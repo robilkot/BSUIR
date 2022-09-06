@@ -10,4 +10,32 @@ maxnumber=${date:${i}:1}
 fi
 done
 
-echo $maxnumber
+#FOR DEBUG  maxnumber=4
+
+if [ $(( $maxnumber%2 )) -eq 0 ]; then
+    case $maxnumber in
+        2)
+            filename=two
+            ;;
+        4)
+            filename=four
+            ;;
+        6)
+            filename=six
+            ;;
+        8)
+            filename=eight
+            ;;
+        0)
+            filename=zero
+            ;;
+    esac
+    touch ${filename}.txt
+    if test -f "${filename}.txt"; then
+        echo File "${filename}.txt" created 
+    else
+        echo File creation error
+    fi
+else
+echo Hello
+fi
