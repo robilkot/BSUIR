@@ -1,0 +1,20 @@
+1a /(?=\b..[aA])(\w*[bB].{4}\b)/gm
+1b
+1c /^(?!.*ab).*$/gm
+1d /^(?!.*aab).*$/gm
+1e /^(?!.*b{2}).*$/gm
+1f /^(?!.*b[a-zA-Z]a).*$/gm
+1g /([aA][cC]).*$/gm
+
+string for tests:
+
+ababab
+ccAccBcccc
+bbbaaa
+bbb2aa
+aaa2bb
+aaaabb
+bababa
+ba12ba
+aaacaa
+abcabc
