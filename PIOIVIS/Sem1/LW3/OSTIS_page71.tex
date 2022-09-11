@@ -1,0 +1,140 @@
+\documentclass{report}
+
+\usepackage[english]{babel}
+
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=1.75cm]{geometry}
+
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{lipsum}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\begin{document}
+
+\newcommand{\skill}{\textit{skill}}
+\newcommand{\method}{\textit{method}}
+\renewcommand{\thesection}{\Roman{section}}
+\titleformat{\section}{\large\centering\sc}{\thesection. }{0cm}{}[]
+
+\setcounter{page}{71}
+\setcounter{section}{7}
+
+\begin{multicols}{2}
+important when borrowing a method from a library of
+reusable components of problem solvers. It is important
+to note that the fact that any concepts are used within
+the framework of the method does not mean that the
+formal record of their definitions is part of this method.
+For example, a method that allows solving problems for
+calculating the area of a triangle will include various
+formulas for calculating the area of a triangle but will not
+include the definitions of the concepts ‘area", ‘triangle",
+etc., since if there are a priori correct formulas, these
+definitions will not be used directly in the process of
+solving the problem. At the same time, the formal
+definitions of these concepts will be part of the declarative
+semantics of this method.
+\par Combining the \textit{method} and its operational semantics,
+that is, information about how this \textit{method} should be
+interpreted, we will call a \textbf{\textit{skill}}.\hfill
+\vspace{4mm}
+\\ \textbf{\textit{skill}}
+
+\setlist{nolistsep}
+
+\newenvironment{bracket}
+    {\textbf{\{}\begin{minipage}[t]{0.8\linewidth}\begin{itemize}[noitemsep]}
+    {\end{itemize}\end{minipage}}
+
+\begin{itemize}[noitemsep]
+    \item [\textbf{:=}] [an ability]
+    \item [\textbf{:=}] [a combination of a \textit{method} with its comprehensive specification – a  \textit{complex representation of the operational semantics of the method}]
+    \item [\textbf{:=}] [a method + a method of its interpretation]
+    \item [\textbf{:=}] [an ability to solve the corresponding class of equivalent problems]
+    \item [\textbf{:=}] [a method plus its operational semantics, which describes how this method is interpreted (performed, implemented) and is at the same time the operational semantics of the corresponding problem solving model]
+    \item [$\Rightarrow$] \textit{subdividing}*:\\
+    \begin{bracket}
+    \item[$\bullet$] \textit{active skill}
+        \begin{itemize}\itemsep0em
+        \item [\textbf{:=}] [a self-initiating skill]
+        \end{itemize}
+    \item[$\bullet$] \textit{passive skill}
+    \end{bracket}
+    
+    \textbf{\}}
+\end{itemize}
+
+Thus, the concept of a \skill is the most important
+concept from the point of view of constructing problem
+solvers, since it combines not only the declarative part
+of the description of the method of solving a class of
+problems but also the operational one.
+
+\textit{Skills} can be \textit{passive skills}, that is, such \textit{skills}, the usage of which must be explicitly initiated by some agent, or \textit{active skills}, which are initiated independently when a corresponding situation occurs in the knowledge base. To do this, in addition to the \method and its operational semantics, the \textit{sc-agent}, which responds to the appearance of a corresponding situation in the knowledge base and initiates the interpretation of the \method of this \skill, is also included in the \textit{active skill}.
+
+This separation allows implementing and combining different approaches for solving problems, in particular, \textit{passive skills} can be considered as a way to implement the concept of a smart software package.
+
+\section{Concepts of a class of methods and a language for representing methods}
+
+Like actions and problems, methods can be classified
+into different classes. We will define a set of methods,
+for which it is possible to \underline{unify} the representation
+(specification) of these methods, as a \textbf{\textit{class of methods}}.
+\vspace{4mm}
+\\ \textbf{\textit{class of methods}}
+
+\begin{itemize}[noitemsep]
+    \item [$\Leftarrow$] \textit{family of subclasses}*:\\ \textit{method}
+    \item [\textbf{:=}] [a set of methods, for which the representation language of these methods is set]
+    \item [$\ni$] \textit{procedural method for solving problems}
+    \begin{itemize}[noitemsep]
+        \item [$\supset$] \textit{algorithmic method for solving problems}
+    \end{itemize}
+    \item [$\ni$] \textit{logical method for solving problems}
+    \begin{itemize}[noitemsep]
+        \item [$\supset$] \textit{productional method for solving problems}
+        \item [$\supset$] \textit{functional method for solving problems}
+    \end{itemize}
+    \item [$\ni$] \textit{artificial neutral network}
+    \begin{itemize}[noitemsep]
+        \item [\textbf{:=}] [a class of methods for solving problems based on artificial neural networks]
+    \end{itemize}
+    \item [$\ni$] \textit{genetic "algorithm"}
+    \item [\textbf{:=}] [a set of methods based on a common ontology]
+    \item [\textbf{:=}] [a set of methods represented in the same language]
+    \item [\textbf{:=}] [a set of methods for solving problems, which corresponds to a special language (for example, an sc-language) that provides a representation of methods from this set]
+    \item [\textbf{:=}] [a set of methods that corresponds to a separate problem-solving model]
+\end{itemize}
+\vspace{2mm}
+Each specific \textit{class of methods} mutually identically
+corresponds to a \textit{language for representing methods}
+that belong to this (specified) \textit{class of methods}. Thus,
+the specification of each \textit{class of methods} is reduced
+to the specification of the corresponding \textit{language for
+representing methods}, i.e., to the description of its
+syntactic, denotational and operational semantics.
+
+Examples of \textit{languages for representing methods} are
+all \textit{programming languages}, which mainly belong to
+the subclass of \textit{languages for representing methods} –
+to \textit{languages for representing methods for information
+processing}. But now the need to create effective formal
+languages for representing methods for performing actions
+in the environment of cybernetical systems is becoming
+increasingly relevant. Complex automation, in particular,
+in the industrial sphere, is impossible without this.
+
+There can be a whole set of such specialized languages,
+each of which will correspond to its own model of
+problem solving (i.e., to its own interpreter).
+\vspace{4mm}
+\\ \textbf{\textit{language for representing methods}}
+\begin{itemize}[noitemsep]
+    \item [\textbf{:=}] [a method language]
+\end{itemize}
+
+\end{multicols}
+
+\end{document}
