@@ -1,1 +1,8 @@
-*.pdf
+*.*
+!*.bat
+!*.sh
+!*.tex
+!*.txt
+!*.sh
+!*.dwg
+!*.cpp
