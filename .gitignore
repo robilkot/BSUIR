@@ -5,4 +5,5 @@
 !*.txt
 !*.sh
 !*.dwg
+!*.dwt
 !*.cpp
