@@ -1,13 +1,11 @@
 #include <iostream>
 #include <math.h>
 
-#define PI 3.14159265358979323846
-
 using namespace std;
 
-int main3()
+int main()
 {
-    double x, y, z, b1, b2, b3;
+    double x, y, z, b1;
     cout <<"Pls enter x, y ,z" << "\n";
     cin >> x >> y >> z;
 
@@ -19,12 +17,10 @@ int main3()
         return 0;
     }
 
-    b1 = pow(x, 1 / 3) + pow(x, y + 2);
-    b2 = pow(asin(z), 2)-abs(x-y);
+    b1 = pow(x, 1./ 3) + pow(x, y + 2);
 
-    if (z>= -PI/2 and z <= PI/2 and b1 >= 0) {
-        b3 = sqrt(10*b1)*b2;
-        cout << "beta equals " <<  b3 << "\n";
+    if (z>= -1 and z <= 1 and b1 >= 0) {
+        cout << "beta equals " << sqrt(10 * (pow(x, 1. / 3) + pow(x, y + 2))) * (asin(z) * asin(z) - fabs(x - y)) << "\n";
     }
     else {
         cout << "Arguments out of bounds!";
