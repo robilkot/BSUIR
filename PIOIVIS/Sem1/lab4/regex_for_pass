@@ -1,0 +1,18 @@
+^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\_])(?=.*[a-z])[A-Za-z\d@$!%*?&\_]{8,16}$
+
+test string:
+
+123tEs@*2t2*
+Test1@@2@33
+12121A121a@@1111
+123TES@*2T2*
+T@@2@33a
+12121A121@1111
+Amm@3*__11
+@mAmm11@33
+mmsszZfDDDDDDD
+AAAAAAAAAfdfc
+AaaaaZaaaaas
+1242354sadA
+@@@@@@@@@@AAAA
+AAa*************
