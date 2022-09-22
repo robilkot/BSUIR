@@ -7,7 +7,7 @@ float func(float x) {
 	return (x * x / 4 + x / 2 - 3) * pow(2.7182818284590, x / 2);
 }
 
-int main() {
+int main1() {
 	float a, b, h, max, min;
 	int i=1;
 	cout << "Pls input a,b,h \n";
