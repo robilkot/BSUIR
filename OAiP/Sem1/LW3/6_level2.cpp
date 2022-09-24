@@ -29,14 +29,14 @@ int main2() {
 		return 0;
 	}
 
-	cout << "i" << " -> " << "   Y   " << "  ->  " << "    S    " << " -> " << "  |Y-S| \n";
+	cout << "i\t  Y\t S\t |Y-S|\n";
 
 	for (a; a <= b; a += h, i++) {
 		summ = 0;
 		for (int k=0; k <= n; k++) {
 			summ += (2 * k + 1) * pow(a, 2 * k) / fact2(k);
 		}
-		cout << i << " -> " << func2(a) << "  ->  " << summ <<"  ->  " << abs(func2(a)-summ)  << "\n";
+		cout << i << "\t" << func2(a) << "\t" << summ << "\t" << abs(func2(a) - summ) << "\n";
 	}
 	cout << "\n";
 }

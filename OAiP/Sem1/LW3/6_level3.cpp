@@ -37,12 +37,12 @@ int main3() {
 		return 0;
 	}
 
-	cout << "i" << " -> " << "   Y   " << "  ->  " << "    S    " << " -> " << "  |Y-S|  " << " -> " << " n sum\n";
+	cout << "i\t Y\t S\t |Y-S|\t n sum\n";
 
 	for (a; a <= b; a += h, i++) {
 		int n = 1;
 		while (abs(findsumm(n, a) - func3(a)) > eps) { n++; }
-		cout << i << " -> " << func3(a) << "  ->  " << findsumm(n, a) << "  ->  " << abs(func3(a) - findsumm(n,a)) << "  ->  " << n <<"\n";
+		cout << i << "\t" << func3(a) << "\t" << findsumm(n, a) << "\t" << abs(func3(a) - findsumm(n,a)) << "\t" << n <<"\n";
 	}
 	cout << "\n";
 }

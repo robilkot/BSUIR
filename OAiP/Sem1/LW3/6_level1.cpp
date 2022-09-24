@@ -25,11 +25,11 @@ int main1() {
 	max = func(a);
 	min = func(a);
 
-	cout << "n" << " -> " << " x " << "  ->  " << " y \n";
+	cout << "n\t x\t y\n";
 	for (a; a <= b; a += h, i++) {
 		if (max < func(a)) max = func(a);
 		if (min > func(a)) min = func(a);
-		cout << i << " -> " << a << "  ->  " << func(a) << "\n";
+		cout << i << "\t" << a << "\t" << func(a) << "\n";
 	}
 	cout << "max value is " << max << "; min value is " << min << "\n";
 }
