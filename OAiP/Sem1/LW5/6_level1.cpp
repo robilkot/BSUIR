@@ -59,5 +59,8 @@ int main1() {
 	}
 	if (sum != 0) cout << "The sum is " << sum << "\n"; else  cout << "No such rows found!\n";
 
+	for (int i = 0; i < m; i++) {
+		delete[] arr[i];
+	}
 	delete[] arr;
 }
