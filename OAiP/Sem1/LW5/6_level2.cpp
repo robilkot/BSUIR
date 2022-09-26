@@ -1,6 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <conio.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -29,7 +30,8 @@ int main2() {
 	cout << "\nPls type 1 to input elements manually (otherwise will be randomly generated) \n\n";
 	if (_getch() == '1') {
 		cout << "Pls input elements for array \n\n";
-		for (int i = 0; i < n; i++) {
+		cin.clear();
+		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
 				cin >> arr[i][j];
 			}
@@ -59,14 +61,18 @@ int main2() {
 			arr_flat_cnt++;
 		}
 	}
+	sort(arr_flat, arr_flat+m*n);
 
-	for (int i = 0; i < m*n; i++) {
-		for (int j = i+1; j<m*n; j++) {
-			if (arr_flat[j] == arr_flat[i]) counter++;
-		}
+	for (int i = 1; i < m*n; i++) {
+			if (arr_flat[i-1] == arr_flat[i]) {
+				counter++;
+			}
 	}
 
 	cout << "\nTotal unique numbers: " << m*n-counter << "\n";
 
+	for (int i = 0; i < m; i++) {
+		delete[] arr[i];
+	}
 	delete[] arr;
 }
