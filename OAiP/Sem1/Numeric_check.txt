@@ -1,0 +1,13 @@
+#include <regex>
+
+	regex reg_num("^[\\+-]?([0-9]+\\.?[0-9]*|\\.?[0-9]+)$");
+	string inp;
+	cout << "Input string\n";
+	cin >> inp;
+	while (!regex_match(inp, reg_num)) {
+		cin.clear();
+		cin.ignore();
+		cout << "\nNon-numeric, pls re-input:\n";
+		cin >> inp;
+	}
+	cout << "\nOk\n";
