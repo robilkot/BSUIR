@@ -7,4 +7,6 @@
 !*.dwg
 !*.dwt
 !*.cpp
+!*.sln
+!*.vcxproj
 **/x64
