@@ -1,13 +1,12 @@
-#include <regex>
-
+float input_num() {
 	regex reg_num("^[\\+-]?([0-9]+\\.?[0-9]*|\\.?[0-9]+)$");
 	string inp;
-	cout << "Input string\n";
 	cin >> inp;
 	while (!regex_match(inp, reg_num)) {
 		cin.clear();
-		cin.ignore();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cout << "\nNon-numeric, pls re-input:\n";
 		cin >> inp;
 	}
-	cout << "\nOk\n";
+	return stof(inp);
+}

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{202cb973-0d57-4318-8667-db25b03b04bb}</ProjectGuid>
-    <RootNamespace>LW5</RootNamespace>
+    <ProjectGuid>{7007f6c0-6229-4682-af30-048d77a729ec}</ProjectGuid>
+    <RootNamespace>lvl1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -128,8 +128,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="6_level1.cpp" />
-    <ClCompile Include="6_level2.cpp" />
-    <ClCompile Include="6_level3.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

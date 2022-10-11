@@ -1,9 +1,23 @@
 #include <iostream>
 #include <math.h>
+#include <regex>
 
 using namespace std;
 
-int rowsum(int** arr ,int row, int length) {
+float input_num() {
+	regex reg_num("^[\\+-]?([0-9]+\\.?[0-9]*|\\.?[0-9]+)$");
+	string inp;
+	cin >> inp;
+	while (!regex_match(inp, reg_num)) {
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nNon-numeric, pls re-input:\n";
+		cin >> inp;
+	}
+	return stof(inp);
+}
+
+int rowsum(int** arr, int row, int length) {
 	int sum = 0;
 	for (int i = 0; i < length; i++) {
 		sum += arr[row][i];
@@ -11,22 +25,14 @@ int rowsum(int** arr ,int row, int length) {
 	return sum;
 }
 
-int main1() {
-	int m,n;
+int main() {
+	cout << "\nLW5 level 1\n";
 	int sum = 0;
 
-	cout << "Pls unput n, m for array" << "\n\n";
-	cin >> m >> n;
+	cout << "\nPls unput n, m for array\n\n";
+	int m = input_num(), n = input_num();
 
-	if (!cin) //numeric check
-	{
-		cin.clear();
-		cin.ignore();
-		cout << "\nNon-numeric!\n";
-		return 0;
-	}
-
-	int** arr = new int *[m];
+	int** arr = new int* [m];
 	for (int i = 0; i < m; i++) {
 		arr[i] = new int[n];
 	}
@@ -35,7 +41,7 @@ int main1() {
 
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
-			cin >> arr[i][j];
+			arr[i][j] = input_num();
 		}
 	}
 	cout << "\nGiven array:\n\n";
@@ -51,13 +57,13 @@ int main1() {
 		for (int k = 0; k < n; k++) {
 			if (arr[i][k] < 0) {
 				sum += rowsum(arr, i, n);
-				cout << "\nAdding to the sum row " << i+1;
+				cout << "\nAdding to the sum row " << i + 1;
 				break;
 			}
 		}
 		cout << "\n";
 	}
-	if (sum != 0) cout << "The sum is " << sum << "\n"; else  cout << "No such rows found!\n";
+	if (sum != 0) cout << "\nThe sum is " << sum << "\n"; else  cout << "\nNo rows with negative numbers found!\n";
 
 	for (int i = 0; i < m; i++) {
 		delete[] arr[i];

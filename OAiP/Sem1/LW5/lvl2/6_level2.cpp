@@ -2,25 +2,31 @@
 #include <math.h>
 #include <conio.h>
 #include <algorithm>
+#include <regex>
 
 using namespace std;
 
-int main2() {
-	int m, n;
+float input_num() {
+	regex reg_num("^[\\+-]?([0-9]+\\.?[0-9]*|\\.?[0-9]+)$");
+	string inp;
+	cin >> inp;
+	while (!regex_match(inp, reg_num)) {
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nNon-numeric, pls re-input:\n";
+		cin >> inp;
+	}
+	return stof(inp);
+}
+
+int main() {
+	cout << "\nLW5 level 2\n";
 	int counter = 0;
 
 	cout << "Pls unput n, m for array" << "\n\n";
-	cin >> m >> n;
+	int m = input_num(), n = input_num();
 
-	float* arr_flat= new float[m*n];
-
-	if (!cin) //numeric check
-	{
-		cin.clear();
-		cin.ignore();
-		cout << "\nNon-numeric!\n";
-		return 0;
-	}
+	float* arr_flat = new float[m * n];
 
 	float** arr = new float* [m];
 	for (int i = 0; i < m; i++) {
@@ -33,7 +39,7 @@ int main2() {
 		cin.clear();
 		for (int i = 0; i < m; i++) {
 			for (int j = 0; j < n; j++) {
-				cin >> arr[i][j];
+				arr[i][j] = input_num();
 			}
 		}
 	}
@@ -61,15 +67,15 @@ int main2() {
 			arr_flat_cnt++;
 		}
 	}
-	sort(arr_flat, arr_flat+m*n);
+	sort(arr_flat, arr_flat + m * n);
 
-	for (int i = 1; i < m*n; i++) {
-			if (arr_flat[i-1] == arr_flat[i]) {
-				counter++;
-			}
+	for (int i = 1; i < m * n; i++) {
+		if (arr_flat[i - 1] == arr_flat[i]) {
+			counter++;
+		}
 	}
 
-	cout << "\nTotal unique numbers: " << m*n-counter << "\n";
+	cout << "\nTotal unique numbers: " << m * n - counter << "\n";
 
 	for (int i = 0; i < m; i++) {
 		delete[] arr[i];
