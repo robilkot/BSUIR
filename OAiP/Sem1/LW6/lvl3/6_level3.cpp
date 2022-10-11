@@ -3,7 +3,8 @@
 
 using namespace std;
 
-int main3() {
+int main() {
+	cout << "\nLW6 level 3\n";
 	string inp;
 	char cut[200] = "";
 	int spacenum = -1;
@@ -13,7 +14,7 @@ int main3() {
 
 	if (size(inp) > 15) {
 		for (int i = 0; i < 10; i++) {
-			cut[i] = inp[i+4];
+			cut[i] = inp[i + 4];
 		}
 		//cout << "Cut string is " << cut << "\n";
 
@@ -29,13 +30,12 @@ int main3() {
 		else {
 			cout << "\nNo spaces found!\n";
 			return 0;
-		}  
-		cout << "\nThe string is: " << cut+inp << "\n";
+		}
+		cout << "\nThe string is: " << cut + inp << "\n";
 	}
 	else {
 		cout << "\nLess than 15 symbols!\n";
 		return 0;
 	}
-
 	return 0;
 }
