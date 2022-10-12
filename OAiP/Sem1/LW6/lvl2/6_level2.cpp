@@ -16,6 +16,6 @@ int main() {
 			inp.erase(i, 1);
 		}
 	}
-	cout << "\nThe number is " << inp << "\n";
+	inp == "\0" ? cout << "\nNo number found\n" : cout << "\nThe number is " << inp << "\n";
 	return 0;
 }
