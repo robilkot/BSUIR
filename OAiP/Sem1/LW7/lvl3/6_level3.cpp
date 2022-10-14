@@ -11,10 +11,10 @@ void writetofile(string str, string filename) {
 	if (fout.is_open()) {
 		fout << str;
 		fout.close();
-		cout << "\nFile " << filename << " succesfully saved.\n";
+		cout << "\nFile " << filename << " succesfully saved in project folder.\n";
 	}
 	else {
-		cout << "\nError saving file, pls try again.\n";
+		cout << "\nError saving file, try again.\n";
 	}
 }
 
@@ -26,7 +26,7 @@ string readfromfile(string filename) {
 		return output;
 	}
 	else {
-		return "Error opening file, pls try again.\n";
+		return "Error opening file, try again.\n";
 	}
 }
 
@@ -58,24 +58,47 @@ string cyfer(string str) {
 
 string decyfer(string str) {
 	vector<char> decyfred;
-
+	if (str.length() < 3) {
+		return str;
+	}
+	int i = 0;
+	for (; i < str.size(); i++) {
+		if (str[i] == 'i' && str[i + 1] == 'i' && (str[i + 2] == 's' || str[i + 2] == 'l' || str[i + 2] == 't')) {
+			switch (str[i + 2]) {
+			case 's': decyfred.push_back('s'); break;
+			case 'l': decyfred.push_back('l'); break;
+			case 't': decyfred.push_back('t'); break;
+			}
+			decyfred.push_back('i');
+			//cout << "\nReplaced cyfred symbols at i = " << i << "\n";
+			i += 2;
+		}
+		else {
+			//cout << "\nPush last symbol at i = " << i << "\n";
+			decyfred.push_back(str[i]);
+		}
+	}
 	return string(decyfred.begin(), decyfred.end());
 }
 
 int main() {
-	string inp;
 	do {
-		cout << "\nPls type 1 to cyfer smth or other key to decyfer from file.\n";
-		if (_getch() == '1') {
+		cout << "\n\nLW7 LVL3 === Type 1 to cyfer string === Type any other key to decyfer from file === FOR EXIT PRESS Q ===\n";
+		switch (_getch()) {
+		case '1': {
 			cout << "\nWhat do you want to cyfer today? Pls input string.\n";
-			cin >> inp;
+			string inp;
+			getline(cin, inp);
 			writetofile(cyfer(inp), "cyfer.txt");
+			break;
 		}
-		else {
+		case 'q':
+		case 'Q': return 0;
+		default: {
 			cout << "\nHere is decyfer from file 'cyfer.txt':\n";
 			cout << decyfer(readfromfile("cyfer.txt")) << "\n";
+			break;
 		}
-		cout << "\n--- Pls type Q to exit the program ---\n";
-	} while (_getch()!='Q');
-	return 0;
+		}
+	} while (true);
 }
