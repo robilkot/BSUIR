@@ -4,85 +4,74 @@
 
 using namespace std;
 
-void Show(string operation, vector<int>& result, int n) //Функция вывода множества в консоль
+void showSet(string operation, vector<int>& result) //Функция вывода множества в консоль
 {
 	cout << "\nThe result of " << operation << " of sets A and B = ( ";
-	for (int i = 0; i < n; i++)
-	{
-		cout << result[i] << " "; //Поэлементный вывод множества D в консоль
-	}
+	for (int i = 0; i < result.size(); i++) cout << result[i] << " "; //Поэлементный вывод множества D в консоль
 	cout << ")\n";
 }
 
-void make_MN(int n, vector<int>& vec, char x) //Функция создания множества
+void createSet(vector<int>& vec, char x) //Функция создания множества
 {
-	cout << "Input elemets of set " << x << " (" << n << " elements)\n";
-	for (int i = 0; i < n; i++)
-	{
-		cin >> vec[i]; //Ввод пользователем каждого элемента множества
+	cout << "Input elemets of set " << x << " (" << vec.size() << " elements)\n";
+	for (int i = 0; i < vec.size(); i++) cin >> vec[i]; //Ввод пользователем каждого элемента множества
+}
+
+void unite(vector<int>& A, vector<int>& B, vector<int>& D) //Функция объединения множеств
+{
+	for (int i = 0; i < A.size(); i++) D.push_back(A[i]); //Копируем во множество D все элементы множества A
+
+	bool ignore;
+	for (int i = 0; i < B.size(); i++) { //Проходим всем по элементам множества B
+			ignore = false;
+			for (int k = 0; k < D.size(); k++) { //Проходим по всем элементам множества D
+				if (B[i] == D[k]) ignore=true;		//и сравниваем выбранные элементы. Если совпали - помечаем совпадение с помощью логической переменной.
+			}
+			if (!ignore) D.push_back(B[i]); //Если выбранный эл-т мн-ва B не совпал ни с одним элементом мн-ва D, добавляем выбранный эл-т мн-ва B во мн-во D 
 	}
 }
 
-int unite(vector<int>& A, vector<int>& B, int nA, int nB) //Функция объединения множеств
+void intersect(vector<int>& A, vector<int>& B, vector<int>& D) //Операция пересечения множеств
 {
-	int ignor, plus = 0;
-	for (int i = 0; i < nA; i++)
+	//На входе в функцию имеем пустое множество D
+	for (int i = 0; i < A.size(); i++) //Проходим всем по элементам множества А
 	{
-		ignor = 0;
-		for (int k = 0; k < nB; k++)
+		for (int k = 0; k < B.size(); k++) //Проходим всем по элементам множества B
 		{
-			if (A[i] == B[k]) ignor++;
-		}
-		if (ignor == 0) plus++, B.push_back(A[i]);
-	}
-	return plus;
-}
-
-int intersect(vector<int>& A, vector<int>& B, vector<int>& D, int n1, int n2) //Операция пересечния множеств
-{
-	int plus = 0;
-	for (int i = 0; i < n1; i++)
-	{
-		for (int k = 0; k < n2; k++)
-		{
-			if (A[i] == B[k]) plus++, D.push_back(A[i]);
+			if (A[i] == B[k]) D.push_back(A[i]); //Сравниваем выбранные элементы. Если совпали, добавляем выбранный элемент мн-ва A во мн-во D
 		}
 	}
-	return plus;
 }
 
 int main()
 {
-	setlocale(LC_ALL, "Russian");
-
-	int n1, n2, number;
-
+	int n1, n2;
 	cout << "\nEnter cardinality of set A: ";
 	cin >> n1; //Ввод пользователем мощности множества А
 	cout << "\nEnter cardinality of set B: ";
 	cin >> n2; //Ввод пользователем мощности множества B
 
 	vector<int> A(n1), B(n2), D;
-	make_MN(n1, A, 'A'); //Вызов функции создания первого множества
-	make_MN(n2, B, 'B'); //Вызов функции создания второго множества
+	createSet(A, 'A'); //Вызов функций создания множеств
+	createSet(B, 'B'); //
 
 	cout << "\nChoose operation on sets: \n1 - union\n2 - intersection\nInput number: "; //Предложение пользователю выбрать операцию (объединение или пересечение)
 	do {
 		switch (_getch()) {
 		case '1': { //Если пользователь выбрал объединение
-			number = unite(A, B, n1, n2);
-			Show("union", B, n2 + number);
+			unite(A, B, D); //Выполняем объединение
+			showSet("union", D); //Выводим в консоль результат (множество D)
 			system("pause");
 			return 0;
 		}
 		case '2': { //Если пользователь выбрал пересечение
-			number = intersect(A, B, D, n1, n2);
-			Show("intersection", D, number);
+			intersect(A, B, D); //Выполняем пересечение
+			showSet("intersection", D); //Выводим в консоль результат (множество D)
 			system("pause");
 			return 0;
 		}
-		default: { //Если пользователь ввел неверное число (просим повторить ввод)
-			cout << "\nYou have input wrong number, try again\n";
+		default: { //Если пользователь ввел неверное число
+			cout << "\nYou have input wrong number, try again\n"; //Просим повторить ввод
 			break;
 		}
 		}
