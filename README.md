@@ -1,18 +1,28 @@
 # Что это за место такое?
 Это [мой](https://vk.com/robilkot) репозиторий, где есть разные работы, связанные с БГУИРом:
-- [**Представление и обработка информации в интеллектуальных системах**](https://github.com/robilkot/BSUIR/tree/main/PIOIVIS/)
 
-    _Вариант_: ЛР1 - 82; ЛР3 - 71; ЛР4 - regex для пароля; РР - 6.4 через списки инцидентности.
-- [**Теоретико-множественные основы интеллектуальных систем**](https://github.com/robilkot/BSUIR/tree/main/TMOIS/)
-- [**Основы компьютерной графики**](https://github.com/robilkot/BSUIR/tree/main/OKG/)
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/PIOIVIS/> <b>Представление и Обработка Информации в Интеллектуальных Системах</b> </a></summary>
+<br />
+<em>Вариант</em>: ЛР1 - 82; ЛР3 - 71; ЛР4 - regex для пароля; РР - 6.4 через списки инцидентности.
+</details>
 
-    _Вариант_: 15  
-    В корне также лежат шаблоны, используемые в работах.
-- [**Основы алгоритмизации и программирования**](https://github.com/robilkot/BSUIR/tree/main/OAiP/)
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OKG> <b>Основы Компьютерной Графики</b> </a></summary>
+<br />
+<em>Вариант</em>: 15  
+    
+В корне также лежат шаблоны, используемые в работах.
+</details>
 
-    _Вариант_: 6  
-    В папке Sem1 отдельно лежит неплохая проверка на ввод чисел. ~~До ЛР5 она, правда, не применялась, хотя должна.~~
-- [**Английский язык**](https://github.com/robilkot/BSUIR/tree/main/English)
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OAiP> <b>Основы Аалгоритмизации и Программирования</b> </a></summary>
+<br />
+<em>Вариант</em>: 6  
+    
+В папке Sem1 отдельно лежит неплохая проверка на ввод чисел. ~~До ЛР5 она, правда, не применялась, хотя должна.~~
+</details>
+
+[**Теоретико-Множественные Основы Интеллектуальных Систем**](https://github.com/robilkot/BSUIR/tree/main/TMOIS/)
+
+[**Английский язык**](https://github.com/robilkot/BSUIR/tree/main/English)
 
 Поблагодари, если это место оказалось для тебя полезным :wink:
 
