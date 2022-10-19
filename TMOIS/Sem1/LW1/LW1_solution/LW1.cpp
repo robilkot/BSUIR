@@ -22,10 +22,10 @@ void unite(vector<int>& A, vector<int>& B, vector<int>& D) //Функция об
 	for (int i = 0; i < A.size(); i++) D.push_back(A[i]); //Копируем во множество D все элементы множества A
 
 	bool ignore;
-	for (int i = 0; i < B.size(); i++) { //Проходим всем по элементам множества B
+	for (int i = 0; i < B.size(); i++) { //Проходим по всем элементам множества B
 			ignore = false;
-			for (int k = 0; k < D.size(); k++) { //Проходим по всем элементам множества D
-				if (B[i] == D[k]) ignore=true;		//и сравниваем выбранные элементы. Если совпали - помечаем совпадение с помощью логической переменной.
+			for (int k = 0; k < D.size(); k++) { //Для каждого выбранного элемента мн-ва B проходим по всем элементам множества D
+				if (B[i] == D[k]) ignore=true;	//и сравниваем выбранные элементы.
 			}
 			if (!ignore) D.push_back(B[i]); //Если выбранный эл-т мн-ва B не совпал ни с одним элементом мн-ва D, добавляем выбранный эл-т мн-ва B во мн-во D 
 	}
@@ -34,11 +34,10 @@ void unite(vector<int>& A, vector<int>& B, vector<int>& D) //Функция об
 void intersect(vector<int>& A, vector<int>& B, vector<int>& D) //Операция пересечения множеств
 {
 	//На входе в функцию имеем пустое множество D
-	for (int i = 0; i < A.size(); i++) //Проходим всем по элементам множества А
+	for (int i = 0; i < A.size(); i++) //Проходим по всем элементам множества А
 	{
-		for (int k = 0; k < B.size(); k++) //Проходим всем по элементам множества B
-		{
-			if (A[i] == B[k]) D.push_back(A[i]); //Сравниваем выбранные элементы. Если совпали, добавляем выбранный элемент мн-ва A во мн-во D
+		for (int k = 0; k < B.size(); k++) {	//Для каждого выбранного элемента мн-ва A проходим всем по элементам множества B
+			if (A[i] == B[k]) D.push_back(A[i]); //и сравниваем выбранные элементы. Если совпали, добавляем выбранный элемент мн-ва A во мн-во D
 		}
 	}
 }
@@ -48,13 +47,16 @@ int main()
 	int n1, n2;
 	cout << "\nEnter cardinality of set A: ";
 	cin >> n1; //Ввод пользователем мощности множества А
+	vector<int> A(n1);
+	createSet(A, 'A'); //Вызов функции создания множества А
+
 	cout << "\nEnter cardinality of set B: ";
 	cin >> n2; //Ввод пользователем мощности множества B
+	vector<int> B(n2);
+	createSet(B, 'B'); //Вызов функции создания множества B
 
-	vector<int> A(n1), B(n2), D;
-	createSet(A, 'A'); //Вызов функций создания множеств
-	createSet(B, 'B'); //
-
+	vector<int> D;
+	
 	cout << "\nChoose operation on sets: \n1 - union\n2 - intersection\nInput number: "; //Предложение пользователю выбрать операцию (объединение или пересечение)
 	do {
 		switch (_getch()) {
@@ -62,17 +64,16 @@ int main()
 			unite(A, B, D); //Выполняем объединение
 			showSet("union", D); //Выводим в консоль результат (множество D)
 			system("pause");
-			return 0;
+			return 0; //Завершаем работу программы
 		}
 		case '2': { //Если пользователь выбрал пересечение
 			intersect(A, B, D); //Выполняем пересечение
 			showSet("intersection", D); //Выводим в консоль результат (множество D)
 			system("pause");
-			return 0;
+			return 0; //Завершаем работу программы
 		}
 		default: { //Если пользователь ввел неверное число
 			cout << "\nYou have input wrong number, try again\n"; //Просим повторить ввод
-			break;
 		}
 		}
 	} while (true);
