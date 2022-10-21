@@ -8,35 +8,31 @@
 
 using namespace std;
 
-// Структура вершины
-// Содержит имя и список инцидентности (СИ)
-// Содержит функцию вывода своего СИ
+// Структура вершины: Имя, Список инцидентности (СИ), Функция вывода своего СИ
 //
 struct vertex
 {
 	string name;
-	vector<int> Incidence;
+	vector<int> IncidenceList;
 
 	void DisplayInfo() {
 		cout << "\n For vertex " << name << ": ";
-		for (int i = 0; i < Incidence.size(); i++) cout << Incidence[i] << " ";
+		for (int i = 0; i < IncidenceList.size(); i++) cout << IncidenceList[i] << " ";
 	}
 };
 
-// Структура графа
-// Содержит список вершин
-// Содержит функции вывода СИ всех своих вершин
+// Структура графа: Список вершин, Функция вывода СИ всех своих вершин
 //
 struct graph
 {
 	vector<vertex> Vertices;
 
-	void DisplayAllIncidence() {
+	void DisplayAllIncidenceList() {
 		for (int i = 0; i < Vertices.size(); i++) Vertices[i].DisplayInfo();
 	}
 };
 
-vertex GetFromLine(string str) { //Парсим строку как запись вершины
+vertex GetVertexFromString(string& str) { //Парсим строку как запись вершины
 	vertex Output;
 
 	Output.name = str.substr(0, str.find(" ")); //Парсим имя вершины
@@ -45,13 +41,13 @@ vertex GetFromLine(string str) { //Парсим строку как запись
 	istringstream currentstring(str); 
 	string temp;
 	while (getline(currentstring, temp, ' ')) { //Парсинг списка инцидентности (делимитер - пробел)
-		Output.Incidence.push_back(stoi(temp)); //----TODO: обработка исключений stoi
+		Output.IncidenceList.push_back(stoi(temp)); //----TODO: обработка исключений stoi
 	}
 
 	return Output;
 }
 
-graph GetFromFile(const char* filename) { //Построчный парсинг файла как граф
+graph GetGraphFromFile(const char* filename) { //Построчный парсинг файла как граф
 	ifstream input(filename);
 	if (!input.is_open()) {
 		cout << "Error opening file, try again.\n";
@@ -61,7 +57,7 @@ graph GetFromFile(const char* filename) { //Построчный парсинг 
 	graph Output;
 	string temp;
 	while (getline(input, temp)) {
-		Output.Vertices.push_back(GetFromLine(temp));
+		Output.Vertices.push_back(GetVertexFromString(temp));
 	}
 
 	input.close();
@@ -76,10 +72,10 @@ void WriteGraphToFile(graph inp, const char* filename) { // Запись гра�
 	}
 
 	for (int i = 0; i < inp.Vertices.size(); i++) {
-		fout << inp.Vertices[i].name << ' '; // Запись имени вершин
-		for (int k = 0; k < inp.Vertices[i].Incidence.size(); k++) {
-			fout << inp.Vertices[i].Incidence[k]; // Запись СИ
-			if (k != inp.Vertices[i].Incidence.size()-1) fout << ' '; //В частности пробелов между элементами списка
+		fout << inp.Vertices[i].name << ' '; // Запись имени вершин ---TODO сделать проверку на пустой СИ и убрать для таких пробелы
+		for (int k = 0; k < inp.Vertices[i].IncidenceList.size(); k++) {
+			fout << inp.Vertices[i].IncidenceList[k]; // Запись СИ
+			if (k != inp.Vertices[i].IncidenceList.size()-1) fout << ' '; //В частности пробелов между элементами списка
 		}
 		if(i != inp.Vertices.size()-1) fout << '\n'; //Также переходим на новую строку после каждой вершины кроме последней
 	}
@@ -91,11 +87,11 @@ void WriteGraphToFile(graph inp, const char* filename) { // Запись гра�
 int main() {
 	//vertex first{ "test1", {8,2} }, second{ "test2", {1,2,4,5}};
 	//graph Gfirst{ {first,second} };
-	//Gfirst.DisplayAllIncidence();
+	//Gfirst.DisplayAllIncidenceList();
 	
-	graph inp = GetFromFile("E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test.txt");
+	graph inp = GetGraphFromFile("E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test.txt");
 	
-	inp.DisplayAllIncidence();
+	inp.DisplayAllIncidenceList();
 
 	WriteGraphToFile(inp, "E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test2.txt");
 
