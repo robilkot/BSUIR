@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 //#define DEBUG
 
@@ -11,7 +12,7 @@ using namespace std;
 // Содержит имя и список инцидентности (СИ)
 // Содержит функцию вывода своего СИ
 //
-struct Vertex
+struct vertex
 {
 	string name;
 	vector<int> Incidence;
@@ -28,77 +29,75 @@ struct Vertex
 //
 struct graph
 {
-	vector<Vertex> Vertices;
+	vector<vertex> Vertices;
 
 	void DisplayAllIncidence() {
 		for (int i = 0; i < Vertices.size(); i++) Vertices[i].DisplayInfo();
 	}
 };
 
-Vertex GetFromLine(string str) { //Парсим строку как запись вершины
-	Vertex Output;
-	size_t pos = 0;
+vertex GetFromLine(string str) { //Парсим строку как запись вершины
+	vertex Output;
 
 	Output.name = str.substr(0, str.find(" ")); //Парсим имя вершины
-	str.erase(0, pos + Output.name.size() + 1);
+	str.erase(0, Output.name.size() + 1);
 
-	while ((pos = str.find(" ")) != string::npos) { //Парсим список инцидентности
-		int adding;
-		try {
-			adding = stoi(str.substr(0, pos));
-		}
-		catch(...) { //На случай нечислового значения в списке инцидентности
-		#ifdef DEBUG
-		cout << "\nInvalid argument ingnored!\n";
-		#endif // DEBUG
-		str.erase(0, pos + 1 + str.substr(0, pos).size());
-		continue;
-		}
-
-		Output.Incidence.push_back(adding);
-		str.erase(0, pos + 1 + str.substr(0, pos).size());
-	}
-	try {
-		Output.Incidence.push_back(stoi(str)); //И добавляем последний элемент списка
-	}
-	catch (...) {
-	#ifdef DEBUG
-		cout << "\nInvalid argument ingnored!\n";
-	#endif // DEBUG
+	istringstream currentstring(str); 
+	string temp;
+	while (getline(currentstring, temp, ' ')) { //Парсинг списка инцидентности (делимитер - пробел)
+		Output.Incidence.push_back(stoi(temp)); //----TODO: обработка исключений stoi
 	}
 
 	return Output;
 }
 
-graph GetFromFile(const char* filename) {
+graph GetFromFile(const char* filename) { //Построчный парсинг файла как граф
 	ifstream input(filename);
-	string gotfromfile;
-
 	if (!input.is_open()) {
 		cout << "Error opening file, try again.\n";
 		return {};
 	}
 
 	graph Output;
-
-	string currentline;
-	while (currentline != "") {
-		getline(input, gotfromfile);
+	string temp;
+	while (getline(input, temp)) {
+		Output.Vertices.push_back(GetFromLine(temp));
 	}
-	
 
+	input.close();
 	return Output;
 }
 
+void WriteGraphToFile(graph inp, const char* filename) { // Запись графа в файл
+	ofstream fout(filename);
+	if (!fout.is_open()) {
+		cout << "Error accesing specified file, try again.\n";
+		return;
+	}
+
+	for (int i = 0; i < inp.Vertices.size(); i++) {
+		fout << inp.Vertices[i].name << ' '; // Запись имени вершин
+		for (int k = 0; k < inp.Vertices[i].Incidence.size(); k++) {
+			fout << inp.Vertices[i].Incidence[k]; // Запись СИ
+			if (k != inp.Vertices[i].Incidence.size()-1) fout << ' '; //В частности пробелов между элементами списка
+		}
+		if(i != inp.Vertices.size()-1) fout << '\n'; //Также переходим на новую строку после каждой вершины кроме последней
+	}
+
+	fout.close();
+	cout << "\nGraph succesfully saved in file " << filename << "\n";
+}
+
 int main() {
-	//Vertex first{ "test1", {8,2} }, second{ "test2", {1,2,4,5}};
+	//vertex first{ "test1", {8,2} }, second{ "test2", {1,2,4,5}};
 	//graph Gfirst{ {first,second} };
 	//Gfirst.DisplayAllIncidence();
 	
-	//graph inp = ReadFromFile("text.txt");
+	graph inp = GetFromFile("E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test.txt");
 	
-	Vertex test = GetFromLine("Vertex1 1 2 3 4 5");
-	test.DisplayInfo();
+	inp.DisplayAllIncidence();
+
+	WriteGraphToFile(inp, "E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test2.txt");
 
 	system("pause");
 	return 0;
