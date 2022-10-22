@@ -1,0 +1,23 @@
+TEST GRAPHS
+
+ДЛЯ ПРОВЕРКИ ИСКЛЮЧЕНИЯ:
+
+one 1 4
+two 1 2
+three 2 3
+four 3 4
+
+
+ДЛЯ ПРОВЕРКИ НА К5:
+
+one 1 5 6 7 11 
+two 4 5 8 9 20
+three 3 4 6 10
+four 2 3 7 9
+five 1 2 8 10
+six 11 12 16 17 18 19
+seven 12 13
+eight 13 14 18
+nine 14 15 17
+ten 15 16
+eleven 19 20
