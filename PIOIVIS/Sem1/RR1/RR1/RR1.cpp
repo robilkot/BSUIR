@@ -71,8 +71,8 @@ graph GetGraphFromFile(const char* filename) { // Парсинг графа из
 	return Output;
 }
 
-void WriteGraphToFile(graph& inp, const char* filename) { // Запись графа в файл
-	if (inp.Vertices.empty()) {
+void WriteGraphToFile(graph& inpG, const char* filename) { // Запись графа в файл
+	if (inpG.Vertices.empty()) {
 		cout << "Tried to write empty graph, aborting\n";
 		return;
 	}
@@ -83,13 +83,13 @@ void WriteGraphToFile(graph& inp, const char* filename) { // Запись гра
 		return;
 	}
 
-	for (int i = 0; i < inp.Vertices.size(); i++) {
-		fout << inp.Vertices[i].name; // Запись имени вершин
-		if (inp.Vertices[i].IncidenceList.empty()) { fout << '\n'; continue; }
+	for (int i = 0; i < inpG.Vertices.size(); i++) {
+		fout << inpG.Vertices[i].name; // Запись имени вершин
+		if (inpG.Vertices[i].IncidenceList.empty()) { fout << '\n'; continue; }
 		fout << ' ';
-		for (int k = 0; k < inp.Vertices[i].IncidenceList.size(); k++) {
-			fout << inp.Vertices[i].IncidenceList[k];						// Запись СИ
-			if (k != inp.Vertices[i].IncidenceList.size()-1) fout << ' ';	// В частности пробелов между элементами списка
+		for (int k = 0; k < inpG.Vertices[i].IncidenceList.size(); k++) {
+			fout << inpG.Vertices[i].IncidenceList[k];						// Запись СИ
+			if (k != inpG.Vertices[i].IncidenceList.size()-1) fout << ' ';	// В частности пробелов между элементами списка
 		}
 		/*if (i != inp.Vertices.size() - 1)*/ fout << '\n'; // Переходим на новую строку после каждой вершины кроме последней (опционально)
 	}
@@ -98,12 +98,12 @@ void WriteGraphToFile(graph& inp, const char* filename) { // Запись гра
 	cout << "\nGraph succesfully saved in file " << filename << "\n";
 }
 
-void FindNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { //Поиск смежных вершин для заданной в графе. Нумерация вершин - с нуля!
+void FindNeighboorVertices(graph& inpG, int inpV, vector<int>& IncidentArray) { // Поиск смежных вершин для заданной в графе
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 			for (int m = 0; m < inpG.Vertices[i].IncidenceList.size(); m++) {
 				for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) {
 					if (inpG.Vertices[i].IncidenceList[m] == inpG.Vertices[inpV].IncidenceList[n] && i!=inpV) {
-						NeighboorArray.push_back(i);
+						IncidentArray.push_back(i);
 					}
 				}
 			}
@@ -114,7 +114,7 @@ bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возмо�
 	vector<int> check;
 	FindNeighboorVertices(inpG, inpV, check);
 
-	if (check.size() != 2) return false; //---TODO дописать проверку для подграфа вида "...-(v)---"
+	if (check.size() != 2) return false;
 	for (int i = 0; i < inpG.Vertices[check[0]].IncidenceList.size(); i++) {
 		for (int k = 0; k < inpG.Vertices[check[1]].IncidenceList.size(); k++) {
 			if (inpG.Vertices[check[0]].IncidenceList[i] == inpG.Vertices[check[1]].IncidenceList[k]) return false;
@@ -123,11 +123,54 @@ bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возмо�
 	return true;
 }
 
-void ExcludeVertices(graph& inp) { //---TODO Исключение вершин степени 2 из данного графа
+void FindCommonEdge(graph& inpG, int inpV1, int inpV2, vector<int>& CommonEdgeArray) { // Получение [из СИ первой данной вершины] номера ребра, инцидентного данным вершинам
+	for (int i = 0; i < inpG.Vertices[inpV1].IncidenceList.size(); i++) {
+		for (int k = 0; k < inpG.Vertices[inpV2].IncidenceList.size(); k++) {
+			if (inpG.Vertices[inpV1].IncidenceList[i] == inpG.Vertices[inpV2].IncidenceList[k]) {
+				CommonEdgeArray.push_back(inpG.Vertices[inpV1].IncidenceList[i]);
+			}
+		}
+	}
+}
+
+bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершины из данного графа. [Опционально] Надо бы сделать выбор какое ребро сохранять при исключении вершины
+	if (CanBeExcluded(inpG, inpV)) {
+		vector<int> neighboors;
+		FindNeighboorVertices(inpG, inpV, neighboors);
+
+		vector<int> commonEdges;
+		FindCommonEdge(inpG, inpV, neighboors[0], commonEdges); // Запись в СИ смежных вершин ребра, инцидентного удаляемому
+		inpG.Vertices[neighboors[1]].IncidenceList.push_back(commonEdges[0]);
+
+#ifdef DEBUG
+		cout << "Vertex " << inpG.Vertices[inpV].name << " was excluded.\n";
+#endif
+		
+		inpG.Vertices.erase(inpG.Vertices.begin()+inpV);
+		return 1;
+	}
+	else {
+#ifdef DEBUG
+		cout << "Vertex " << inpG.Vertices[inpV].name << " can not be excluded.\n";
+#endif
+		return 0;
+	}
+}
+
+void ExcludeAllVertices(graph& inpG) { // Исключение всех вершин степени 2 из данного графа
+	bool isReady;
 	do
 	{
+		for (int i = 0; i < inpG.Vertices.size(); ) {
+			if(!ExcludeVertex(inpG, i)) i++; // Удаление всех возможных вершин
+		}
 
-	} while (true); //---TODO Проверка весь ли мусор мы удалили
+		isReady = true;
+		for (int i = 0; i < inpG.Vertices.size(); i++) { // Проверка все ли мы удалили
+			CanBeExcluded(inpG, i) ? isReady = false: NULL;
+		}
+	} while (!isReady); 
+	cout << "Excluded all odd vertices.\n";
 }
 
 graph FindNonPlanarSubgraph(graph& inp) { //---TODO Поиск подграфа данного графа, гомеоморфного К5 или К3,3 (критерий непланарности)
@@ -141,15 +184,9 @@ int main() {
 	
 	inp.DisplayAllIncidenceList();
 
-	vector<int> test;
-	FindNeighboorVertices(inp, 4, test);
-	for (int i = 0; i < test.size(); i++) {
-		cout << "\n neighboor for 5: " << test[i] << endl;
-	}
-	cout << "\n can be excluded 3: "<< CanBeExcluded(inp, 2) << endl;
-	cout << "\n can be excluded 2: " << CanBeExcluded(inp, 1) << endl;
+	ExcludeAllVertices(inp);
 
-	//WriteGraphToFile(inp, "E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test2.txt");
+	WriteGraphToFile(inp, "E:/work/BSUIR/PIOIVIS/Sem1/RR1/RR1/x64/Debug/test2.txt");
 
 	system("pause");
 	return 0;
