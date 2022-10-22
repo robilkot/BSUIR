@@ -17,8 +17,9 @@ struct vertex // Структура вершины: Имя, Список инц�
 	vector<int> IncidenceList;
 
 	void DisplayInfo() {
-		cout << "\n For vertex " << name << ": ";
+		cout << "For vertex " << name << ": ";
 		for (int i = 0; i < IncidenceList.size(); i++) cout << IncidenceList[i] << " ";
+		cout << "\n";
 	}
 };
 
@@ -70,6 +71,12 @@ graph GetGraphFromFile(const char* filename) { // Парсинг графа из
 	}
 
 	input.close();
+
+#ifdef DEBUG
+	cout << "Incidence list for graph from file:\n";
+	Output.DisplayAllIncidenceList();
+#endif // DEBUG
+
 	return Output;
 }
 
@@ -100,12 +107,12 @@ void WriteGraphToFile(graph& inpG, const char* filename) { // Запись гр�
 	cout << "\nGraph succesfully saved in file " << filename << "\n";
 }
 
-void FindNeighboorVertices(graph& inpG, int inpV, vector<int>& IncidentArray) { // Поиск смежных вершин для заданной в графе
+void FindNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { // Получение номеров смежных вершин для заданной в графе в данный список
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 			for (int m = 0; m < inpG.Vertices[i].IncidenceList.size(); m++) {
 				for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) {
 					if (inpG.Vertices[i].IncidenceList[m] == inpG.Vertices[inpV].IncidenceList[n] && i!=inpV) {
-						IncidentArray.push_back(i);
+						NeighboorArray.push_back(i);
 					}
 				}
 			}
@@ -135,11 +142,13 @@ void FindCommonEdges(graph& inpG, int inpV1, int inpV2, vector<int>& CommonEdgeA
 	}
 }
 
-int GetEdgeNumber(graph& inpG, int inpV, int edgeName) { // Получение номера ребра по его имени из СИ данной вершины.
+int GetEdgeNumber(graph& inpG, int inpV, int edgeName) { // Получение номера [из СИ данной вершины] ребра по его имени.
 	for (int i = 0; i < inpG.Vertices[inpV].IncidenceList.size(); i++) {
 		if (inpG.Vertices[inpV].IncidenceList[i] == edgeName) return i;
 	}
+#ifdef DEBUG
 	cout << "No match for edge " << edgeName << " and vertex " << inpG.Vertices[inpV].name << "\n";
+#endif // DEBUG
 	return 0;
 }
 
@@ -153,7 +162,7 @@ bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершин
 		inpG.Vertices[neighboors[1]].IncidenceList.push_back(commonEdges[0]);
 
 		commonEdges.clear();
-		FindCommonEdges(inpG, neighboors[1], inpV, commonEdges); // Удаление из СИ 2 соседа ребра, смежного с удаляемым
+		FindCommonEdges(inpG, neighboors[1], inpV, commonEdges); // Удаление из СИ второго соседа ребра, смежного с удаляемым
 		inpG.Vertices[neighboors[1]].IncidenceList.erase(inpG.Vertices[neighboors[1]].IncidenceList.begin() + GetEdgeNumber(inpG, neighboors[1], commonEdges[0]));
 
 #ifdef DEBUG
@@ -171,7 +180,7 @@ bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершин
 	}
 }
 
-void ExcludeAllVertices(graph& inpG) { // Исключение всех вершин степени 2 из данного графа
+void ExcludeAllVertices(graph& inpG) { // Исключение [не нарушающее гомеоморфизм исходному графу] всех вершин из данного графа
 	bool isReady;
 	do
 	{
@@ -180,14 +189,20 @@ void ExcludeAllVertices(graph& inpG) { // Исключение всех верш
 		}
 
 		isReady = true;
-		for (int i = 0; i < inpG.Vertices.size(); i++) { // Проверка все ли мы удалили
+		for (int i = 0; i < inpG.Vertices.size(); i++) { // Проверка все ли удалено
 			CanBeExcluded(inpG, i) ? isReady = false: NULL;
 		}
 	} while (!isReady); 
+#ifdef DEBUG
 	cout << "Excluded all odd vertices.\n";
+#endif // DEBUG
 }
 
 graph FindSubgraph_K5(graph& inpG) {
+	return {};
+}
+
+graph FindSubgraph_K33(graph& inpG) {
 	return {};
 }
 
@@ -201,12 +216,12 @@ int main() {
 	graph inp;
 	do {
 		inp = GetGraphFromFile("test.txt");
-		inp.DisplayAllIncidenceList();
 
 		ExcludeAllVertices(inp);
 
 		WriteGraphToFile(inp, "test2.txt");
 
-	} while (_getch() != 'q' || _getch()!='Q');
+		cout << "\n--- Press q to exit ---\n\n";
+	} while (_getch() != 'q');
 	return 0;
 }
