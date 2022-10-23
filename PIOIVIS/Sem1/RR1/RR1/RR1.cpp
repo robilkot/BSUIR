@@ -29,7 +29,6 @@ struct graph // Структура графа: Список вершин, Фун
 
 	void DisplayAllIncidenceList() {
 		for (int i = 0; i < Vertices.size(); i++) Vertices[i].DisplayInfo();
-		cout << "\n";
 	}
 };
 
@@ -191,7 +190,7 @@ bool ExcludeVertex(graph& inpG, int inpV) {
 // Исключение [не нарушающее гомеоморфизм исходному графу] всех вершин из данного графа
 void ExcludeAllVertices(graph& inpG) { 
 #ifdef DEBUG
-	cout << "\n";
+	cout << "\nExcluding all odd vertices.\n";
 #endif // DEBUG
 	bool isReady;
 	int excluded = 0;
@@ -207,7 +206,7 @@ void ExcludeAllVertices(graph& inpG) {
 		}
 	} while (!isReady); 
 #ifdef DEBUG
-	cout << "Excluded all odd vertices (" << excluded << " vertices)\n";
+	cout << "Excluded all odd vertices. (" << excluded << " vertices)\n";
 #endif // DEBUG
 }
 
@@ -223,15 +222,27 @@ bool Neighboors(graph& inpG, int inpV1, int inpV2) {
 	return count(NeighboorCheck.begin(), NeighboorCheck.end(), inpV2); // Проходим по массиву соседей вершины 1 и ищем там вершину 2
 }
 
-//---TODO Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
+// Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
 void DeleteVertex(graph& inpG, int inpV) { 
-
+	vector<int> neighboors;
+	GetNeighboorVertices(inpG, inpV, neighboors);
+	for (int i = 0; i < neighboors.size(); i++) {
+		vector<int> commonEdges;
+		GetCommonEdges(inpG.Vertices[neighboors[i]], inpG.Vertices[inpV], commonEdges);
+		for (int k = 0; k < commonEdges.size(); k++) { // Для каждой смежной вершины удаляем из её СИ номер ребра, инцидентного удаляемой вершине
+			inpG.Vertices[neighboors[i]].IncidenceList.erase(inpG.Vertices[neighboors[i]].IncidenceList.begin()+GetEdgeNumber(inpG.Vertices[neighboors[i]],commonEdges[k]));
+		}
+	}
+#ifdef DEBUG
+	cout << "Deleted vertex " << inpG.Vertices[inpV].name << "\n";
+#endif
+	inpG.Vertices.erase(inpG.Vertices.begin() + inpV);
 }
 
 // Поиск подграфа, изоморфного К5
 graph FindSubgraph_K5(graph& inpG) { 
 #ifdef DEBUG
-	cout << "\n";
+	cout << "\nTrying to find K5-isomorphic subgraph.\n";
 #endif
 
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
@@ -239,7 +250,7 @@ graph FindSubgraph_K5(graph& inpG) {
 		if (GetVertexDegree(inpG.Vertices[i]) > 3) {
 			CandidatesLevel1.push_back(i);
 #ifdef DEBUG
-			cout << "Added vertex " << inpG.Vertices[i].name << " to the 1 level candidates\n";
+			cout << "Added vertex " << inpG.Vertices[i].name << " to the 1 level candidates.\n";
 #endif
 		}
 	}
@@ -247,7 +258,7 @@ graph FindSubgraph_K5(graph& inpG) {
 	cout << "\n";
 #endif
 	if (CandidatesLevel1.size() < 5) { // Возвращаем пустой подграф если кандидатов 1 уровня < 5
-		cout << "No K5-isomorphic subgraph found\n";
+		cout << "No K5-isomorphic subgraph found.\n\n";
 		return {};
 	}
 
@@ -260,7 +271,7 @@ graph FindSubgraph_K5(graph& inpG) {
 		}
 		if (NeighboorCandidatesLevel1 > 3) {
 #ifdef DEBUG
-			cout << "Added vertex " << inpG.Vertices[CandidatesLevel1[i]].name << " to the 2 level candidates\n";
+			cout << "Added vertex " << inpG.Vertices[CandidatesLevel1[i]].name << " to the 2 level candidates.\n";
 #endif
 			CandidatesLevel2.push_back(CandidatesLevel1[i]); // ---TODO По готовности функции от вектора кандидатов можно избавиться и писать сразу в аутпут и с ним работать
 		}
@@ -269,16 +280,20 @@ graph FindSubgraph_K5(graph& inpG) {
 	cout << "\n";
 #endif
 	if (CandidatesLevel2.size() < 5) { // Возвращаем пустой подграф если кандидатов 2 уровня < 5
-		cout << "No K5-isomorphic subgraph found\n";
+		cout << "No K5-isomorphic subgraph found.\n\n";
 		return {};
 	}
 
 	graph Output;
 	for (int i = 0; i < CandidatesLevel2.size(); i++) Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]); // Добавление всех кандидатов 2 уровня в аутпут
 	while (Output.Vertices.size() > 5) DeleteVertex(Output, 0); // Удаление лишних вершин (т.к. граф может быть больше чем К5)
+#ifdef DEBUG
+	cout << "Succesfully returned K5-isomorphic subgraph.\n";
+#endif
 	return Output;
 }
 
+// ---TODO Поиск подграфа, изоморфного К3,3
 graph FindSubgraph_K33(graph& inpG) {
 	return {};
 }
