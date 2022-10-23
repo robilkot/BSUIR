@@ -35,15 +35,16 @@ struct graph // Структура графа: Список вершин, Фун
 
 // ФУНКЦИИ
 
-vertex GetVertexFromString(string& str) { //Парсинг строки как запись вершины
+// Парсинг строки как запись вершины
+vertex GetVertexFromString(string& str) { 
 	vertex Output;
 
-	Output.name = str.substr(0, str.find(" ")); //Парсинг имени вершины
+	Output.name = str.substr(0, str.find(" ")); // Парсинг имени вершины
 	str.erase(0, Output.name.size() + 1);
 
 	istringstream currentstring(str); 
 	string temp;
-	while (getline(currentstring, temp, ' ')) { //Парсинг списка инцидентности
+	while (getline(currentstring, temp, ' ')) { // Парсинг списка инцидентности
 		try {
 			Output.IncidenceList.push_back(stoi(temp));
 		}
@@ -57,7 +58,8 @@ vertex GetVertexFromString(string& str) { //Парсинг строки как �
 	return Output;
 }
 
-graph GetGraphFromFile(const char* filename) { // Парсинг графа из файла
+// Парсинг графа из файла
+graph GetGraphFromFile(const char* filename) { 
 	ifstream input(filename);
 	if (!input.is_open()) {
 		cout << "Error opening file, try again.\n";
@@ -75,12 +77,13 @@ graph GetGraphFromFile(const char* filename) { // Парсинг графа из
 #ifdef DEBUG
 	cout << "Incidence list for graph from file:\n";
 	Output.DisplayAllIncidenceList();
-#endif // DEBUG
+#endif
 
 	return Output;
 }
 
-void WriteGraphToFile(graph& inpG, const char* filename) { // Запись графа в файл
+// Запись графа в файл
+void WriteGraphToFile(graph& inpG, const char* filename) { 
 	if (inpG.Vertices.empty()) {
 		cout << "Tried to write empty graph, aborting\n";
 		return;
@@ -107,7 +110,8 @@ void WriteGraphToFile(graph& inpG, const char* filename) { // Запись гр�
 	cout << "\nGraph succesfully saved in file " << filename << "\n";
 }
 
-void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { // Получение номеров смежных вершин для заданной в графе в данный список
+// Получение номеров смежных вершин для заданной в графе в данный список
+void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 			for (int m = 0; m < inpG.Vertices[i].IncidenceList.size(); m++) {
 				for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) {
@@ -119,7 +123,8 @@ void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	}
 }
 
-bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возможность исключения вершины без нарушения гомеоморфизма исходному графу
+// Проверка на возможность исключения вершины без нарушения гомеоморфизма исходному графу
+bool CanBeExcluded(graph& inpG, int inpV) { 
 	vector<int> check;
 	GetNeighboorVertices(inpG, inpV, check);
 
@@ -132,7 +137,8 @@ bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возмо�
 	return true;
 }
 
-void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) { // Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
+// Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
+void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) { 
 	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
 		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
 			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
@@ -142,7 +148,8 @@ void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
 	}
 }
 
-int GetEdgeNumber(vertex& inpV, int edgeName) { // Получение номера [из СИ данной вершины] ребра по его имени.
+// Получение номера [из СИ данной вершины] ребра по его имени.
+int GetEdgeNumber(vertex& inpV, int edgeName) { 
 	for (int i = 0; i < inpV.IncidenceList.size(); i++) {
 		if (inpV.IncidenceList[i] == edgeName) return i;
 	}
@@ -152,7 +159,8 @@ int GetEdgeNumber(vertex& inpV, int edgeName) { // Получение номер
 	return 0;
 }
 
-bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершины из данного графа. [Опционально] todo: сделать выбор какое именно ребро сохранять при исключении
+// Исключение вершины из данного графа. [Опционально] ---TODO: сделать выбор какое именно ребро сохранять при исключении
+bool ExcludeVertex(graph& inpG, int inpV) { 
 	if (CanBeExcluded(inpG, inpV)) {
 		vector<int> neighboors;
 		GetNeighboorVertices(inpG, inpV, neighboors);
@@ -180,7 +188,8 @@ bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершин
 	}
 }
 
-void ExcludeAllVertices(graph& inpG) { // Исключение [не нарушающее гомеоморфизм исходному графу] всех вершин из данного графа
+// Исключение [не нарушающее гомеоморфизм исходному графу] всех вершин из данного графа
+void ExcludeAllVertices(graph& inpG) { 
 #ifdef DEBUG
 	cout << "\n";
 #endif // DEBUG
@@ -202,24 +211,25 @@ void ExcludeAllVertices(graph& inpG) { // Исключение [не наруш�
 #endif // DEBUG
 }
 
-int GetVertexDegree(vertex& inpV) { // Получение степени вершины
+// Получение степени вершины
+int GetVertexDegree(vertex& inpV) { 
 	return inpV.IncidenceList.size();
 }
 
-bool Neighboors(graph& inpG, int inpV1, int inpV2) { // Проверка, являются ли данные вершины смежными
+// Проверка, являются ли данные вершины смежными
+bool Neighboors(graph& inpG, int inpV1, int inpV2) { 
 	vector<int> NeighboorCheck;
 	GetNeighboorVertices(inpG, inpV1, NeighboorCheck);
-	for (int i = 0; i < NeighboorCheck.size(); i++) {
-		if(NeighboorCheck[i]==inpV2) return true;
-	}
-	return false;
+	return count(NeighboorCheck.begin(), NeighboorCheck.end(), inpV2); // Проходим по массиву соседей вершины 1 и ищем там вершину 2
 }
 
-void DeleteVertex(graph& inpG, int inpV) { //---TODO Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
+//---TODO Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
+void DeleteVertex(graph& inpG, int inpV) { 
 
 }
 
-graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изоморфного К5
+// Поиск подграфа, изоморфного К5
+graph FindSubgraph_K5(graph& inpG) { 
 #ifdef DEBUG
 	cout << "\n";
 #endif
@@ -241,7 +251,7 @@ graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изомо�
 		return {};
 	}
 
-	vector<int> CandidatesLevel2; // 2 уровень кандидитов (по смежности с 4 вершинами-кандидитами 1 уровня)
+	vector<int> CandidatesLevel2; // 2 уровень кандидатов (по смежности с 4 вершинами-кандидитами 1 уровня)
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
 		int NeighboorCandidatesLevel1 = 0;
 
@@ -264,12 +274,8 @@ graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изомо�
 	}
 
 	graph Output;
-	for (int i = 0; i < CandidatesLevel2.size(); i++) {
-		Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]);
-	}
-	while (Output.Vertices.size() > 5) { // Удаление лишних вершин (т.к. граф может быть больше чем К5)
-		DeleteVertex(Output, 0);
-	}
+	for (int i = 0; i < CandidatesLevel2.size(); i++) Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]); // Добавление всех кандидатов 2 уровня в аутпут
+	while (Output.Vertices.size() > 5) DeleteVertex(Output, 0); // Удаление лишних вершин (т.к. граф может быть больше чем К5)
 	return Output;
 }
 
@@ -277,7 +283,8 @@ graph FindSubgraph_K33(graph& inpG) {
 	return {};
 }
 
-graph FindNonPlanarSubgraph(graph& inpG) { //---TODO Поиск непланарного подграфа
+//---TODO Поиск непланарного подграфа
+graph FindNonPlanarSubgraph(graph& inpG) { 
 	return {};
 }
 
