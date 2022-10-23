@@ -119,7 +119,7 @@ void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	}
 }
 
-bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возможность исключения вершины без нарушения гомеоморфизма
+bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возможность исключения вершины без нарушения гомеоморфизма исходному графу
 	vector<int> check;
 	GetNeighboorVertices(inpG, inpV, check);
 
@@ -132,22 +132,22 @@ bool CanBeExcluded(graph& inpG, int inpV) { // Проверка на возмо�
 	return true;
 }
 
-void GetCommonEdges(graph& inpG, int inpV1, int inpV2, vector<int>& CommonEdgeArray) { // Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
-	for (int i = 0; i < inpG.Vertices[inpV1].IncidenceList.size(); i++) {
-		for (int k = 0; k < inpG.Vertices[inpV2].IncidenceList.size(); k++) {
-			if (inpG.Vertices[inpV1].IncidenceList[i] == inpG.Vertices[inpV2].IncidenceList[k]) {
-				CommonEdgeArray.push_back(inpG.Vertices[inpV1].IncidenceList[i]);
+void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) { // Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
+	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
+		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
+			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
+				CommonEdgeArray.push_back(inpV1.IncidenceList[i]);
 			}
 		}
 	}
 }
 
-int GetEdgeNumber(graph& inpG, int inpV, int edgeName) { // Получение номера [из СИ данной вершины] ребра по его имени.
-	for (int i = 0; i < inpG.Vertices[inpV].IncidenceList.size(); i++) {
-		if (inpG.Vertices[inpV].IncidenceList[i] == edgeName) return i;
+int GetEdgeNumber(vertex& inpV, int edgeName) { // Получение номера [из СИ данной вершины] ребра по его имени.
+	for (int i = 0; i < inpV.IncidenceList.size(); i++) {
+		if (inpV.IncidenceList[i] == edgeName) return i;
 	}
 #ifdef DEBUG
-	cout << "No match for edge " << edgeName << " and vertex " << inpG.Vertices[inpV].name << "\n";
+	cout << "No match for edge " << edgeName << " and vertex " << inpV.name << "\n";
 #endif // DEBUG
 	return 0;
 }
@@ -158,12 +158,12 @@ bool ExcludeVertex(graph& inpG, int inpV) { // Исключение вершин
 		GetNeighboorVertices(inpG, inpV, neighboors);
 
 		vector<int> commonEdges;
-		GetCommonEdges(inpG, inpV, neighboors[0], commonEdges); // Запись в СИ смежных вершин ребра, инцидентного удаляемому
+		GetCommonEdges(inpG.Vertices[inpV], inpG.Vertices[neighboors[0]], commonEdges); // Запись в СИ смежных вершин ребра, инцидентного удаляемому
 		inpG.Vertices[neighboors[1]].IncidenceList.push_back(commonEdges[0]);
 
 		commonEdges.clear();
-		GetCommonEdges(inpG, neighboors[1], inpV, commonEdges); // Удаление из СИ второго соседа ребра, смежного с удаляемым
-		inpG.Vertices[neighboors[1]].IncidenceList.erase(inpG.Vertices[neighboors[1]].IncidenceList.begin() + GetEdgeNumber(inpG, neighboors[1], commonEdges[0]));
+		GetCommonEdges(inpG.Vertices[neighboors[1]], inpG.Vertices[inpV], commonEdges); // Удаление из СИ второго соседа ребра, смежного с удаляемым
+		inpG.Vertices[neighboors[1]].IncidenceList.erase(inpG.Vertices[neighboors[1]].IncidenceList.begin() + GetEdgeNumber(inpG.Vertices[neighboors[1]], commonEdges[0]));
 
 #ifdef DEBUG
 		cout << "Excluding vertex " << inpG.Vertices[inpV].name << ".\tDone.\n";
@@ -202,8 +202,8 @@ void ExcludeAllVertices(graph& inpG) { // Исключение [не наруш�
 #endif // DEBUG
 }
 
-int GetVertexDegree(graph& inpG, int inpV) { // Получение степени вершины
-	return inpG.Vertices[inpV].IncidenceList.size();
+int GetVertexDegree(vertex& inpV) { // Получение степени вершины
+	return inpV.IncidenceList.size();
 }
 
 graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изоморфного К5
@@ -213,7 +213,7 @@ graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изомо�
 
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
-		if (GetVertexDegree(inpG, i) > 3) {
+		if (GetVertexDegree(inpG.Vertices[i]) > 3) {
 			CandidatesLevel1.push_back(i);
 #ifdef DEBUG
 			cout << "Added vertex " << inpG.Vertices[i].name << " to the 1 level candidates\n";
