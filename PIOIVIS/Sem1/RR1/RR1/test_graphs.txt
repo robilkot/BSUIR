@@ -54,3 +54,22 @@ five 3 5 8 13 14
 six 4 7 9 14 15
 seven 17 18 20
 eight 16 19 20
+
+К3,3
+
+one 1 2 3
+two 4 5 6
+three 7 8 9
+four 1 4 7
+five 2 5 8
+six 3 6 9
+
+К3,3 с лишней вершиной в доле
+
+one 1 2 3
+two 4 5 6
+three 7 8 9
+four 1 4 7 10
+five 2 5 8 11
+six 3 6 9 12
+seven 10 11 12

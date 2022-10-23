@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <conio.h>
+#include <algorithm>
 
 #define DEBUG
 
@@ -339,7 +340,63 @@ graph GetSubgraph_K5(graph& inpG) {
 
 // ---TODO Поиск подграфа, изоморфного К3,3
 graph GetSubgraph_K33(graph& inpG) {
+#ifdef DEBUG
+	cout << "Trying to find K3,3-isomorphic subgraph.\n";
+#endif
 
+	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >2)
+	for (int i = 0; i < inpG.Vertices.size(); i++) {
+		if (GetVertexDegree(inpG.Vertices[i]) > 2) {
+			CandidatesLevel1.push_back(i);
+#ifdef DEBUG
+			cout << "Added vertex " << inpG.Vertices[i].name << " to the 1 level candidates.\n";
+#endif
+		}
+	}
+#ifdef DEBUG
+	cout << "\n";
+#endif
+	if (CandidatesLevel1.size() < 6) { // Возвращаем пустой подграф если кандидатов 1 уровня < 6
+		cout << "No K3,3-isomorphic subgraph found.\n\n";
+		return {};
+	}
+	
+	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
+	//
+	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
+	vector<int> Parts; // Список вершин, образующих графа
+	for (int i = 0; i < CandidatesLevel1.size(); i++) {
+		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
+		
+		vector<int> NeighboorsI;
+		GetNeighboorVertices(inpG, i, NeighboorsI);
+		sort(NeighboorsI.begin(), NeighboorsI.end());
+
+		int CurrentPartSize = 0; // Счетчик для записи размера текущей доли
+		vector<int> CurrentPart; // Доля, которую пытаемся сформировать на данной итерации
+		for (int k = 0; k < CandidatesLevel1.size(); k++) {
+			vector<int> NeighboorsK;
+			GetNeighboorVertices(inpG, k, NeighboorsK);
+			sort(NeighboorsK.begin(), NeighboorsK.end());
+			if (NeighboorsI==NeighboorsK) {
+				CurrentPart.push_back(k);
+				CurrentPartSize++;
+			}
+		}
+		if (CurrentPart.size() > 1) {
+			PartsSizes.push_back(CurrentPartSize);
+
+			cout << "Part of size " << CurrentPartSize << " formed of vertices:\n";
+			for (int k = 0; k < CurrentPartSize; k++) {
+				cout << inpG.Vertices[CurrentPart[k]].name << "\n";
+				Parts.push_back(CurrentPart[k]);
+			}
+			cout << "\n";
+		}
+		else {
+			cout << "Failed forming part of size " << CurrentPartSize << "\n";
+		}
+	}
 
 	return {};
 }
@@ -362,8 +419,10 @@ void MakePlanar(graph& inpG, graph& NPG) {
 int main() {
 	graph inp;
 	do {
-		inp = GetNonPlanarSubgraph(GetGraphFromFile("test.txt"));
-		WriteGraphToFile(inp, "test2.txt");
+		inp = GetGraphFromFile("test.txt");
+		ExcludeAllVertices(inp);
+		graph temp = GetSubgraph_K33(inp);
+		WriteGraphToFile(temp, "test2.txt");
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
 	return 0;
