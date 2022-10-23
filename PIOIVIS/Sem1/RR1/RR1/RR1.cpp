@@ -206,6 +206,19 @@ int GetVertexDegree(vertex& inpV) { // Получение степени вер�
 	return inpV.IncidenceList.size();
 }
 
+bool Neighboors(graph& inpG, int inpV1, int inpV2) { // Проверка, являются ли данные вершины смежными
+	vector<int> NeighboorCheck;
+	GetNeighboorVertices(inpG, inpV1, NeighboorCheck);
+	for (int i = 0; i < NeighboorCheck.size(); i++) {
+		if(NeighboorCheck[i]==inpV2) return true;
+	}
+	return false;
+}
+
+void DeleteVertex(graph& inpG, int inpV) { //---TODO Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
+
+}
+
 graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изоморфного К5
 #ifdef DEBUG
 	cout << "\n";
@@ -223,10 +236,41 @@ graph FindSubgraph_K5(graph& inpG) { // Поиск подграфа, изомо�
 #ifdef DEBUG
 	cout << "\n";
 #endif
+	if (CandidatesLevel1.size() < 5) { // Возвращаем пустой подграф если кандидатов 1 уровня < 5
+		cout << "No K5-isomorphic subgraph found\n";
+		return {};
+	}
 
-	vector<int> CandidatesLevel2;
+	vector<int> CandidatesLevel2; // 2 уровень кандидитов (по смежности с 4 вершинами-кандидитами 1 уровня)
+	for (int i = 0; i < CandidatesLevel1.size(); i++) {
+		int NeighboorCandidatesLevel1 = 0;
 
-	return {};
+		for (int k = 0; k < CandidatesLevel1.size(); k++) {
+			if(Neighboors(inpG, i, k) && i!=k) NeighboorCandidatesLevel1++;
+		}
+		if (NeighboorCandidatesLevel1 > 3) {
+#ifdef DEBUG
+			cout << "Added vertex " << inpG.Vertices[CandidatesLevel1[i]].name << " to the 2 level candidates\n";
+#endif
+			CandidatesLevel2.push_back(CandidatesLevel1[i]); // ---TODO По готовности функции от вектора кандидатов можно избавиться и писать сразу в аутпут и с ним работать
+		}
+	}
+#ifdef DEBUG
+	cout << "\n";
+#endif
+	if (CandidatesLevel2.size() < 5) { // Возвращаем пустой подграф если кандидатов 2 уровня < 5
+		cout << "No K5-isomorphic subgraph found\n";
+		return {};
+	}
+
+	graph Output;
+	for (int i = 0; i < CandidatesLevel2.size(); i++) {
+		Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]);
+	}
+	while (Output.Vertices.size() > 5) { // Удаление лишних вершин (т.к. граф может быть больше чем К5)
+		DeleteVertex(Output, 0);
+	}
+	return Output;
 }
 
 graph FindSubgraph_K33(graph& inpG) {
@@ -248,7 +292,7 @@ int main() {
 
 		graph temp = FindSubgraph_K5(inp);
 
-		WriteGraphToFile(inp, "test2.txt");
+		WriteGraphToFile(temp, "test2.txt");
 
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
