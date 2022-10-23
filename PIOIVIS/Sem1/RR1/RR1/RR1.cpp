@@ -11,7 +11,8 @@ using namespace std;
 
 // СТРУКТУРЫ
 
-struct vertex // Структура вершины: Имя, Список инцидентности (СИ), Функция вывода своего СИ
+// Структура вершины: Имя, Список инцидентности (СИ), Функция вывода своего СИ
+struct vertex
 {
 	string name;
 	vector<int> IncidenceList;
@@ -23,12 +24,16 @@ struct vertex // Структура вершины: Имя, Список инц�
 	}
 };
 
-struct graph // Структура графа: Список вершин, Функция вывода СИ всех своих вершин
+// Структура графа: Список вершин, Функция вывода СИ всех своих вершин
+struct graph
 {
 	vector<vertex> Vertices;
 
 	void DisplayAllIncidenceList() {
 		for (int i = 0; i < Vertices.size(); i++) Vertices[i].DisplayInfo();
+	}
+	bool empty() {
+		return !Vertices.size();
 	}
 };
 
@@ -106,7 +111,7 @@ void WriteGraphToFile(graph& inpG, const char* filename) {
 	}
 
 	fout.close();
-	cout << "\nGraph succesfully saved in file " << filename << "\n";
+	cout << "Graph succesfully saved in file " << filename << "\n";
 }
 
 // Получение номеров смежных вершин для заданной в графе в данный список
@@ -158,18 +163,18 @@ int GetEdgeNumber(vertex& inpV, int edgeName) {
 	return 0;
 }
 
-// Исключение вершины из данного графа. [Опционально] ---TODO: сделать выбор какое именно ребро сохранять при исключении
+// Исключение [не нарушающее гомеоморфизм исходному графу] вершины из данного графа. [Опционально] ---TODO: сделать выбор какое именно ребро сохранять при исключении
 bool ExcludeVertex(graph& inpG, int inpV) { 
 	if (CanBeExcluded(inpG, inpV)) {
 		vector<int> neighboors;
 		GetNeighboorVertices(inpG, inpV, neighboors);
 
 		vector<int> commonEdges;
-		GetCommonEdges(inpG.Vertices[inpV], inpG.Vertices[neighboors[0]], commonEdges); // Запись в СИ смежных вершин ребра, инцидентного удаляемому
+		GetCommonEdges(inpG.Vertices[inpV], inpG.Vertices[neighboors[0]], commonEdges); // Запись в СИ первого соседа ребра, инцидентного удаляемой вершине и второму соседу
 		inpG.Vertices[neighboors[1]].IncidenceList.push_back(commonEdges[0]);
 
 		commonEdges.clear();
-		GetCommonEdges(inpG.Vertices[neighboors[1]], inpG.Vertices[inpV], commonEdges); // Удаление из СИ второго соседа ребра, смежного с удаляемым
+		GetCommonEdges(inpG.Vertices[neighboors[1]], inpG.Vertices[inpV], commonEdges); // Удаление из СИ второго соседа ребра, инцидентного с ним и удаляемой вершиной
 		inpG.Vertices[neighboors[1]].IncidenceList.erase(inpG.Vertices[neighboors[1]].IncidenceList.begin() + GetEdgeNumber(inpG.Vertices[neighboors[1]], commonEdges[0]));
 
 #ifdef DEBUG
@@ -187,7 +192,7 @@ bool ExcludeVertex(graph& inpG, int inpV) {
 	}
 }
 
-// Исключение [не нарушающее гомеоморфизм исходному графу] всех вершин из данного графа
+// Исключение всех возможных вершин из данного графа
 void ExcludeAllVertices(graph& inpG) { 
 #ifdef DEBUG
 	cout << "\nExcluding all odd vertices.\n";
@@ -206,7 +211,7 @@ void ExcludeAllVertices(graph& inpG) {
 		}
 	} while (!isReady); 
 #ifdef DEBUG
-	cout << "Excluded all odd vertices. (" << excluded << " vertices)\n";
+	cout << "Excluded all odd vertices. (" << excluded << " vertices)\n\n";
 #endif // DEBUG
 }
 
@@ -239,10 +244,48 @@ void DeleteVertex(graph& inpG, int inpV) {
 	inpG.Vertices.erase(inpG.Vertices.begin() + inpV);
 }
 
-// Поиск подграфа, изоморфного К5
-graph FindSubgraph_K5(graph& inpG) { 
+// Очистка СИ вершин от ребёр, не ведущих ни в одну вершину
+void CleanIncidenceList(graph& inpG, int inpV) {
+	vector<int> neighboors;
+	GetNeighboorVertices(inpG, inpV, neighboors);
+	if (neighboors.size() == 0) {
+		inpG.Vertices[inpV].IncidenceList.clear();
+		return;
+	}
+
+	vector<int> nonOddEdges;
+	for (int i = 0; i < inpG.Vertices[inpV].IncidenceList.size(); i++) {
+		for (int k = 0; k < neighboors.size(); k++) {
+			if (count(inpG.Vertices[neighboors[k]].IncidenceList.begin(), inpG.Vertices[neighboors[k]].IncidenceList.end(), inpG.Vertices[inpV].IncidenceList[i])) {
+				//cout << "\nFound not odd edge " << inpG.Vertices[inpV].IncidenceList[i] << " in list for vertex " << inpG.Vertices[inpV].name << "\n";
+				nonOddEdges.push_back(inpG.Vertices[inpV].IncidenceList[i]);
+			}
+		}
+	}
+	inpG.Vertices[inpV].IncidenceList.clear();
+	for (int i = 0; i < nonOddEdges.size(); i++) inpG.Vertices[inpV].IncidenceList.push_back(nonOddEdges[i]);
+
 #ifdef DEBUG
-	cout << "\nTrying to find K5-isomorphic subgraph.\n";
+	cout << "Cleaned incidence list for vertex " << inpG.Vertices[inpV].name << "\n";
+#endif
+}
+
+void CleanAllIncidenceList(graph& inpG) {
+#ifdef DEBUG
+	cout << "Cleaning incidence lists for all vertices.\n";
+#endif
+	for (int i = 0; i < inpG.Vertices.size(); i++) {
+		CleanIncidenceList(inpG, i);
+	}
+#ifdef DEBUG
+	cout << "Cleaned incidence lists for " << inpG.Vertices.size() << " vertices.\n\n";
+#endif
+}
+
+// Поиск подграфа, изоморфного К5
+graph GetSubgraph_K5(graph& inpG) { 
+#ifdef DEBUG
+	cout << "Trying to find K5-isomorphic subgraph.\n";
 #endif
 
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
@@ -287,20 +330,31 @@ graph FindSubgraph_K5(graph& inpG) {
 	graph Output;
 	for (int i = 0; i < CandidatesLevel2.size(); i++) Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]); // Добавление всех кандидатов 2 уровня в аутпут
 	while (Output.Vertices.size() > 5) DeleteVertex(Output, 0); // Удаление лишних вершин (т.к. граф может быть больше чем К5)
+	CleanAllIncidenceList(Output);
 #ifdef DEBUG
-	cout << "Succesfully returned K5-isomorphic subgraph.\n";
+	cout << "Succesfully returned K5-isomorphic subgraph.\n\n";
 #endif
 	return Output;
 }
 
 // ---TODO Поиск подграфа, изоморфного К3,3
-graph FindSubgraph_K33(graph& inpG) {
+graph GetSubgraph_K33(graph& inpG) {
+
+
 	return {};
 }
 
-//---TODO Поиск непланарного подграфа
-graph FindNonPlanarSubgraph(graph& inpG) { 
-	return {};
+// Поиск непланарного подграфа
+graph GetNonPlanarSubgraph(graph inpG) { 
+	ExcludeAllVertices(inpG);
+	graph output = GetSubgraph_K5(inpG);
+	if (!output.empty()) return output;
+	return GetSubgraph_K33(inpG);
+}
+
+// ---TODO Удаление ребёр для превращения графа в планарный. На вход идут граф и его непланарный подграф.
+void MakePlanar(graph& inpG, graph& NPG) {
+
 }
 
 // MAIN
@@ -308,14 +362,8 @@ graph FindNonPlanarSubgraph(graph& inpG) {
 int main() {
 	graph inp;
 	do {
-		inp = GetGraphFromFile("test.txt");
-
-		ExcludeAllVertices(inp);
-
-		graph temp = FindSubgraph_K5(inp);
-
-		WriteGraphToFile(temp, "test2.txt");
-
+		inp = GetNonPlanarSubgraph(GetGraphFromFile("test.txt"));
+		WriteGraphToFile(inp, "test2.txt");
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
 	return 0;
