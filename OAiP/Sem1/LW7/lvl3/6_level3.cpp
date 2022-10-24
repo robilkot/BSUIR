@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void writetofile(string str, string filename) {
+void writetofile(string str, const char* filename) {
 	ofstream fout(filename);
 	if (fout.is_open()) {
 		fout << str;
@@ -18,7 +18,7 @@ void writetofile(string str, string filename) {
 	}
 }
 
-string readfromfile(string filename) {
+string readfromfile(const char* filename) {
 	ifstream fin(filename);
 	if (fin.is_open()) {
 		string output;

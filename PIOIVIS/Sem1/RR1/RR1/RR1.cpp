@@ -153,6 +153,12 @@ void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
 	}
 }
 
+// Получение общих рёбер данных графов
+void GetCommonEdges(graph& inpG1, graph& inpG2) {
+	vector<int> commonVertices; // Список одинаковых вершин двух графов (нумерация по списку из первого графа)
+
+}
+
 // Получение номера [из СИ данной вершины] ребра по его имени.
 int GetEdgeNumber(vertex& inpV, int edgeName) { 
 	for (int i = 0; i < inpV.IncidenceList.size(); i++) {
@@ -399,7 +405,6 @@ graph GetSubgraph_K33(graph& inpG) {
 		}
 	}
 
-
 	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление лишних вершин из доль (т.к. может быть > 3)
 #ifdef DEBUG
 		cout << "Deleting odd vertices from part " << i+1 << ":\n";
@@ -417,7 +422,7 @@ graph GetSubgraph_K33(graph& inpG) {
 		cout << "Deleted " << deletedCount << " vertices\n\n";
 #endif
 	}
-	//---TODO возвращать двудольные графы
+
 	graph Output;
 	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
 	CleanAllIncidenceList(Output);
@@ -427,16 +432,10 @@ graph GetSubgraph_K33(graph& inpG) {
 	return Output;
 }
 
-// Поиск непланарного подграфа
-graph GetNonPlanarSubgraph(graph inpG) { 
-	ExcludeAllVertices(inpG);
-	graph output = GetSubgraph_K5(inpG);
-	if (!output.empty()) return output;
-	return GetSubgraph_K33(inpG);
-}
-
 // ---TODO Удаление ребёр для превращения графа в планарный. На вход идут граф и его непланарный подграф.
-void MakePlanar(graph& inpG, graph& NPG) {
+void MakePlanar(graph& inpG) {
+	graph ToExclude1 = GetSubgraph_K5(inpG);
+	graph ToExclude2 = GetSubgraph_K33(inpG);
 
 }
 
