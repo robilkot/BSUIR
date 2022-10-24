@@ -142,19 +142,8 @@ bool CanBeExcluded(graph& inpG, int inpV) {
 	return true;
 }
 
-// Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
-void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) { 
-	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
-		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
-			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
-				CommonEdgeArray.push_back(inpV1.IncidenceList[i]);
-			}
-		}
-	}
-}
-
 // Получение общих вершин данных графов (нумерация по первому графу)
-void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int> commonVertices) {
+void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) {
 	cout << "\n";
 	for (int i = 0; i < inpG1.Vertices.size(); i++) {
 		for (int k = 0; k < inpG2.Vertices.size(); k++) {
@@ -166,6 +155,24 @@ void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int> commonVertices) {
 	}
 	if (!commonVertices.size()) cout << "No common vertices found.\n";
 	else cout << "Found " << commonVertices.size() << " common vertices\n";
+}
+
+// Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
+void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
+	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
+		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
+			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
+				CommonEdgeArray.push_back(inpV1.IncidenceList[i]);
+			}
+		}
+	}
+}
+
+// ---TODO Получение рёбер которые содержатся в обоих графах
+void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& CommonEdgeArray) {
+	vector<int> commonVertices;
+	GetCommonVertices(inpG1, inpG2, commonVertices);
+
 }
 
 // Получение номера [из СИ данной вершины] ребра по его имени.
@@ -445,7 +452,7 @@ graph GetSubgraph_K33(graph& inpG) {
 void MakePlanar(graph inpG) {
 	//graph ToExclude1 = GetSubgraph_K5(inpG);
 	//graph ToExclude2 = GetSubgraph_K33(inpG);
-	GetCommonEdges(inpG, inpG);
+	//GetCommonEdges(inpG, inpG);
 }
 
 // MAIN
