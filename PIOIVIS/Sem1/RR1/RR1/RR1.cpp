@@ -153,10 +153,19 @@ void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
 	}
 }
 
-// Получение общих рёбер данных графов
-void GetCommonEdges(graph& inpG1, graph& inpG2) {
-	vector<int> commonVertices; // Список одинаковых вершин двух графов (нумерация по списку из первого графа)
-
+// Получение общих вершин данных графов (нумерация по первому графу)
+void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int> commonVertices) {
+	cout << "\n";
+	for (int i = 0; i < inpG1.Vertices.size(); i++) {
+		for (int k = 0; k < inpG2.Vertices.size(); k++) {
+			if (inpG1.Vertices[i].name == inpG1.Vertices[k].name) {
+				commonVertices.push_back(i);
+				cout << "Found common vertex " << inpG1.Vertices[i].name << "\n";
+			}
+		}
+	}
+	if (!commonVertices.size()) cout << "No common vertices found.\n";
+	else cout << "Found " << commonVertices.size() << " common vertices\n";
 }
 
 // Получение номера [из СИ данной вершины] ребра по его имени.
@@ -344,7 +353,7 @@ graph GetSubgraph_K5(graph& inpG) {
 	return Output;
 }
 
-// ---TODO Поиск подграфа, изоморфного К3,3
+// Поиск подграфа, изоморфного К3,3
 graph GetSubgraph_K33(graph& inpG) {
 #ifdef DEBUG
 	cout << "Trying to find K3,3-isomorphic subgraph.\n\n";
@@ -432,11 +441,11 @@ graph GetSubgraph_K33(graph& inpG) {
 	return Output;
 }
 
-// ---TODO Удаление ребёр для превращения графа в планарный. На вход идут граф и его непланарный подграф.
-void MakePlanar(graph& inpG) {
-	graph ToExclude1 = GetSubgraph_K5(inpG);
-	graph ToExclude2 = GetSubgraph_K33(inpG);
-
+// ---TODO Удаление ребёр для превращения графа в планарный.
+void MakePlanar(graph inpG) {
+	//graph ToExclude1 = GetSubgraph_K5(inpG);
+	//graph ToExclude2 = GetSubgraph_K33(inpG);
+	GetCommonEdges(inpG, inpG);
 }
 
 // MAIN
@@ -446,8 +455,9 @@ int main() {
 	do {
 		inp = GetGraphFromFile("test.txt");
 		ExcludeAllVertices(inp);
-		graph temp = GetSubgraph_K33(inp);
-		WriteGraphToFile(temp, "test2.txt");
+		MakePlanar(inp);
+		//graph temp = GetSubgraph_K33(inp);
+		//WriteGraphToFile(temp, "test2.txt");
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
 	return 0;
