@@ -147,9 +147,13 @@ void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) 
 	cout << "\n";
 	for (int i = 0; i < inpG1.Vertices.size(); i++) {
 		for (int k = 0; k < inpG2.Vertices.size(); k++) {
-			if (inpG1.Vertices[i].name == inpG1.Vertices[k].name) {
-				commonVertices.push_back(i);
-				cout << "Found common vertex " << inpG1.Vertices[i].name << "\n";
+			if (inpG1.Vertices[i].name == inpG2.Vertices[k].name) {
+				sort(inpG1.Vertices[i].IncidenceList.begin(), inpG1.Vertices[i].IncidenceList.end());
+				sort(inpG2.Vertices[k].IncidenceList.begin(), inpG2.Vertices[k].IncidenceList.end());
+				if (inpG1.Vertices[i].IncidenceList == inpG2.Vertices[k].IncidenceList) {
+					commonVertices.push_back(i);
+					cout << "Found common vertex " << inpG1.Vertices[i].name << "\n";
+				}
 			}
 		}
 	}
@@ -352,7 +356,11 @@ graph GetSubgraph_K5(graph& inpG) {
 
 	graph Output;
 	for (int i = 0; i < CandidatesLevel2.size(); i++) Output.Vertices.push_back(inpG.Vertices[CandidatesLevel2[i]]); // Добавление всех кандидатов 2 уровня в аутпут
+
+#ifdef DeleteOddVertsInSubgraphs
 	while (Output.Vertices.size() > 5) DeleteVertex(Output, 0); // Удаление лишних вершин (т.к. граф может быть больше чем К5)
+#endif // DeleteOddVertsInSubgraphs
+
 	CleanAllIncidenceList(Output);
 #ifdef DEBUG
 	cout << "Succesfully returned K5-isomorphic subgraph.\n\n";
@@ -388,7 +396,11 @@ graph GetSubgraph_K33(graph& inpG) {
 	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже) --- ПРОВЕРИТЬ БУДЕТ ЛИ ЭТО ИСПОЛЬЗОВАТЬСЯ ДАЛЕЕ
 	vector<int> Parts; // Список вершин, образующих графа
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
+
+#ifdef DeleteOddVertsInSubgraphs
 		if (PartsSizes.size() == 2) break; // Если уже есть две доли то новые не формируем
+#endif // DeleteOddVertsInSubgraphs
+
 		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
 		
 		vector<int> NeighboorsI;
@@ -406,7 +418,7 @@ graph GetSubgraph_K33(graph& inpG) {
 				CurrentPartSize++;
 			}
 		}
-		if (CurrentPart.size() > 1) {
+		if (CurrentPart.size() > 2) { // Для наших целей подходят только доли из 3+ вершин
 			PartsSizes.push_back(CurrentPartSize);
 
 			cout << "Part of size " << CurrentPartSize << " formed of vertices:\n";
@@ -421,6 +433,7 @@ graph GetSubgraph_K33(graph& inpG) {
 		}
 	}
 
+#ifdef DeleteOddVertsInSubgraphs
 	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление лишних вершин из доль (т.к. может быть > 3)
 #ifdef DEBUG
 		cout << "Deleting odd vertices from part " << i+1 << ":\n";
@@ -438,6 +451,7 @@ graph GetSubgraph_K33(graph& inpG) {
 		cout << "Deleted " << deletedCount << " vertices\n\n";
 #endif
 	}
+#endif // DeleteOddVertsInSubgraphs
 
 	graph Output;
 	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
@@ -450,19 +464,26 @@ graph GetSubgraph_K33(graph& inpG) {
 
 // ---TODO Удаление ребёр для превращения графа в планарный.
 void MakePlanar(graph inpG) {
-	//graph ToExclude1 = GetSubgraph_K5(inpG);
-	//graph ToExclude2 = GetSubgraph_K33(inpG);
-	//GetCommonEdges(inpG, inpG);
+	// Алгоритм:
+	// Возвращать К5, К3,3 БЕЗ УДАЛЕНИЯ ВЕРШИН!
+	// ---Искать общие рёбра К5 и К3,3 если оба графа не пусты
+	// ---Иначе удалять ребро принадлежащее К5/К3,3
+	// ---Проверять результат. Если граф все еще не планарен, удаляем ребро и еще одно.
+	// ---Повторяем цикл пока граф не планарен
 }
 
 // MAIN
 
 int main() {
-	graph inp;
+	graph inp1;
+	graph inp2;
 	do {
-		inp = GetGraphFromFile("test.txt");
-		ExcludeAllVertices(inp);
-		MakePlanar(inp);
+		inp1 = GetGraphFromFile("test_input1.txt");
+		inp2 = GetGraphFromFile("test_input2.txt");
+		//ExcludeAllVertices(inp1);
+		vector<int> common;
+		GetCommonVertices(inp1, inp2, common);
+		//MakePlanar(inp);
 		//graph temp = GetSubgraph_K33(inp);
 		//WriteGraphToFile(temp, "test2.txt");
 		cout << "\n--- Press q to exit ---\n\n";
