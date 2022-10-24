@@ -330,7 +330,7 @@ void CleanAllIncidenceList(graph& inpG) {
 #endif
 }
 
-// Поиск подграфа, изоморфного К5
+// Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых)
 graph GetSubgraph_K5(graph& inpG) { 
 #ifdef DEBUG
 	cout << "Trying to find K5-isomorphic subgraph.\n";
@@ -389,7 +389,7 @@ graph GetSubgraph_K5(graph& inpG) {
 	return Output;
 }
 
-// Поиск подграфа, изоморфного К3,3
+// Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
 graph GetSubgraph_K33(graph& inpG) {
 #ifdef DEBUG
 	cout << "Trying to find K3,3-isomorphic subgraph.\n\n";
@@ -481,6 +481,11 @@ graph GetSubgraph_K33(graph& inpG) {
 	cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
 #endif
 	return Output;
+}
+
+// Проверка является ли граф планарным
+bool Planar(graph& inpG) {
+	if (GetSubgraph_K5(inpG).empty() && GetSubgraph_K33(inpG).empty()) return 1; else return 0;
 }
 
 // ---TODO Удаление ребёр для превращения графа в планарный.
