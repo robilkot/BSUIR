@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #define DEBUG
+//#define DeleteOddVertsInSubgraphs
 
 using namespace std;
 
@@ -152,16 +153,20 @@ void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) 
 				sort(inpG2.Vertices[k].IncidenceList.begin(), inpG2.Vertices[k].IncidenceList.end());
 				if (inpG1.Vertices[i].IncidenceList == inpG2.Vertices[k].IncidenceList) {
 					commonVertices.push_back(i);
+#ifdef DEBUG
 					cout << "Found common vertex " << inpG1.Vertices[i].name << "\n";
+#endif // DEBUG
 				}
 			}
 		}
 	}
+#ifdef DEBUG
 	if (!commonVertices.size()) cout << "No common vertices found.\n";
-	else cout << "Found " << commonVertices.size() << " common vertices\n";
+	else cout << "Found " << commonVertices.size() << " common vertices\n\n";
+#endif // DEBUG
 }
 
-// Получение [из СИ первой данной вершины] имени ребра, инцидентного данным вершинам
+// Получение имён рёбер, инцидентных данным вершинам
 void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
 	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
 		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
@@ -172,11 +177,27 @@ void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
 	}
 }
 
-// ---TODO Получение рёбер которые содержатся в обоих графах
+// Получение имён общих рёбер данных графов
 void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& CommonEdgeArray) {
 	vector<int> commonVertices;
 	GetCommonVertices(inpG1, inpG2, commonVertices);
+	for (int i=0; i < commonVertices.size(); i++) {
+		for (int k = 0; k < commonVertices.size(); k++) {
+			GetCommonEdges(inpG1.Vertices[commonVertices[i]], inpG2.Vertices[commonVertices[k]], CommonEdgeArray);
+		}
+	}
+	CommonEdgeArray.erase(unique(CommonEdgeArray.begin(), CommonEdgeArray.end()), CommonEdgeArray.end()); // Чистка от дубликатов
 
+#ifdef DEBUG
+	if (!CommonEdgeArray.size()) {
+		cout << "No common edges found.\n";
+		return;
+	}
+	for (int i = 0; i < CommonEdgeArray.size(); i++) {
+		cout << "Found common edge " << CommonEdgeArray[i] << "\n";
+	}
+	cout << "Found " << CommonEdgeArray.size() << " common edges\n\n";
+#endif // DEBUG
 }
 
 // Получение номера [из СИ данной вершины] ребра по его имени.
@@ -466,10 +487,21 @@ graph GetSubgraph_K33(graph& inpG) {
 void MakePlanar(graph inpG) {
 	// Алгоритм:
 	// Возвращать К5, К3,3 БЕЗ УДАЛЕНИЯ ВЕРШИН!
-	// ---Искать общие рёбра К5 и К3,3 если оба графа не пусты
+	// Искать общие рёбра К5 и К3,3 если оба графа не пусты
+	// Удалять рёбра из списка общих рёбер непланарных подграфов. Ищем минимум.
 	// ---Иначе удалять ребро принадлежащее К5/К3,3
 	// ---Проверять результат. Если граф все еще не планарен, удаляем ребро и еще одно.
 	// ---Повторяем цикл пока граф не планарен
+
+	graph Subgraph_K5 = GetSubgraph_K5(inpG);
+	graph Subgraph_K33 = GetSubgraph_K33(inpG);
+	
+	if (!Subgraph_K5.empty() && !Subgraph_K33.empty()) {
+		vector<int> commonEdges;
+		GetCommonEdges(Subgraph_K5, Subgraph_K33, commonEdges);
+
+		/// do while
+	}
 }
 
 // MAIN
@@ -482,7 +514,7 @@ int main() {
 		inp2 = GetGraphFromFile("test_input2.txt");
 		//ExcludeAllVertices(inp1);
 		vector<int> common;
-		GetCommonVertices(inp1, inp2, common);
+		GetCommonEdges(inp1, inp2, common);
 		//MakePlanar(inp);
 		//graph temp = GetSubgraph_K33(inp);
 		//WriteGraphToFile(temp, "test2.txt");
