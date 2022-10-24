@@ -341,7 +341,7 @@ graph GetSubgraph_K5(graph& inpG) {
 // ---TODO Поиск подграфа, изоморфного К3,3
 graph GetSubgraph_K33(graph& inpG) {
 #ifdef DEBUG
-	cout << "Trying to find K3,3-isomorphic subgraph.\n";
+	cout << "Trying to find K3,3-isomorphic subgraph.\n\n";
 #endif
 
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >2)
@@ -363,9 +363,10 @@ graph GetSubgraph_K33(graph& inpG) {
 	
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
-	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
+	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже) --- ПРОВЕРИТЬ БУДЕТ ЛИ ЭТО ИСПОЛЬЗОВАТЬСЯ ДАЛЕЕ
 	vector<int> Parts; // Список вершин, образующих графа
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
+		if (PartsSizes.size() == 2) break; // Если уже есть две доли то новые не формируем
 		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
 		
 		vector<int> NeighboorsI;
@@ -398,7 +399,32 @@ graph GetSubgraph_K33(graph& inpG) {
 		}
 	}
 
-	return {};
+
+	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление лишних вершин из доль (т.к. может быть > 3)
+#ifdef DEBUG
+		cout << "Deleting odd vertices from part " << i+1 << ":\n";
+		int deletedCount = 0;
+#endif
+		while (PartsSizes[i]>3) {
+			cout << "Deleted vertex " << inpG.Vertices[Parts[3*i]].name << "\n";
+			Parts.erase(Parts.begin() + 3 * i);
+			PartsSizes[i]--;
+#ifdef DEBUG
+			deletedCount++;
+#endif
+		}
+#ifdef DEBUG
+		cout << "Deleted " << deletedCount << " vertices\n\n";
+#endif
+	}
+	//---TODO возвращать двудольные графы
+	graph Output;
+	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
+	CleanAllIncidenceList(Output);
+#ifdef DEBUG
+	cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
+#endif
+	return Output;
 }
 
 // Поиск непланарного подграфа
