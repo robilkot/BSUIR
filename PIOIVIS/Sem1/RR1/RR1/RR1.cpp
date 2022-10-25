@@ -292,6 +292,15 @@ void DeleteVertex(graph& inpG, int inpV) {
 	inpG.Vertices.erase(inpG.Vertices.begin() + inpV);
 }
 
+// Удаление ребра из графа (по имени ребра)
+void DeleteEdge(graph& inpG, int inpE) {
+	for (int i = 0; i < inpG.Vertices.size(); i++) {
+		for (int k = 0; k < inpG.Vertices[i].IncidenceList.size(); k++) {
+			if (inpG.Vertices[i].IncidenceList[k] == inpE) inpG.Vertices[i].IncidenceList.erase(inpG.Vertices[i].IncidenceList.begin() + k);
+		}
+	}
+}
+
 // Очистка СИ вершин от ребёр, не ведущих ни в одну вершину
 void CleanIncidenceList(graph& inpG, int inpV) {
 	vector<int> neighboors;
@@ -505,7 +514,13 @@ void MakePlanar(graph inpG) {
 		vector<int> commonEdges;
 		GetCommonEdges(Subgraph_K5, Subgraph_K33, commonEdges);
 
-		/// do while
+		int testvertex = 0; 
+		graph temp=inpG;
+		for(int i = 0; i<temp.Vertices.size(); i++) {
+			DeleteEdge(temp, commonEdges[i]);
+			if (Planar(temp)) break;
+			else 
+		}
 	}
 }
 
