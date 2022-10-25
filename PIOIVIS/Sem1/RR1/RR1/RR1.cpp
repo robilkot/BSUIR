@@ -116,6 +116,16 @@ void WriteGraphToFile(graph& inpG, const char* filename) {
 	cout << "Graph succesfully saved in file " << filename << "\n";
 }
 
+// Чистка вектора от дубликатов
+void CleanVector(vector<int>& v)
+{
+	auto end = v.end();
+	for (auto it = v.begin(); it != end; ++it) {
+		end = std::remove(it + 1, end, *it);
+	}
+	v.erase(end, v.end());
+}
+
 // Получение номеров смежных вершин для заданной в графе в данный список
 void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
@@ -167,37 +177,40 @@ void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) 
 }
 
 // Получение имён рёбер, инцидентных данным вершинам
-void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& CommonEdgeArray) {
+void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& commonEdgesArray) {
 	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
 		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
 			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
-				CommonEdgeArray.push_back(inpV1.IncidenceList[i]);
+				commonEdgesArray.push_back(inpV1.IncidenceList[i]);
 			}
 		}
 	}
 }
 
 // Получение имён общих рёбер данных графов
-void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& CommonEdgeArray) {
+void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& commonEdgesArray) {
 	if (inpG1.empty() || inpG2.empty()) return; // Если хотя бы один входной граф пустой, не тратим драгоценные ресурсы компутера
 	vector<int> commonVertices;
 	GetCommonVertices(inpG1, inpG2, commonVertices);
 	for (int i=0; i < commonVertices.size(); i++) {
 		for (int k = 0; k < commonVertices.size(); k++) {
-			GetCommonEdges(inpG1.Vertices[commonVertices[i]], inpG2.Vertices[commonVertices[k]], CommonEdgeArray);
+			GetCommonEdges(inpG1.Vertices[commonVertices[i]], inpG2.Vertices[commonVertices[k]], commonEdgesArray);
 		}
 	}
-	CommonEdgeArray.erase(unique(CommonEdgeArray.begin(), CommonEdgeArray.end()), CommonEdgeArray.end()); // Чистка от дубликатов
+	
 
 #ifdef DEBUG
-	if (!CommonEdgeArray.size()) {
+	if (!commonEdgesArray.size()) {
 		cout << "No common edges found.\n";
 		return;
 	}
-	for (int i = 0; i < CommonEdgeArray.size(); i++) {
-		cout << "Found common edge " << CommonEdgeArray[i] << "\n";
+#endif // DEBUG
+	CleanVector(commonEdgesArray); // Чистка от дубликатов
+#ifdef DEBUG
+	for (int i = 0; i < commonEdgesArray.size(); i++) {
+		cout << "Found common edge " << commonEdgesArray[i] << "\n";
 	}
-	cout << "Found " << CommonEdgeArray.size() << " common edges\n\n";
+	cout << "Found " << commonEdgesArray.size() << " common edges\n\n";
 #endif // DEBUG
 }
 
@@ -417,29 +430,45 @@ graph GetSubgraph_K33(graph& inpG) {
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
 	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже) --- ПРОВЕРИТЬ БУДЕТ ЛИ ЭТО ИСПОЛЬЗОВАТЬСЯ ДАЛЕЕ
-	vector<int> Parts; // Список вершин, образующих графа
+	vector<int> Parts; // Список вершин, образующих доли графа
+	int CommonVertsOfIandK;
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
-
+		CommonVertsOfIandK = 0;
 #ifdef DeleteOddVertsInSubgraphs
 		if (PartsSizes.size() == 2) break; // Если уже есть две доли то новые не формируем
 #endif // DeleteOddVertsInSubgraphs
 
 		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
-		
+
 		vector<int> NeighboorsI;
 		GetNeighboorVertices(inpG, i, NeighboorsI);
-		sort(NeighboorsI.begin(), NeighboorsI.end());
-
+		
 		int CurrentPartSize = 0; // Счетчик для записи размера текущей доли
 		vector<int> CurrentPart; // Доля, которую пытаемся сформировать на данной итерации
+		
 		for (int k = 0; k < CandidatesLevel1.size(); k++) {
+			//if (i == k) continue;
+
+			CommonVertsOfIandK = 0;
 			vector<int> NeighboorsK;
 			GetNeighboorVertices(inpG, k, NeighboorsK);
-			sort(NeighboorsK.begin(), NeighboorsK.end());
-			if (NeighboorsI==NeighboorsK) {
+			for (int m = 0; m < NeighboorsI.size(); m++) { // Считаем вершины, содержащиеся в обоих списках. Нам нужно хотя бы 3 совпадения.
+				if (count(NeighboorsK.begin(), NeighboorsK.end(), NeighboorsI[m])) CommonVertsOfIandK++;
+			}
+			cout << "For vertices " << inpG.Vertices[CandidatesLevel1[i]].name << " and " << inpG.Vertices[CandidatesLevel1[k]].name << " found " << CommonVertsOfIandK << "\n";
+			if (CommonVertsOfIandK>2) {
 				CurrentPart.push_back(k);
 				CurrentPartSize++;
 			}
+			for (int m = 0; m < CurrentPartSize; m++) {
+				for (int n = 0; n < CurrentPartSize; n++) {
+					if (Neighboors(inpG, CurrentPart[m], CurrentPart[n])) {
+						CurrentPart.erase(CurrentPart.begin() + n);
+						CurrentPartSize--;
+					}
+				}
+			}
+			// Очистка доль от вершин, которые связаны помиж собой
 		}
 		if (CurrentPart.size() > 2) { // Для наших целей подходят только доли из 3+ вершин
 			PartsSizes.push_back(CurrentPartSize);
@@ -497,19 +526,35 @@ bool Planar(graph& inpG) {
 
 // ---TODO Удаление ребёр для превращения графа в планарный.
 void MakePlanar(graph inpG) {
-	// Алгоритм:
-	// Искать общие рёбра К5 и К3,3 если оба графа не пусты
-	// Удалять рёбра из списка общих рёбер непланарных подграфов. Ищем минимум.
-
+	ExcludeAllVertices(inpG);
 	graph Subgraph_K5 = GetSubgraph_K5(inpG);
 	graph Subgraph_K33 = GetSubgraph_K33(inpG);
-	
-	vector<int> commonEdges;
-	GetCommonEdges(Subgraph_K5, Subgraph_K33, commonEdges);
+	if (Subgraph_K5.empty() && Subgraph_K33.empty()) {
+		cout << "Graph is already planar\n\n";
+		return;
+	}
 
-	// АХТУНГ, НИЖЕ ПОЛНЕЙШАЯ ХУЙНЯ, ПЕРЕДЕЛАТЬ АЛГОРИТМ
-	if (commonEdges.size()) { // Если общие ребра у двух непланарных подграфов вообще присутствуют
-		cout << "Trying to make both of non-planar subgraphs planar\n";
+	vector<int> potentialAnswer; //Массив потенциально подходящих нам рёбер. В первую очередь проверяются те, что общие для двух непланарных подграфов (при наличии таковых)
+	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer);
+	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) {
+		for (int k=0; k < Subgraph_K5.Vertices[i].IncidenceList.size(); k++) {
+			potentialAnswer.push_back(Subgraph_K5.Vertices[i].IncidenceList[k]);
+		}
+	}
+	for (int i=0; i < Subgraph_K33.Vertices.size(); i++) {
+		for (int k=0; k < Subgraph_K33.Vertices[i].IncidenceList.size(); k++) {
+			potentialAnswer.push_back(Subgraph_K33.Vertices[i].IncidenceList[k]);
+		}
+	}
+	CleanVector(potentialAnswer);
+
+	cout << "Potential list: ";
+	for (int i = 0; i < potentialAnswer.size(); i++) {
+		cout << potentialAnswer[i] << " ";
+	}
+
+#ifdef DEBUG2
+		cout << "Trying to make graph planar\n";
 		int iteration = 0;
 		vector<int> nonoptimaledges; // Массив рёбер, удаление которых по отдельности недостаточно для планарности
 		do {
@@ -518,22 +563,27 @@ void MakePlanar(graph inpG) {
 				DeleteEdge(Subgraph_K33, nonoptimaledges[i]);
 			}
 
-			bool isReady=false;
-			for (int i = 0; i < commonEdges.size(); i++) {
-				DeleteEdge(Subgraph_K5, commonEdges[i]);
-				DeleteEdge(Subgraph_K33, commonEdges[i]);
-				if (!Planar(Subgraph_K5) && !Planar(Subgraph_K33)) isReady = true;
+			bool isReady1=false, isReady2=false;
+			graph temp1 = Subgraph_K5, temp2 = Subgraph_K33; // Проверка планарны ли графы после удаления рёбер
+			for (int i = 0; i < potentialAnswer.size(); i++) { // Разбивка на 2 цикла для оптимизации
+				DeleteEdge(Subgraph_K5, potentialAnswer[i]);
+				if (!Planar(Subgraph_K5)) isReady1 = true;
 			}
-			if(isReady) break;
+			if (!isReady1) {
+				for (int i = 0; i < potentialAnswer.size(); i++) {
+					DeleteEdge(Subgraph_K33, potentialAnswer[i]);
+					if (!Planar(Subgraph_K33)) isReady2 = true;
+				}
+			}
+			if(isReady1&&isReady2) break;
 	
 			cout << "Graph in not planar on iteration " << iteration << " to nonoptimal edges\n";
-			nonoptimaledges.push_back(commonEdges[0]); // Перенос в массив недостаточных ребра
-			cout << "Added " << commonEdges[0] << " to nonoptimal edges\n";
-			commonEdges.erase(commonEdges.begin()); 
+			nonoptimaledges.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
+			cout << "Added " << potentialAnswer[0] << " to nonoptimal edges\n";
+			potentialAnswer.erase(potentialAnswer.begin()); 
 			iteration++;
-		} while (true);
-
-	}
+		} while (nonoptimaledges.size() != potentialAnswer.size()); // Принудительно завершаем это если проверили все рёбра и не помогло
+#endif // 123
 }
 
 // MAIN
