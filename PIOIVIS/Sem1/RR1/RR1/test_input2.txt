@@ -1,5 +1,6 @@
-one 1 4 5
-two 1 2
-three 2 3
-four 3 4
-five 5
+one 1 6 7 8 9
+two 1 2 10 11 12
+three 2 3 9 13 14
+four 3 4 8 12 15
+five 4 5 7 11 14
+six 5 6 10 13 15

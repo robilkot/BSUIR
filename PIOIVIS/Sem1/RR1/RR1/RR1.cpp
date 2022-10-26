@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #define DEBUG
-//#define DEBUG2
+//#define DEBUG_K5
+#define DEBUG_K33
+#define DEBUG2
 //#define DeleteOddVertsInSubgraphs
 
 using namespace std;
@@ -66,7 +68,7 @@ vertex GetVertexFromString(string& str) {
 }
 
 // Парсинг графа из файла
-graph GetGraphFromFile(const char* filename) { 
+graph GetGraphFromFile(string filename) { 
 	ifstream input(filename);
 	if (!input.is_open()) {
 		cout << "Error opening file, try again.\n";
@@ -90,7 +92,7 @@ graph GetGraphFromFile(const char* filename) {
 }
 
 // Запись графа в файл
-void WriteGraphToFile(graph& inpG, const char* filename) { 
+void WriteGraphToFile(graph& inpG, string filename) { 
 	if (inpG.Vertices.empty()) {
 		cout << "Tried to write empty graph, aborting\n";
 		return;
@@ -127,12 +129,16 @@ void CleanVector(vector<int>& inp) {
 // Получение номеров смежных вершин для заданной в графе в данный список
 void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
+		if (i == inpV) continue;
 			for (int m = 0; m < inpG.Vertices[i].IncidenceList.size(); m++) {
-				for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) {
-					if (inpG.Vertices[i].IncidenceList[m] == inpG.Vertices[inpV].IncidenceList[n] && i!=inpV) {
+				if (count(inpG.Vertices[inpV].IncidenceList.begin(), inpG.Vertices[inpV].IncidenceList.end(), inpG.Vertices[i].IncidenceList[m])) {
+					NeighboorArray.push_back(i);
+				}
+				/*for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) { // ЛЕГАСИ
+					if (inpG.Vertices[i].IncidenceList[m] == inpG.Vertices[inpV].IncidenceList[n] && i != inpV) {
 						NeighboorArray.push_back(i);
 					}
-				}
+				}*/
 			}
 	}
 }
@@ -308,7 +314,10 @@ void DeleteVertex(graph& inpG, int inpV) {
 void DeleteEdge(graph& inpG, int inpE) {
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		for (int k = 0; k < inpG.Vertices[i].IncidenceList.size(); k++) {
-			if (inpG.Vertices[i].IncidenceList[k] == inpE) inpG.Vertices[i].IncidenceList.erase(inpG.Vertices[i].IncidenceList.begin() + k);
+			if (inpG.Vertices[i].IncidenceList[k] == inpE) {
+				inpG.Vertices[i].IncidenceList.erase(inpG.Vertices[i].IncidenceList.begin() + k);
+				cout << "deleted edge number " << k+1 << " from vertex " << inpG.Vertices[i].name << "\n";
+			}
 		}
 	}
 }
@@ -407,11 +416,10 @@ graph GetSubgraph_K5(graph& inpG) {
 }
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
-graph GetSubgraph_K33(graph& inpG) {
+graph GetSubgraph_K33(graph& inpG) { // ПЕРЕСМОТРЕТЬ УСЛОВИЕ ФОРМИРОВАНИЕ ДОЛЕЙ, ВТОРУЮ НЕКОРРЕКТНО ФОРМИРУЕТ
 #ifdef DEBUG
 	cout << "Trying to find K3,3-isomorphic subgraph.\n";
 #endif
-
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >2)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (GetVertexDegree(inpG.Vertices[i]) > 2) {
@@ -433,7 +441,7 @@ graph GetSubgraph_K33(graph& inpG) {
 	
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
-	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже) --- ПРОВЕРИТЬ БУДЕТ ЛИ ЭТО ИСПОЛЬЗОВАТЬСЯ ДАЛЕЕ
+	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
 	vector<int> Parts; // Список вершин, образующих доли графа
 	int CommonVertsOfIandK;
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
@@ -444,20 +452,25 @@ graph GetSubgraph_K33(graph& inpG) {
 
 		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
 
-		vector<int> NeighboorsI;
-		GetNeighboorVertices(inpG, i, NeighboorsI);
-		
 		int CurrentPartSize = 0; // Счетчик для записи размера текущей доли
 		vector<int> CurrentPart; // Доля, которую пытаемся сформировать на данной итерации
-		
+
+		vector<int> NeighboorsI;
+		GetNeighboorVertices(inpG, CandidatesLevel1[i], NeighboorsI);
+
 		for (int k = 0; k < CandidatesLevel1.size(); k++) {
 			//if (i == k) continue;
 
 			CommonVertsOfIandK = 0;
+
 			vector<int> NeighboorsK;
-			GetNeighboorVertices(inpG, k, NeighboorsK);
-			for (int m = 0; m < NeighboorsI.size(); m++) { // Считаем вершины, содержащиеся в обоих списках. Нам нужно хотя бы 3 совпадения.
-				if (count(NeighboorsK.begin(), NeighboorsK.end(), NeighboorsI[m])) CommonVertsOfIandK++;
+			GetNeighboorVertices(inpG, CandidatesLevel1[k], NeighboorsK);
+
+			for (int m = 0; m < NeighboorsK.size(); m++) { // Считаем вершины, содержащиеся в обоих списках. Нам нужно хотя бы 3 совпадения.
+				if (count(NeighboorsI.begin(), NeighboorsI.end(), NeighboorsK[m])) {
+					//cout << "Found common vertex " << inpG.Vertices[NeighboorsK[m]].name << "\n";
+					CommonVertsOfIandK++;
+				}
 			}
 #ifdef DEBUG2
 			cout << "For vertices " << inpG.Vertices[CandidatesLevel1[i]].name << " and " << inpG.Vertices[CandidatesLevel1[k]].name << " found " << CommonVertsOfIandK << "\n";
@@ -519,8 +532,12 @@ graph GetSubgraph_K33(graph& inpG) {
 #endif
 	}
 #endif // DeleteOddVertsInSubgraphs
-	if (PartsSizes.size() < 2) return {}; // Если меньше двух доль ничего не возвращаем
-
+	if (PartsSizes.size() < 2) {
+#ifdef DEBUG
+		cout << "No K3,3-isomorphic subgraph found.\n\n";
+#endif
+		return {}; // Если меньше двух доль ничего не возвращаем
+	}
 	graph Output;
 	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
 	CleanAllIncidenceList(Output);
@@ -529,6 +546,7 @@ graph GetSubgraph_K33(graph& inpG) {
 		cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
 	} else cout << "No K3,3-isomorphic subgraph found.\n\n";
 #endif
+	Output.DisplayAllIncidenceList();
 	return Output;
 }
 
@@ -549,7 +567,9 @@ void MakePlanar(graph inpG) {
 		return;
 	}
 
+#ifdef DEBUG
 	cout << "Trying find common edges for two non-planar subgraphs\n";
+#endif
 	vector<int> potentialAnswer; // Массив потенциально подходящих нам рёбер. В первую очередь проверяются те, что общие для двух непланарных подграфов (при наличии таковых)	
 	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer);
 	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) {
@@ -564,91 +584,124 @@ void MakePlanar(graph inpG) {
 	}
 	CleanVector(potentialAnswer);
 
-	cout << "Potential deleted edges list: ";
+#ifdef DEBUG
+	cout << "Potential edges list: ";
 	for (int i = 0; i < potentialAnswer.size(); i++) {
 		cout << potentialAnswer[i] << " ";
 	}
 	cout << "\n\n";
-
+#endif
 		int iteration = 0;
 		int maxiteration = potentialAnswer.size();
 		vector<int> needtodelete; // Массив рёбер, удаление которых по отдельности недостаточно для планарности
-		graph t_Subgraph_K5; Subgraph_K5;
-		graph t_Subgraph_K33;  Subgraph_K33;
+		graph t_Subgraph_K5; 
+		graph t_Subgraph_K33; // Временные графы, используемые для проверки планарности после удаления рёбер в циклах
 
 		do {
-			t_Subgraph_K5 = Subgraph_K5;
-			t_Subgraph_K33 = Subgraph_K33; // В начале каждой итерации восстанвливаем подграфы которые анализируем
-
+#ifdef DEBUG
+			cout << "Now on iteration " << iteration + 1 << " (max iterations " << maxiteration << ")\n";
+#endif
 			for (int i = 0; i < needtodelete.size(); i++) { // Удаление вышеупомянутых рёбер
-				DeleteEdge(t_Subgraph_K5, needtodelete[i]);	
-				DeleteEdge(t_Subgraph_K33, needtodelete[i]);
+				DeleteEdge(Subgraph_K5, needtodelete[i]);	
+				DeleteEdge(Subgraph_K33, needtodelete[i]);
 			}
 
 			bool isReadyK5=true, isReadyK33=true; // Проверка планарны ли графы после удаления рёбер
-			if (!t_Subgraph_K5.empty()) {
+			if (!Subgraph_K5.empty()) {
 				for (int i = 0; i < potentialAnswer.size(); i++) { // Разбивка на 2 цикла для оптимизации
-					cout << "Deleted edge " << potentialAnswer[i] << "\n";
+					t_Subgraph_K5 = Subgraph_K5;
+#ifdef DEBUG
+					cout << "Deleted edge " << potentialAnswer[i] << " (trying to make K5 planar)\n";
+#endif
 					DeleteEdge(t_Subgraph_K5, potentialAnswer[i]);
 					if (GetSubgraph_K5(t_Subgraph_K5).empty()) {
 						isReadyK5 = true;
+#ifdef DEBUG
 						cout << "Made K5 planar\n";
 						cout << "Added edge " << potentialAnswer[i] << " to the answer\n";
+#endif
 						needtodelete.push_back(potentialAnswer[i]);
 						break;
 					}
 					isReadyK5 = false;
+#ifdef DEBUG
 					cout << "Did not make K5 planar\n";
+#endif
 				}
 			}
-			if (/*!isReadyK5 && */ !t_Subgraph_K33.empty()) {
+			if (/*!isReadyK5 && */ !Subgraph_K33.empty()) {
 				for (int i = 0; i < potentialAnswer.size(); i++) {
+					t_Subgraph_K33 = Subgraph_K33;
+#ifdef DEBUG
+					cout << "Deleted edge " << potentialAnswer[i] << " (trying to make K33 planar)\n";
+#endif
 					DeleteEdge(t_Subgraph_K33, potentialAnswer[i]);
+
 					if (GetSubgraph_K33(t_Subgraph_K33).empty()) {
 						isReadyK33 = true;
+#ifdef DEBUG
 						cout << "Made K33 planar\n";
 						cout << "Added edge " << potentialAnswer[i] <<" to the answer\n";
+#endif
 						needtodelete.push_back(potentialAnswer[i]);
 						break;
 					}
 					isReadyK33 = false;
+#ifdef DEBUG
 					cout << "Did not make K33 planar\n";
+#endif
 				}
 			}
 			if (isReadyK5 && isReadyK33) {
+#ifdef DEBUG
 				cout << "Made graph planar\n\n";
+#endif
 				break;
 			}
-
-			cout << "Graph in not planar on iteration " << iteration+1 << " (max iterations " << maxiteration << ")\n";
+#ifdef DEBUG
+			cout << "Graph in not planar yet\n";
+			cout << "Added " << potentialAnswer[0] << " to the answer\n";
+#endif
 			needtodelete.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
-			cout << "Added " << potentialAnswer[0] << " to nonoptimal edges\n";
 			potentialAnswer.erase(potentialAnswer.begin());
 			CleanVector(needtodelete);
 			iteration++;
-
-			system("pause");
-		} while (iteration<=maxiteration); // Принудительно завершаем это если проверили все рёбра и не помогло
+		} while (iteration<=maxiteration); // Принудительно завершаем проверку если проверили все рёбра и не помогло
 
 		CleanVector(needtodelete);
-		cout << "List of edges to be deleted: "; ///---TODO переделать вывод, понять что выводится
+		cout << "Minimal list of edges to be deleted: ";
 		for (int i = 0; i < needtodelete.size(); i++) {
 			cout << needtodelete[i] << " ";
 		}
-		cout << "\n";
+		cout << "(" << needtodelete.size() << " edges)\n\n";
 }
 
 // MAIN
 
 int main() {
-	graph inp1;
 	do {
-		inp1 = GetGraphFromFile("test_input1.txt");
-
-		MakePlanar(inp1);
+		graph inp;
+		char filename[] = { "test_input4.txt" };
 		
-		//graph temp = GetSubgraph_K33(inp1);
-		//WriteGraphToFile(temp, "test2.txt");
+		cout << "\n--- Pls input example number ---\n\n";
+		
+		/*for (int i = 0; i < 5; i++) {
+			filename[10]=char(i+49);
+			cout << filename << "\n";
+			inp = GetGraphFromFile(filename);
+			MakePlanar(inp);
+		}*/
+
+		filename[10] = _getch();
+		inp = GetGraphFromFile(filename);
+		MakePlanar(inp);
+		
+
+		/*inp = GetGraphFromFile(filename);
+		vector<int> common;
+		GetNeighboorVertices(inp, 1, common);
+		*/
+
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
 	return 0;
