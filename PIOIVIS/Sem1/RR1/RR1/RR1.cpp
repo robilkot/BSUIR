@@ -528,7 +528,7 @@ bool Planar(graph& inpG) {
 	if (GetSubgraph_K5(inpG).empty() && GetSubgraph_K33(inpG).empty()) return 1; else return 0;
 }
 
-// ---TODO Удаление ребёр для превращения графа в планарный.
+// Удаление ребёр для превращения графа в планарный.
 void MakePlanar(graph inpG) {
 	ExcludeAllVertices(inpG);
 	graph Subgraph_K5 = GetSubgraph_K5(inpG);
@@ -557,11 +557,11 @@ void MakePlanar(graph inpG) {
 	for (int i = 0; i < potentialAnswer.size(); i++) {
 		cout << potentialAnswer[i] << " ";
 	}
+	cout << "\n";
 
-#ifdef DEBUG
 		int iteration = 0;
 		int maxiteration = potentialAnswer.size();
-		vector<int> nonoptimaledges; // Массив рёбер, удаление которых по отдельности недостаточно для планарности
+		vector<int> needtodelete; // Массив рёбер, удаление которых по отдельности недостаточно для планарности
 		graph t_Subgraph_K5; Subgraph_K5;
 		graph t_Subgraph_K33;  Subgraph_K33;
 
@@ -569,45 +569,58 @@ void MakePlanar(graph inpG) {
 			t_Subgraph_K5 = Subgraph_K5;
 			t_Subgraph_K33 = Subgraph_K33; // В начале каждой итерации восстанвливаем подграфы которые анализируем
 
-			for (int i = 0; i < nonoptimaledges.size(); i++) { // Удаление вышеупомянутых рёбер
-				DeleteEdge(t_Subgraph_K5, nonoptimaledges[i]);	
-				DeleteEdge(t_Subgraph_K33, nonoptimaledges[i]);
+			for (int i = 0; i < needtodelete.size(); i++) { // Удаление вышеупомянутых рёбер
+				DeleteEdge(t_Subgraph_K5, needtodelete[i]);	
+				DeleteEdge(t_Subgraph_K33, needtodelete[i]);
 			}
 
-			bool isReady1=true, isReady2=true; // Проверка планарны ли графы после удаления рёбер
-			for (int i = 0; i < potentialAnswer.size(); i++) { // Разбивка на 2 цикла для оптимизации
-				DeleteEdge(t_Subgraph_K5, potentialAnswer[i]);
-				if (!Planar(t_Subgraph_K5)) {
-					isReady1 = true;
-					cout << "Made K5 planar\n";
-					break;
-				}
-				isReady1 = false;
-				cout << "Did not make K5 planar\n";
-			}
-			if (!isReady1 && !t_Subgraph_K33.empty()) {
-				for (int i = 0; i < potentialAnswer.size(); i++) {
-					DeleteEdge(t_Subgraph_K33, potentialAnswer[i]);
-					if (!Planar(t_Subgraph_K33)) {
-						isReady2 = true;
-						cout << "Made K33 planar\n";
+			bool isReadyK5=true, isReadyK33=true; // Проверка планарны ли графы после удаления рёбер
+			if (!t_Subgraph_K5.empty()) {
+				for (int i = 0; i < potentialAnswer.size(); i++) { // Разбивка на 2 цикла для оптимизации
+					DeleteEdge(t_Subgraph_K5, potentialAnswer[i]);
+					if (GetSubgraph_K5(t_Subgraph_K5).empty()) {
+						isReadyK5 = true;
+						cout << "Made K5 planar\n";
+						needtodelete.push_back(potentialAnswer[i]);
 						break;
 					}
-					isReady2 = false;
+					isReadyK5 = false;
+					cout << "Did not make K5 planar\n";
+				}
+			}
+			if (/*!isReadyK5 && */ !t_Subgraph_K33.empty()) {
+				for (int i = 0; i < potentialAnswer.size(); i++) {
+					DeleteEdge(t_Subgraph_K33, potentialAnswer[i]);
+					if (GetSubgraph_K33(t_Subgraph_K33).empty()) {
+						isReadyK33 = true;
+						cout << "Made K33 planar\n";
+						needtodelete.push_back(potentialAnswer[i]);
+						break;
+					}
+					isReadyK33 = false;
 					cout << "Did not make K33 planar\n";
 				}
 			}
-			if(isReady1&&isReady2) break;
-	
-			cout << "Graph in not planar on iteration " << iteration << "\n";
-			nonoptimaledges.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
+			if (isReadyK5 && isReadyK33) {
+				cout << "Made graph planar\n";
+				break;
+			}
+
+			cout << "Graph in not planar on iteration " << iteration+1 << " (max iterations " << maxiteration << ")\n";
+			needtodelete.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
 			cout << "Added " << potentialAnswer[0] << " to nonoptimal edges\n";
-			potentialAnswer.erase(potentialAnswer.begin()); 
+			potentialAnswer.erase(potentialAnswer.begin());
+			CleanVector(needtodelete);
 			iteration++;
 
 			system("pause");
 		} while (iteration<=maxiteration); // Принудительно завершаем это если проверили все рёбра и не помогло
-#endif
+
+		cout << "List of edges to be deleted: "; ///---TODO переделать вывод, понять что выводится
+		for (int i = 0; i < needtodelete.size(); i++) {
+			cout << needtodelete[i] << " ";
+		}
+		cout << "\n";
 }
 
 // MAIN
