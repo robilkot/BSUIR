@@ -416,7 +416,7 @@ graph GetSubgraph_K5(graph& inpG) {
 }
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
-graph GetSubgraph_K33(graph& inpG) { // ПЕРЕСМОТРЕТЬ УСЛОВИЕ ФОРМИРОВАНИЕ ДОЛЕЙ, ВТОРУЮ НЕКОРРЕКТНО ФОРМИРУЕТ
+graph GetSubgraph_K33(graph& inpG) { // НЕ ПРИБАВЛЯЕТ В CURRENTPARTSIZE ПОСЛЕДНЮЮ ЕДИНИЦУ
 #ifdef DEBUG
 	cout << "Trying to find K3,3-isomorphic subgraph.\n";
 #endif
@@ -452,15 +452,12 @@ graph GetSubgraph_K33(graph& inpG) { // ПЕРЕСМОТРЕТЬ УСЛОВИЕ 
 
 		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
 
-		int CurrentPartSize = 0; // Счетчик для записи размера текущей доли
 		vector<int> CurrentPart; // Доля, которую пытаемся сформировать на данной итерации
 
 		vector<int> NeighboorsI;
 		GetNeighboorVertices(inpG, CandidatesLevel1[i], NeighboorsI);
 
 		for (int k = 0; k < CandidatesLevel1.size(); k++) {
-			//if (i == k) continue;
-
 			CommonVertsOfIandK = 0;
 
 			vector<int> NeighboorsK;
@@ -477,25 +474,24 @@ graph GetSubgraph_K33(graph& inpG) { // ПЕРЕСМОТРЕТЬ УСЛОВИЕ 
 #endif // DEBUG2
 			if (CommonVertsOfIandK>2) {
 				CurrentPart.push_back(k);
-				CurrentPartSize++;
 			}
-			for (int m = 0; m < CurrentPartSize; m++) {
-				for (int n = 0; n < CurrentPartSize; n++) {
+			cout << "Currentpart size " << CurrentPart.size() << "\n";
+
+			for (int m = 0; m < CurrentPart.size(); m++) { //---TODO перезаписывает вершину вместо записи новой (не должно)
+				for (int n = 0; n < CurrentPart.size(); n++) {
 					if (Neighboors(inpG, CurrentPart[m], CurrentPart[n])) {
 						CurrentPart.erase(CurrentPart.begin() + n);
-						CurrentPartSize--;
 					}
 				}
-			}
-			// Очистка доль от вершин, которые связаны помиж собой
+			} // Очистка доль от вершин, которые связаны помиж собой
 		}
 		if (CurrentPart.size() > 2) { // Для наших целей подходят только доли из 3+ вершин
-			PartsSizes.push_back(CurrentPartSize);
+			PartsSizes.push_back(CurrentPart.size());
 
 #ifdef DEBUG_K33
-			cout << "Part of size " << CurrentPartSize << " formed of vertices:\n";
+			cout << "Part of size " << CurrentPart.size() << " formed of vertices:\n";
 #endif
-			for (int k = 0; k < CurrentPartSize; k++) {
+			for (int k = 0; k < CurrentPart.size(); k++) {
 #ifdef DEBUG_K33
 				cout << inpG.Vertices[CurrentPart[k]].name << "\n";
 #endif
@@ -506,7 +502,7 @@ graph GetSubgraph_K33(graph& inpG) { // ПЕРЕСМОТРЕТЬ УСЛОВИЕ 
 #endif
 		}
 #ifdef DEBUG_K33
-		else cout << "Failed forming part of size " << CurrentPartSize << "\n";
+		else cout << "Failed forming part of size " << CurrentPart.size() << "\n";
 #endif
 	}
 #ifdef DEBUG_K33
