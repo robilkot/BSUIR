@@ -6,9 +6,9 @@
 #include <conio.h>
 #include <algorithm>
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_K5
-//#define DEBUG_K33
+#define DEBUG_K33
 //#define DEBUG2
 //#define DeleteOddVertsInSubgraphs
 
@@ -474,13 +474,6 @@ graph GetSubgraph_K33(graph& inpG) {
 #ifdef DEBUG2
 			cout << "Currentpart size " << CurrentPart.size() << "\n";
 #endif
-			for (int m = 0; m < CurrentPart.size(); m++) { //---TODO перезаписывает вершину вместо записи новой (не должно)
-				for (int n = 0; n < CurrentPart.size(); n++) {
-					if (Neighboors(inpG, CurrentPart[m], CurrentPart[n])) {
-						CurrentPart.erase(CurrentPart.begin() + n);
-					}
-				}
-			}  // Очистка доль от вершин, которые связаны помиж собой
 		}
 		if (CurrentPart.size() > 2) { // Для наших целей подходят только доли из 3+ вершин
 			PartsSizes.push_back(CurrentPart.size());
@@ -534,13 +527,33 @@ graph GetSubgraph_K33(graph& inpG) {
 	}
 	graph Output;
 	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
-	//CleanAllIncidenceList(Output);
+
+	/* int checked = 0;
+	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление рёбер между соседними вершинами в пределах одной доли
+		for (int k = checked; k < checked + PartsSizes[i]; k++) {
+			for (int l = checked; l < checked + PartsSizes[i]; l++) {
+				if (Neighboors(Output, Parts[k], Parts[i])) {
+					vector<int> commonEdges;
+					GetCommonEdges(Output.Vertices[Parts[k]], Output.Vertices[Parts[i]], commonEdges);
+					for (auto x : commonEdges)
+						DeleteEdge(Output, x);
+				}
+			}
+		}
+
+		checked += PartsSizes[i];
+	} */
+
+	//CleanAllIncidenceList(Output); // Чистим СИ от остатков оригинального графа
+
 #ifdef DEBUG
 	if (Output.Vertices.size()) {
 		cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
 	} else cout << "No K3,3-isomorphic subgraph found.\n\n";
 #endif
-	//Output.DisplayAllIncidenceList();
+#ifdef DEBUG_K33
+	Output.DisplayAllIncidenceList();
+#endif
 	return Output;
 }
 
@@ -550,7 +563,7 @@ bool Planar(graph& inpG) {
 }
 
 // Удаление ребёр для превращения графа в планарный.
-void MakePlanar(graph inpG) {
+void MakePlanar(graph& inpG) {
 	cout << "Trying to make graph planar\n";
 
 	ExcludeAllVertices(inpG);
