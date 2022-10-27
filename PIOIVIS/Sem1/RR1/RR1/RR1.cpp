@@ -6,9 +6,9 @@
 #include <conio.h>
 #include <algorithm>
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_K5
-#define DEBUG_K33
+//#define DEBUG_K33
 //#define DEBUG2
 //#define DeleteOddVertsInSubgraphs
 
@@ -435,6 +435,7 @@ graph GetSubgraph_K33(graph& inpG) {
 		return {};
 	}
 	
+	graph Output;
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
 	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
@@ -486,6 +487,17 @@ graph GetSubgraph_K33(graph& inpG) {
 				cout << inpG.Vertices[CurrentPart[k]].name << "\n";
 #endif
 				Parts.push_back(CurrentPart[k]);
+				Output.Vertices.push_back(inpG.Vertices[CurrentPart[k]]); // Добавляем в аутпут вершины текущей доли
+			}
+
+			for (int k = 0; k < CurrentPart.size(); k++) { // Удаляем общие рёбра соседних вершин одной доли
+				for (int l = 0; l < CurrentPart.size(); l++) {
+					if (l != k && Neighboors(inpG, CurrentPart[k], CurrentPart[l])) {
+						vector<int> commonEdges;
+						GetCommonEdges(inpG.Vertices[CurrentPart[k]], inpG.Vertices[CurrentPart[l]], commonEdges);
+						for (int m = 0; m < commonEdges.size(); m++) DeleteEdge(Output, commonEdges[m]);
+					}
+				}
 			}
 #ifdef DEBUG_K33
 			cout << "\n";
@@ -525,24 +537,6 @@ graph GetSubgraph_K33(graph& inpG) {
 #endif
 		return {}; // Если меньше двух доль ничего не возвращаем
 	}
-	graph Output;
-	for (int i = 0; i < Parts.size(); i++) Output.Vertices.push_back(inpG.Vertices[Parts[i]]);
-
-	/* int checked = 0;
-	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление рёбер между соседними вершинами в пределах одной доли
-		for (int k = checked; k < checked + PartsSizes[i]; k++) {
-			for (int l = checked; l < checked + PartsSizes[i]; l++) {
-				if (Neighboors(Output, Parts[k], Parts[i])) {
-					vector<int> commonEdges;
-					GetCommonEdges(Output.Vertices[Parts[k]], Output.Vertices[Parts[i]], commonEdges);
-					for (auto x : commonEdges)
-						DeleteEdge(Output, x);
-				}
-			}
-		}
-
-		checked += PartsSizes[i];
-	} */
 
 	//CleanAllIncidenceList(Output); // Чистим СИ от остатков оригинального графа
 
