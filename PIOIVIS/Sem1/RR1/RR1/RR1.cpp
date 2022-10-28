@@ -58,12 +58,9 @@ vertex GetVertexFromString(string& str) {
 			Output.IncidenceList.push_back(stoi(temp));
 		}
 		catch (...) {
-#ifdef DEBUG
 			cout << "Ingnored invalid edge number input!\n";
-#endif
 		}
 	}
-
 	return Output;
 }
 
@@ -77,24 +74,16 @@ graph GetGraphFromFile(string filename) {
 
 	graph Output;
 	string temp;
-	while (getline(input, temp)) {
-		Output.Vertices.push_back(GetVertexFromString(temp));
-	}
-
+	while (getline(input, temp)) 	Output.Vertices.push_back(GetVertexFromString(temp));
 	input.close();
 
 	cout << "Opened file " << filename << "\n";
-#ifdef DEBUG2
-	cout << "Incidence list for graph from file:\n";
-	Output.DisplayAllIncidenceList();
-#endif
-
 	return Output;
 }
 
 // Запись графа в файл
 void WriteGraphToFile(graph& inpG, string filename) { 
-	if (inpG.Vertices.empty()) {
+	if (inpG.empty()) {
 		cout << "Tried to write empty graph, aborting\n";
 		return;
 	}
@@ -135,32 +124,28 @@ void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) {
 				if (count(inpG.Vertices[inpV].IncidenceList.begin(), inpG.Vertices[inpV].IncidenceList.end(), inpG.Vertices[i].IncidenceList[m])) {
 					NeighboorArray.push_back(i);
 				}
-				/*for (int n = 0; n < inpG.Vertices[inpV].IncidenceList.size(); n++) { // ЛЕГАСИ
-					if (inpG.Vertices[i].IncidenceList[m] == inpG.Vertices[inpV].IncidenceList[n] && i != inpV) {
-						NeighboorArray.push_back(i);
-					}
-				}*/
 			}
 	}
+}
+
+// Проверка, являются ли данные вершины смежными
+bool Neighboors(graph& inpG, int inpV1, int inpV2) {
+	vector<int> NeighboorCheck;
+	GetNeighboorVertices(inpG, inpV1, NeighboorCheck);
+	return count(NeighboorCheck.begin(), NeighboorCheck.end(), inpV2); // Проходим по массиву соседей вершины 1 и ищем там вершину 2
 }
 
 // Проверка на возможность исключения вершины без нарушения гомеоморфизма исходному графу
 bool CanBeExcluded(graph& inpG, int inpV) { 
 	vector<int> check;
 	GetNeighboorVertices(inpG, inpV, check);
-
-	if (check.size() != 2) return false;
-	for (int i = 0; i < inpG.Vertices[check[0]].IncidenceList.size(); i++) {
-		for (int k = 0; k < inpG.Vertices[check[1]].IncidenceList.size(); k++) {
-			if (inpG.Vertices[check[0]].IncidenceList[i] == inpG.Vertices[check[1]].IncidenceList[k]) return false;
-		}
-	}
+	if (check.size() != 2 || Neighboors(inpG, check[0], check[1])) return false; // Если степень вершины не 2, то исключить нельзя
+																				// Если две смежные вершины данной - смежны, тоже исключить нельзя (цикл)
 	return true;
 }
 
 // Получение номеров общих вершин данных графов (нумерация по первому графу)
 void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) {
-	cout << "\n";
 	for (int i = 0; i < inpG1.Vertices.size(); i++) {
 		for (int k = 0; k < inpG2.Vertices.size(); k++) {
 			if (inpG1.Vertices[i].name == inpG2.Vertices[k].name) {
@@ -202,8 +187,6 @@ void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& commonEdgesArray) {
 			GetCommonEdges(inpG1.Vertices[commonVertices[i]], inpG2.Vertices[commonVertices[k]], commonEdgesArray);
 		}
 	}
-	
-
 #ifdef DEBUG
 	if (!commonEdgesArray.size()) {
 		cout << "No common edges found.\n";
@@ -247,26 +230,18 @@ bool ExcludeVertex(graph& inpG, int inpV) {
 #ifdef DEBUG2
 		cout << "Excluding vertex " << inpG.Vertices[inpV].name << ".\tDone.\n";
 #endif
-		
 		inpG.Vertices.erase(inpG.Vertices.begin()+inpV);
 		return 1;
 	}
-	else {
-#ifdef DEBUG2
-		cout << "Excluding vertex " << inpG.Vertices[inpV].name << ".\tImpossible.\n";
-#endif
-		return 0;
-	}
+	else return 0;
 }
 
 // Исключение всех возможных вершин из данного графа
 void ExcludeAllVertices(graph& inpG) { 
 	bool isReady;
-	int excluded = 0;
-	do
-	{
+	do {
 		for (int i = 0; i < inpG.Vertices.size(); ) {
-			if (!ExcludeVertex(inpG, i)) i++; else excluded++; // Удаление всех возможных вершин
+			if (!ExcludeVertex(inpG, i)) i++; // Удаление всех возможных вершин
 		}
 
 		isReady = true;
@@ -274,9 +249,6 @@ void ExcludeAllVertices(graph& inpG) {
 			CanBeExcluded(inpG, i) ? isReady = false: NULL;
 		}
 	} while (!isReady); 
-#ifdef DEBUG
-	cout << "Excluded all odd vertices. (" << excluded << " vertices)\n\n";
-#endif // DEBUG
 }
 
 // Получение степени вершины
@@ -284,23 +256,16 @@ int GetVertexDegree(vertex& inpV) {
 	return inpV.IncidenceList.size();
 }
 
-// Проверка, являются ли данные вершины смежными
-bool Neighboors(graph& inpG, int inpV1, int inpV2) { 
-	vector<int> NeighboorCheck;
-	GetNeighboorVertices(inpG, inpV1, NeighboorCheck);
-	return count(NeighboorCheck.begin(), NeighboorCheck.end(), inpV2); // Проходим по массиву соседей вершины 1 и ищем там вершину 2
-}
-
 // Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
 void DeleteVertex(graph& inpG, int inpV) { 
-	vector<int> neighboors;
+	vector<int> neighboors, commonEdges;
 	GetNeighboorVertices(inpG, inpV, neighboors);
 	for (int i = 0; i < neighboors.size(); i++) {
-		vector<int> commonEdges;
 		GetCommonEdges(inpG.Vertices[neighboors[i]], inpG.Vertices[inpV], commonEdges);
 		for (int k = 0; k < commonEdges.size(); k++) { // Для каждой смежной вершины удаляем из её СИ номер ребра, инцидентного удаляемой вершине
 			inpG.Vertices[neighboors[i]].IncidenceList.erase(inpG.Vertices[neighboors[i]].IncidenceList.begin()+GetEdgeNumber(inpG.Vertices[neighboors[i]],commonEdges[k]));
 		}
+		commonEdges.clear();
 	}
 #ifdef DEBUG
 	cout << "Deleted vertex " << inpG.Vertices[inpV].name << "\n";
