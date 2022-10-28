@@ -522,9 +522,9 @@ bool Planar(graph& inpG) {
 }
 
 // Удаление ребёр для превращения графа в планарный.
-void MakePlanar(graph& inpG) {
+void MakePlanar(graph& input) {
 	cout << "Trying to make graph planar\n";
-
+	graph inpG = input; // Создаём граф внутри функции, из которого будем исключать вершины и делать иные вещи для поиска ответа. Оригинальный же затронем только удалением рёбер.
 	ExcludeAllVertices(inpG);
 	graph Subgraph_K5 = GetSubgraph_K5(inpG);
 	graph Subgraph_K33 = GetSubgraph_K33(inpG);
@@ -537,7 +537,7 @@ void MakePlanar(graph& inpG) {
 #ifdef DEBUG
 	cout << "Trying find common edges for two non-planar subgraphs\n";
 #endif
-	vector<int> potentialAnswer; // Массив потенциально подходящих нам рёбер. В первую очередь проверяются те, что общие для двух непланарных подграфов (при наличии таковых)	
+	vector<int> potentialAnswer; // Массив рёбер, которые будем пробовать удалить. В первую очередь - общие для двух непланарных подграфов рёбра.
 	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer);
 	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) {
 		for (int k=0; k < Subgraph_K5.Vertices[i].IncidenceList.size(); k++) {
@@ -589,6 +589,7 @@ void MakePlanar(graph& inpG) {
 					cout << "Added edge " << potentialAnswer[i] << " to the answer\n\n";
 #endif
 					needtodelete.push_back(potentialAnswer[i]);
+					DeleteEdge(input, potentialAnswer[i]);
 					break;
 				}
 				else {
@@ -614,6 +615,7 @@ void MakePlanar(graph& inpG) {
 					cout << "Added edge " << potentialAnswer[i] << " to the answer\n\n";
 #endif
 					needtodelete.push_back(potentialAnswer[i]);
+					DeleteEdge(input, potentialAnswer[i]);
 					break;
 				}
 				isReadyK33 = false;
@@ -635,6 +637,7 @@ void MakePlanar(graph& inpG) {
 #endif
 
 			needtodelete.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
+			DeleteEdge(input, potentialAnswer[0]);
 			potentialAnswer.erase(potentialAnswer.begin());
 			CleanVector(needtodelete);
 			iteration++;
@@ -659,6 +662,7 @@ int main() {
 		filename[10] = _getch();
 		inp = GetGraphFromFile(filename);
 		MakePlanar(inp);
+		WriteGraphToFile(inp, "test_output.txt");
 
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
