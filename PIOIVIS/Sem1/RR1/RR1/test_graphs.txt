@@ -44,7 +44,7 @@ four 2 6 9 12 13
 five 3 5 8 13 14
 six 4 7 9 14 15
 
-ПОЛНЫЙ ГРАФ К6 С МУСОРОМ (test_input2.txt)
+ПОЛНЫЙ ГРАФ К6 С МУСОРОМ (test_input2.txt) (1,2)
 
 one 1 2 3 10 15
 two 4 5 6 10 11
@@ -64,7 +64,7 @@ four 1 4 7
 five 2 5 8
 six 3 6 9
 
-К3,3 с лишней вершиной в доле (test_input3.txt)
+К3,3 с лишней вершиной в доле (test_input3.txt) (1,4)
 
 one 1 2 3
 two 4 5 6
@@ -117,12 +117,12 @@ twelve 13 14 17
 
 ТЕСТ 5 (test_input5.txt)
 
-one 1 2 3 4 5 6
+one 1 2 3 4 5 6 7
 two 4 8 9 10 11 12 13
-three 3 14 15 16 17 18
-four 3 9 15 19 20
+three 3 10 14 15 16 17 18
+four 2 9 15 19 20
 five 1 8 14 20
 six 7 13 18 21
 seven 6 12 17 22
-eight 6 11 16 23
-nine 21 22 23 19
+eight 5 11 16 23
+nine 19 21 22 23
