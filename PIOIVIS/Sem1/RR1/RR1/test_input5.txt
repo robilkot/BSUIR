@@ -1,7 +1,9 @@
-one 1 2 3 13
-two 4 5 6 13 14
-three 7 8 9 14
-four 1 4 7 10
-five 2 5 8 11
-six 3 6 9 12
-seven 10 11 12
+one 1 2 3 4 5 6 7
+two 4 8 9 10 11 12 13
+three 3 14 15 16 17 18
+four 2 9 15 19 20
+five 1 8 14 20
+six 7 13 18 21
+seven 6 12 17 22
+eight 5 11 16 23
+nine 21 22 23 19
