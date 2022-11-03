@@ -6,9 +6,9 @@
 #include <conio.h>
 #include <algorithm>
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUG_K5
-//#define DEBUG_K33
+#define DEBUG_K33
 //#define DEBUG2
 //#define DeleteOddVertsInSubgraphs
 
@@ -399,120 +399,70 @@ graph GetSubgraph_K33(graph& inpG) {
 #endif
 		return {};
 	}
-	
+	graph candidates1;
+	for (int i = 0; i < CandidatesLevel1.size(); i++) candidates1.Vertices.push_back(inpG.Vertices[CandidatesLevel1[i]]);
+
+
 	graph Output;
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
 	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
 	vector<int> Parts; // Список вершин, образующих доли графа
 	int CommonVertsOfIandK;
+	
 	for (int i = 0; i < CandidatesLevel1.size(); i++) {
-		CommonVertsOfIandK = 0;
-#ifdef DeleteOddVertsInSubgraphs
-		if (PartsSizes.size() == 2) break; // Если уже есть две доли то новые не формируем
-#endif // DeleteOddVertsInSubgraphs
+		if (count(Parts.begin(), Parts.end(), CandidatesLevel1[i])) continue; // Пропуск если вершина уже есть в доле
 
-		if (count(Parts.begin(), Parts.end(), i)) continue; // Пропуск формирования доли с вершиной если она уже есть в какой-то доле
-
-		vector<int> CurrentPart; // Доля, которую пытаемся сформировать на данной итерации
-
-		vector<int> NeighboorsI;
-		GetNeighboorVertices(inpG, CandidatesLevel1[i], NeighboorsI);
-
+		
+		vector<int> CurrentPart; // Список вершин в доле, которую формируем
+		CurrentPart.push_back(i); // Добавляем в текущую долю И вершину
+		vector<int> NeighBoorsI;
+		GetNeighboorVertices(inpG, i, NeighBoorsI);
 		for (int k = 0; k < CandidatesLevel1.size(); k++) {
+			if (i == k) continue; // Пропуск если смотрим одинаковые вершины
+			if (count(Parts.begin(), Parts.end(), CandidatesLevel1[k])) continue;
 			CommonVertsOfIandK = 0;
-
+			cout << "Looking at vertices " << inpG.Vertices[CandidatesLevel1[i]].name << " and " << inpG.Vertices[CandidatesLevel1[k]].name << "\n";
 			vector<int> NeighboorsK;
-			GetNeighboorVertices(inpG, CandidatesLevel1[k], NeighboorsK);
-
-			for (int m = 0; m < NeighboorsK.size(); m++) { // Считаем вершины, содержащиеся в обоих списках. Нам нужно хотя бы 3 совпадения.
-				if (count(NeighboorsI.begin(), NeighboorsI.end(), NeighboorsK[m])) {
-					//cout << "Found common vertex " << inpG.Vertices[NeighboorsK[m]].name << "\n";
+			GetNeighboorVertices(inpG, k, NeighboorsK);
+			for (int m = 0; m < NeighboorsK.size(); m++) { // Если в списке соседей И нашелся сосед К то увеличиваем счтчик
+				if (count(NeighBoorsI.begin(), NeighBoorsI.end(), NeighboorsK[m])) { // ТУДУ ЧТОБЫ ОБА СОСЕДА БЫЛИ В КАНДИДАТАХ А НЕ ТОЛЬКО В ИНПУТЕ
+					//cout << "found common vertex\n";
 					CommonVertsOfIandK++;
 				}
 			}
-#ifdef DEBUG2
-			cout << "For vertices " << inpG.Vertices[CandidatesLevel1[i]].name << " and " << inpG.Vertices[CandidatesLevel1[k]].name << " found " << CommonVertsOfIandK << "\n";
-#endif
-			if (CommonVertsOfIandK>2) {
-				CurrentPart.push_back(CandidatesLevel1[k]);
-			}
-#ifdef DEBUG2
-			cout << "Currentpart size " << CurrentPart.size() << "\n";
-#endif
+			cout << "found " << CommonVertsOfIandK << " common vertices\n";
+			if (CommonVertsOfIandK > 2) CurrentPart.push_back(k);
 		}
-		if (CurrentPart.size() > 2) { // Для наших целей подходят только доли из 3+ вершин
+
+		if (CurrentPart.size() < 3) {
+			cout << "Failed forming part of size " << CurrentPart.size() << "\n";
+		}
+		else {
+			for (int k = 0; k < CurrentPart.size(); k++) Parts.push_back(CurrentPart[k]); // Записываем полученную долю в общий список
 			PartsSizes.push_back(CurrentPart.size());
-
-#ifdef DEBUG_K33
-			cout << "Part of size " << CurrentPart.size() << " formed of vertices:\n";
-#endif
-			for (int k = 0; k < CurrentPart.size(); k++) {
-#ifdef DEBUG_K33
-				cout << inpG.Vertices[CurrentPart[k]].name << "\n";
-#endif
-				Parts.push_back(CurrentPart[k]);
-				Output.Vertices.push_back(inpG.Vertices[CurrentPart[k]]); // Добавляем в аутпут вершины текущей доли
-			}
-
-			for (int k = 0; k < CurrentPart.size(); k++) { // Удаляем общие рёбра соседних вершин одной доли
-				for (int l = 0; l < CurrentPart.size(); l++) {
-					if (l != k && Neighboors(inpG, CurrentPart[k], CurrentPart[l])) {
-						vector<int> commonEdges;
-						GetCommonEdges(inpG.Vertices[CurrentPart[k]], inpG.Vertices[CurrentPart[l]], commonEdges);
-						for (int m = 0; m < commonEdges.size(); m++) DeleteEdge(Output, commonEdges[m]);
-					}
-				}
-			}
-#ifdef DEBUG_K33
-			cout << "\n";
-#endif
+			cout << "Wrote part of size " << CurrentPart.size() << "\n";
 		}
-#ifdef DEBUG_K33
-		else cout << "Failed forming part of size " << CurrentPart.size() << "\n";
-#endif
 	}
-#ifdef DEBUG_K33
-	cout << "\n";
-#endif
-
-#ifdef DeleteOddVertsInSubgraphs // Включать для случая когда нужен подграф где только доли по три вершины
-	for (int i = 0; i < PartsSizes.size(); i++) { // Удаление лишних вершин из доль (т.к. может быть > 3)
-#ifdef DEBUG
-		cout << "Deleting odd vertices from part " << i+1 << ":\n";
-		int deletedCount = 0;
-#endif
-		while (PartsSizes[i] > 3) {
-			cout << "Deleted vertex " << inpG.Vertices[Parts[3 * i]].name << "\n";
-			Parts.erase(Parts.begin() + 3 * i);
-			PartsSizes[i]--;
-#ifdef DEBUG
-			deletedCount++;
-#endif
-		}
-#ifdef DEBUG
-		cout << "Deleted " << deletedCount << " vertices\n\n";
-#endif
-	}
-#endif 
 
 	if (PartsSizes.size() < 2) {
-#ifdef DEBUG
 		cout << "No K3,3-isomorphic subgraph found.\n\n";
-#endif
 		return {}; // Если меньше двух доль ничего не возвращаем
+	} else {
+		for(int i = 0; i < Parts.size();i++) Output.Vertices.push_back(candidates1.Vertices[Parts[i]]);
 	}
 
 	//CleanAllIncidenceList(Output); // Чистим СИ от остатков оригинального графа
 
 #ifdef DEBUG
-	if (Output.Vertices.size()) {
-		cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
-	} else cout << "No K3,3-isomorphic subgraph found.\n\n";
+	if (Output.Vertices.empty()) {
+		cout << "No K3,3-isomorphic subgraph found.\n\n";
+	} else 	cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
 #endif
 #ifdef DEBUG_K33
 	Output.DisplayAllIncidenceList();
 #endif
+	//system("pause");
 	return Output;
 }
 
