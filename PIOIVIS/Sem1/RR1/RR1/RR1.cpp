@@ -27,6 +27,9 @@ struct vertex
 		for (int i = 0; i < IncidenceList.size(); i++) cout << IncidenceList[i] << " ";
 		cout << "\n";
 	}
+	int degree() {
+		return IncidenceList.size();
+	}
 };
 
 // Структура графа: Список вершин, Функция вывода СИ всех своих вершин
@@ -120,11 +123,11 @@ void CleanVector(vector<int>& inp) {
 void GetNeighboorVertices(graph& inpG, int inpV, vector<int>& NeighboorArray) { 
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (i == inpV) continue;
-			for (int m = 0; m < inpG.Vertices[i].IncidenceList.size(); m++) {
-				if (count(inpG.Vertices[inpV].IncidenceList.begin(), inpG.Vertices[inpV].IncidenceList.end(), inpG.Vertices[i].IncidenceList[m])) {
-					NeighboorArray.push_back(i);
-				}
+		for (int k = 0; k < inpG.Vertices[i].IncidenceList.size(); k++) {
+			if (count(inpG.Vertices[inpV].IncidenceList.begin(), inpG.Vertices[inpV].IncidenceList.end(), inpG.Vertices[i].IncidenceList[k])) {
+				NeighboorArray.push_back(i);
 			}
+		}
 	}
 }
 
@@ -251,11 +254,6 @@ void ExcludeAllVertices(graph& inpG) {
 	} while (!isReady); 
 }
 
-// Получение степени вершины
-int GetVertexDegree(vertex& inpV) { 
-	return inpV.IncidenceList.size();
-}
-
 // Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
 void DeleteVertex(graph& inpG, int inpV) { 
 	vector<int> neighboors, commonEdges;
@@ -323,7 +321,7 @@ graph GetSubgraph_K5(graph& inpG) {
 
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
-		if (GetVertexDegree(inpG.Vertices[i]) > 3) {
+		if (inpG.Vertices[i].degree() > 3) {
 			CandidatesLevel1.push_back(i);
 #ifdef DEBUG_K5
 			cout << "Vertex " << inpG.Vertices[i].name << "\t-> 1 level candidates.\n";
@@ -377,17 +375,14 @@ graph GetSubgraph_K5(graph& inpG) {
 }
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
-graph GetSubgraph_K33(graph& inpG) {
+graph GetSubgraph_K33(graph& inpG) { // Говно
 #ifdef DEBUG
 	cout << "Trying to find K3,3-isomorphic subgraph.\n";
 #endif
 	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >2)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
-		if (GetVertexDegree(inpG.Vertices[i]) > 2) {
+		if (inpG.Vertices[i].degree() > 2) {
 			CandidatesLevel1.push_back(i);
-#ifdef DEBUG_K33
-			cout << "Vertex " << inpG.Vertices[i].name << "\t-> 1 level candidates.\n";
-#endif
 		}
 	}
 #ifdef DEBUG_K33
@@ -399,65 +394,19 @@ graph GetSubgraph_K33(graph& inpG) {
 #endif
 		return {};
 	}
-	graph candidates1;
-	for (int i = 0; i < CandidatesLevel1.size(); i++) candidates1.Vertices.push_back(inpG.Vertices[CandidatesLevel1[i]]);
-
-
 	graph Output;
+
+
 	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
 	//
-	vector<int> PartsSizes; // Список где указаны размеры доль (разметка списка ниже)
-	vector<int> Parts; // Список вершин, образующих доли графа
-	int CommonVertsOfIandK;
-	
-	for (int i = 0; i < CandidatesLevel1.size(); i++) {
-		if (count(Parts.begin(), Parts.end(), CandidatesLevel1[i])) continue; // Пропуск если вершина уже есть в доле
 
-		
-		vector<int> CurrentPart; // Список вершин в доле, которую формируем
-		CurrentPart.push_back(i); // Добавляем в текущую долю И вершину
-		vector<int> NeighBoorsI;
-		GetNeighboorVertices(inpG, i, NeighBoorsI);
-		for (int k = 0; k < CandidatesLevel1.size(); k++) {
-			if (i == k) continue; // Пропуск если смотрим одинаковые вершины
-			if (count(Parts.begin(), Parts.end(), CandidatesLevel1[k])) continue;
-			CommonVertsOfIandK = 0;
-			cout << "Looking at vertices " << inpG.Vertices[CandidatesLevel1[i]].name << " and " << inpG.Vertices[CandidatesLevel1[k]].name << "\n";
-			vector<int> NeighboorsK;
-			GetNeighboorVertices(inpG, k, NeighboorsK);
-			for (int m = 0; m < NeighboorsK.size(); m++) { // Если в списке соседей И нашелся сосед К то увеличиваем счтчик
-				if (count(NeighBoorsI.begin(), NeighBoorsI.end(), NeighboorsK[m])) { // ТУДУ ЧТОБЫ ОБА СОСЕДА БЫЛИ В КАНДИДАТАХ А НЕ ТОЛЬКО В ИНПУТЕ
-					//cout << "found common vertex\n";
-					CommonVertsOfIandK++;
-				}
-			}
-			cout << "found " << CommonVertsOfIandK << " common vertices\n";
-			if (CommonVertsOfIandK > 2) CurrentPart.push_back(k);
-		}
-
-		if (CurrentPart.size() < 3) {
-			cout << "Failed forming part of size " << CurrentPart.size() << "\n";
-		}
-		else {
-			for (int k = 0; k < CurrentPart.size(); k++) Parts.push_back(CurrentPart[k]); // Записываем полученную долю в общий список
-			PartsSizes.push_back(CurrentPart.size());
-			cout << "Wrote part of size " << CurrentPart.size() << "\n";
-		}
-	}
-
-	if (PartsSizes.size() < 2) {
-		cout << "No K3,3-isomorphic subgraph found.\n\n";
-		return {}; // Если меньше двух доль ничего не возвращаем
-	} else {
-		for(int i = 0; i < Parts.size();i++) Output.Vertices.push_back(candidates1.Vertices[Parts[i]]);
-	}
-
+	//
 	//CleanAllIncidenceList(Output); // Чистим СИ от остатков оригинального графа
 
 #ifdef DEBUG
-	if (Output.Vertices.empty()) {
+	if (Output.empty()) {
 		cout << "No K3,3-isomorphic subgraph found.\n\n";
-	} else 	cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
+	} else cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
 #endif
 #ifdef DEBUG_K33
 	Output.DisplayAllIncidenceList();
@@ -487,9 +436,9 @@ void MakePlanar(graph& input) {
 #ifdef DEBUG
 	cout << "Trying find common edges for two non-planar subgraphs\n";
 #endif
-	vector<int> potentialAnswer; // Массив рёбер, которые будем пробовать удалить. В первую очередь - общие для двух непланарных подграфов рёбра.
-	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer);
-	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) {
+	vector<int> potentialAnswer; // Массив рёбер, которые будем пробовать удалить. 
+	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer); // В первую очередь - общие для двух непланарных подграфов рёбра.
+	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) { // Далее просто добавляем туда все рёбра непланарных подграфов
 		for (int k=0; k < Subgraph_K5.Vertices[i].IncidenceList.size(); k++) {
 			potentialAnswer.push_back(Subgraph_K5.Vertices[i].IncidenceList[k]);
 		}
@@ -503,9 +452,7 @@ void MakePlanar(graph& input) {
 
 #ifdef DEBUG
 	cout << "Potential edges list: ";
-	for (int i = 0; i < potentialAnswer.size(); i++) {
-		cout << potentialAnswer[i] << " ";
-	}
+	for (int i = 0; i < potentialAnswer.size(); i++) cout << potentialAnswer[i] << " ";
 	cout << "\n\n";
 #endif
 		int iteration = 0;
@@ -586,14 +533,14 @@ void MakePlanar(graph& input) {
 			cout << "Added " << potentialAnswer[0] << " to the answer\n";
 #endif
 
-			needtodelete.push_back(potentialAnswer[0]); // Перенос в массив недостаточных ребра
+			needtodelete.push_back(potentialAnswer[0]);
 			DeleteEdge(input, potentialAnswer[0]);
 			potentialAnswer.erase(potentialAnswer.begin());
 			CleanVector(needtodelete);
 			iteration++;
 		} while (iteration<=maxiteration); // Принудительно завершаем проверку если проверили все рёбра и не помогло
 
-		CleanVector(needtodelete);
+		//CleanVector(needtodelete);
 		cout << "Minimal list of edges to be deleted: ";
 		for (int i = 0; i < needtodelete.size(); i++) {
 			cout << needtodelete[i] << " ";
