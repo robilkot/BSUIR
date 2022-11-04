@@ -10,7 +10,6 @@
 //#define DEBUG_K5
 #define DEBUG_K33
 //#define DEBUG2
-//#define DeleteOddVertsInSubgraphs
 
 using namespace std;
 
@@ -348,9 +347,9 @@ graph GetSubgraph_K5(graph& inpG) {
 		}
 		if (NeighboorCandidatesLevel1 > 3) {
 #ifdef DEBUG_K5
-			cout << "Vertex " << inpG.Vertices[CandidatesLevel1[i]].name << "\t-> 2 level candidates.\n";
+			cout << "Vertex " << inpG.Vertices[CandidatesLevel1[i]].name << "\t-> Output.\n";
 #endif
-			Output.Vertices.push_back(inpG.Vertices[CandidatesLevel1[i]]); // ---TODO По готовности функции от вектора кандидатов можно избавиться и писать сразу в аутпут и с ним работать
+			Output.Vertices.push_back(inpG.Vertices[CandidatesLevel1[i]]);
 		}
 	}
 #ifdef DEBUG_K5
@@ -362,10 +361,6 @@ graph GetSubgraph_K5(graph& inpG) {
 #endif
 		return {};
 	}
-
-#ifdef DeleteOddVertsInSubgraphs
-	while (Output.Vertices.size() > 5) DeleteVertex(Output, 0); // Удаление лишних вершин (т.к. граф может быть больше чем К5)
-#endif // DeleteOddVertsInSubgraphs
 
 	CleanAllIncidenceList(Output);
 #ifdef DEBUG
