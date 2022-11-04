@@ -42,6 +42,16 @@ struct graph
 	bool empty() {
 		return !Vertices.size();
 	}
+	int edgesCount() {
+		vector<int> edges;
+		for (int i = 0; i < Vertices.size(); i++) {
+			for (int k = 0; k < Vertices[i].IncidenceList.size(); k++) {
+				edges.push_back(Vertices[i].IncidenceList[k]);
+			}
+		}
+		CleanVector(edges);
+		return edges.size();
+	}
 };
 
 // ФУНКЦИИ
@@ -412,7 +422,8 @@ graph GetSubgraph_K33(graph& inpG) { // Говно
 
 // Проверка является ли граф планарным
 bool Planar(graph& inpG) {
-	if (GetSubgraph_K5(inpG).empty() && GetSubgraph_K33(inpG).empty()) return 1; else return 0;
+	if (3 * inpG.Vertices.size() - inpG.edgesCount() < 6) return false; // Следствие формулы Эйлера (3В-Р>=6 для планарных связных графов)
+	if (GetSubgraph_K5(inpG).empty() && GetSubgraph_K33(inpG).empty()) return true; else return false;
 }
 
 // Удаление ребёр для превращения графа в планарный.
