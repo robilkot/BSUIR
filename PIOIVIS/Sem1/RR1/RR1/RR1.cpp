@@ -13,6 +13,8 @@
 
 using namespace std;
 
+void CleanVector(vector<int>& inp);
+
 // СТРУКТУРЫ
 
 // Структура вершины: Имя, Список инцидентности (СИ), Функция вывода своего СИ
@@ -263,7 +265,7 @@ void ExcludeAllVertices(graph& inpG) {
 	} while (!isReady); 
 }
 
-// Удаление вершины и инцидентных ей ребер из графа (НЕ ИСКЛЮЧЕНИЕ ВЕРШИНЫ!)
+// Удаление вершины и инцидентных ей ребер из графа
 void DeleteVertex(graph& inpG, int inpV) { 
 	vector<int> neighboors, commonEdges;
 	GetNeighboorVertices(inpG, inpV, neighboors);
@@ -380,43 +382,36 @@ graph GetSubgraph_K5(graph& inpG) {
 }
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
-graph GetSubgraph_K33(graph& inpG) { // Говно
-#ifdef DEBUG
-	cout << "Trying to find K3,3-isomorphic subgraph.\n";
-#endif
-	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >2)
+graph GetSubgraph_K33(graph& inpG) {
+
+	graph CandidateGraph1; // Подграф из вершин-кандидатов 1 уровня
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
-		if (inpG.Vertices[i].degree() > 2) {
-			CandidatesLevel1.push_back(i);
+		if (inpG.Vertices[i].degree() > 2) CandidateGraph1.Vertices.push_back(inpG.Vertices[i]);
+	}
+	CleanAllIncidenceList(CandidateGraph1);
+
+	for (int i = 0; i < CandidateGraph1.Vertices.size(); i++) { // После очистки СИ в графе кандидатов-1 вновь проверяем степени вершин, удаляем не подходящие
+		if (inpG.Vertices[i].degree() < 3) {
+			DeleteVertex(CandidateGraph1,i);
+			i--; // Откатываем счетчик т.к. удаляем вершину
 		}
 	}
-#ifdef DEBUG_K33
-	cout << "\n";
-#endif
-	if (CandidatesLevel1.size() < 6) { // Возвращаем пустой подграф если кандидатов 1 уровня < 6
-#ifdef DEBUG
-		cout << "No K3,3-isomorphic subgraph found.\n\n";
-#endif
-		return {};
-	}
+	CleanAllIncidenceList(CandidateGraph1);
+
+	if (CandidateGraph1.Vertices.size() < 6) return {}; // Возвращаем пустой подграф если кандидатов-1 < 6
+
 	graph Output;
 
+	//Собираем граф из 6 вершин-кандидатов-1
+	//Если получился несвязный - выходим для оптимизации
+	//Генерируем МИ данного графа
+	//Проверяем совпадение МИ графа-образца и сгенерированной МИ при всех возможных перестановках строк
+	//Также можно проверять есть ли в принципе строка из сген. МИ в МИ графа-образца, если нет - выход
 
-	// ПОИСК ДОЛЬ ГРАФА СРЕДИ КАНДИДАТОВ 1 УРОВНЯ
-	//
 
-	//
-	//CleanAllIncidenceList(Output); // Чистим СИ от остатков оригинального графа
-
-#ifdef DEBUG
 	if (Output.empty()) {
 		cout << "No K3,3-isomorphic subgraph found.\n\n";
 	} else cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
-#endif
-#ifdef DEBUG_K33
-	Output.DisplayAllIncidenceList();
-#endif
-	//system("pause");
 	return Output;
 }
 
@@ -564,8 +559,8 @@ int main() {
 
 		filename[10] = _getch();
 		inp = GetGraphFromFile(filename);
-		MakePlanar(inp);
-		WriteGraphToFile(inp, "test_output.txt");
+		graph k33=GetSubgraph_K33(inp);
+		WriteGraphToFile(k33, "test_output.txt");
 
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
