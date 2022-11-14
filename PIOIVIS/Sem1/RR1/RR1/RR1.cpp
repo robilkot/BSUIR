@@ -296,7 +296,7 @@ void DeleteEdge(graph& inpG, int inpE) {
 	}
 }
 
-// Очистка СИ вершин от ребёр, не ведущих ни в одну вершину ---TODO review
+// Очистка СИ вершин от ребёр, не ведущих ни в одну вершину
 void CleanIncidenceList(graph& inpG, int inpV) {
 	vector<int> neighboors;
 	GetNeighboorVertices(inpG, inpV, neighboors);
@@ -313,8 +313,7 @@ void CleanIncidenceList(graph& inpG, int inpV) {
 			}
 		}
 	}
-	inpG.Vertices[inpV].IncidenceList.clear();
-	for (int i = 0; i < nonOddEdges.size(); i++) inpG.Vertices[inpV].IncidenceList.push_back(nonOddEdges[i]);
+	inpG.Vertices[inpV].IncidenceList=nonOddEdges;
 }
 
 void CleanAllIncidenceList(graph& inpG) {
@@ -322,6 +321,32 @@ void CleanAllIncidenceList(graph& inpG) {
 #ifdef DEBUG2
 	cout << "Cleaned incidence lists for " << inpG.Vertices.size() << " vertices.\n\n";
 #endif
+}
+
+// Создание матрицы смежности данного графа
+void CreateAdjacanceMatrix(graph& inpG, vector<vector<int>>& matrix) {
+	matrix.clear();
+	for (int i = 0; i < inpG.Vertices.size(); i++) { // Заполнение МС нулями
+		matrix.push_back({});
+		for (int k = 0; k < inpG.Vertices.size(); k++)	matrix[i].push_back(0);
+	}
+
+	for (int i = 0; i < inpG.Vertices.size(); i++) { // Заполнение единиц в МС
+		vector<int> neighboors;
+		GetNeighboorVertices(inpG, i, neighboors);
+		for (int k = 0; k < neighboors.size(); k++) {
+			matrix[i][neighboors[k]] = 1;
+		}
+	}
+
+	for (int i = 0; i < inpG.Vertices.size(); i++) cout << inpG.Vertices[i].name << "\t"; // Вывод на экран матрицы
+	cout << "\n";
+	for (int i = 0; i < matrix.size(); i++) {
+		for (int j = 0; j < matrix[i].size(); j++) {
+			cout << matrix[i][j] << "\t";
+		}
+		cout << inpG.Vertices[i].name << "\n";
+	}
 }
 
 // Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых)
@@ -383,8 +408,7 @@ graph GetSubgraph_K5(graph& inpG) {
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
 graph GetSubgraph_K33(graph& inpG) {
-
-	graph CandidateGraph1; // Подграф из вершин-кандидатов 1 уровня
+	graph CandidateGraph1; // Подграф из кандидатов 1 уровня
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (inpG.Vertices[i].degree() > 2) CandidateGraph1.Vertices.push_back(inpG.Vertices[i]);
 	}
@@ -392,21 +416,50 @@ graph GetSubgraph_K33(graph& inpG) {
 
 	for (int i = 0; i < CandidateGraph1.Vertices.size(); i++) { // После очистки СИ в графе кандидатов-1 вновь проверяем степени вершин, удаляем не подходящие
 		if (inpG.Vertices[i].degree() < 3) {
-			DeleteVertex(CandidateGraph1,i);
+			DeleteVertex(CandidateGraph1, i);
 			i--; // Откатываем счетчик т.к. удаляем вершину
 		}
 	}
-	CleanAllIncidenceList(CandidateGraph1);
-
 	if (CandidateGraph1.Vertices.size() < 6) return {}; // Возвращаем пустой подграф если кандидатов-1 < 6
 
 	graph Output;
 
-	//Собираем граф из 6 вершин-кандидатов-1
-	//Если получился несвязный - выходим для оптимизации
-	//Генерируем МИ данного графа
+	unsigned int iteration = 1;
+	do {
+		cout << "\nNow on iteration " << iteration << "\n";
+		graph IsomorphismTest;
+		vector<vector<int>> IsomorphismTestMatrix;
+		for (int i=0; i < 6; i++) IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[i]); // Собираем проверяемый граф
+		CleanAllIncidenceList(IsomorphismTest);
+		IsomorphismTest.DisplayAllIncidenceList();
+		bool NonK33 = false;
+		for (int i = 0; i < IsomorphismTest.Vertices.size(); i++) {
+			if (IsomorphismTest.Vertices[i].degree() < 3) {
+				NonK33 = true;
+				cout << "Exit from cycle on " << IsomorphismTest.Vertices[i].name <<  "\n";
+				break;
+			}
+		}
+		if (NonK33) {
+			rotate(CandidateGraph1.Vertices.begin(), CandidateGraph1.Vertices.begin() + 1, CandidateGraph1.Vertices.end()); // Перемещаем вершины в массиве чтобы на следующей итерации получить новый проверяемый граф
+			iteration++;
+			continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем надо
+		}
+
+		CreateAdjacanceMatrix(IsomorphismTest, IsomorphismTestMatrix);
+
+
+
+		rotate(CandidateGraph1.Vertices.begin(), CandidateGraph1.Vertices.begin() + 1, CandidateGraph1.Vertices.end()); // Перемещаем вершины в массиве чтобы на следующей итерации получить новый проверяемый граф
+		iteration++;
+	} while (iteration<CandidateGraph1.Vertices.size()-5+2); // Выход когда проверили все перестановки
+
+
+	//---Собираем граф из 6 вершин-кандидатов-1
+	//---Дополнительные условия для оптимизации
+	//---Генерируем МИ данного графа
 	//Проверяем совпадение МИ графа-образца и сгенерированной МИ при всех возможных перестановках строк
-	//Также можно проверять есть ли в принципе строка из сген. МИ в МИ графа-образца, если нет - выход
+	//Слепить в аутпут все найденные изоморфизмы
 
 
 	if (Output.empty()) {
@@ -559,6 +612,7 @@ int main() {
 
 		filename[10] = _getch();
 		inp = GetGraphFromFile(filename);
+		
 		graph k33=GetSubgraph_K33(inp);
 		WriteGraphToFile(k33, "test_output.txt");
 
