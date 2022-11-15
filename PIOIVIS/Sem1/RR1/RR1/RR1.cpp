@@ -227,7 +227,7 @@ int GetEdgeNumber(vertex& inpV, int edgeName) {
 	return 0;
 }
 
-// Исключение [не нарушающее гомеоморфизм исходному графу] вершины из данного графа. [Опционально] ---TODO: сделать выбор какое именно ребро сохранять при исключении
+// Исключение вершины из данного графа. [Опционально] ---TODO: сделать выбор какое именно ребро сохранять при исключении
 bool ExcludeVertex(graph& inpG, int inpV) { 
 	if (CanBeExcluded(inpG, inpV)) {
 		vector<int> neighboors;
@@ -250,7 +250,6 @@ bool ExcludeVertex(graph& inpG, int inpV) {
 	else return 0;
 }
 
-// Исключение всех возможных вершин из данного графа
 void ExcludeAllVertices(graph& inpG) { 
 	bool isReady;
 	do {
@@ -323,33 +322,19 @@ void CleanAllIncidenceList(graph& inpG) {
 #endif
 }
 
-// Создание матрицы смежности данного графа
-void CreateAdjacanceMatrix(graph& inpG, vector<vector<int>>& matrix) {
-	matrix.clear();
-	for (int i = 0; i < inpG.Vertices.size(); i++) { // Заполнение МС нулями
-		matrix.push_back({});
-		for (int k = 0; k < inpG.Vertices.size(); k++)	matrix[i].push_back(0);
-	}
-
-	for (int i = 0; i < inpG.Vertices.size(); i++) { // Заполнение единиц в МС
-		vector<int> neighboors;
-		GetNeighboorVertices(inpG, i, neighboors);
-		for (int k = 0; k < neighboors.size(); k++) {
-			matrix[i][neighboors[k]] = 1;
+// Функция нахождения следующего сочетания
+bool NextCombination(vector<int>& a, int n) {
+	for (int i = n - 1; i >= 0; --i) {
+		if (a[i] < a.size() - n + i + 1) {
+			a[i]++;
+			for (int j = i + 1; j < n; ++j)	a[j] = a[j - 1] + 1;
+			return true;
 		}
 	}
-
-	for (int i = 0; i < inpG.Vertices.size(); i++) cout << inpG.Vertices[i].name << "\t"; // Вывод на экран матрицы
-	cout << "\n";
-	for (int i = 0; i < matrix.size(); i++) {
-		for (int j = 0; j < matrix[i].size(); j++) {
-			cout << matrix[i][j] << "\t";
-		}
-		cout << inpG.Vertices[i].name << "\n";
-	}
+	return false;
 }
 
-// Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых)
+// Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых) ---TODO REVIEW
 graph GetSubgraph_K5(graph& inpG) { 
 #ifdef DEBUG
 	cout << "Trying to find K5-isomorphic subgraph.\n";
@@ -359,14 +344,8 @@ graph GetSubgraph_K5(graph& inpG) {
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (inpG.Vertices[i].degree() > 3) {
 			CandidatesLevel1.push_back(i);
-#ifdef DEBUG_K5
-			cout << "Vertex " << inpG.Vertices[i].name << "\t-> 1 level candidates.\n";
-#endif
 		}
 	}
-#ifdef DEBUG_K5
-	cout << "\n";
-#endif
 	if (CandidatesLevel1.size() < 5) { // Возвращаем пустой подграф если кандидатов 1 уровня < 5
 #ifdef DEBUG
 		cout << "No K5-isomorphic subgraph found.\n\n";
@@ -422,46 +401,52 @@ graph GetSubgraph_K33(graph& inpG) {
 	}
 	if (CandidateGraph1.Vertices.size() < 6) return {}; // Возвращаем пустой подграф если кандидатов-1 < 6
 
-	graph Output;
+	vector<int> VerticesNumbers; // Массив номеров вершин графа кандидатов-1, из которых мы будем формировать проверяемый граф
+	for (int i = 0; i < CandidateGraph1.Vertices.size(); i++) VerticesNumbers.push_back(i+1);
 
-	unsigned int iteration = 1;
-	do {
-		cout << "\nNow on iteration " << iteration << "\n";
+	vector<vector<int>> IsomorphismTestList = { {} };  // Формируем список списков вершин, из которых будут состоять проверяемые графы
+	for (int k = 0; k < 6; k++) IsomorphismTestList[0].push_back(VerticesNumbers[k]); // Помимо прочих сочетаний, добавляем также изначальные 6 вершин
+	for (int i = 0; NextCombination(VerticesNumbers, 6); i++) { 
+		IsomorphismTestList.push_back({});
+		for (int k = 0; k < 6; k++) {
+			IsomorphismTestList[i+1].push_back(VerticesNumbers[k]);
+		}
+	}
+
+	vector<int> OutputVerts;
+
+	for (int i = 0; i < IsomorphismTestList.size(); i++) {
+		//cout << "\nNow on iteration " << i+1 << "\n";
+		//for (int k = 0; k < 6; k++) { cout << IsomorphismTestList[i][k] << " ";
+		//cout << "\n";
+
 		graph IsomorphismTest;
-		vector<vector<int>> IsomorphismTestMatrix;
-		for (int i=0; i < 6; i++) IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[i]); // Собираем проверяемый граф
+		for (int k = 0; k < 6; k++) { // Собираем проверяемый граф из собранных ранее вершин
+			IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[IsomorphismTestList[i][k]-1]);
+		} 
 		CleanAllIncidenceList(IsomorphismTest);
-		IsomorphismTest.DisplayAllIncidenceList();
+		//IsomorphismTest.DisplayAllIncidenceList();
 		bool NonK33 = false;
-		for (int i = 0; i < IsomorphismTest.Vertices.size(); i++) {
-			if (IsomorphismTest.Vertices[i].degree() < 3) {
+		for (int k = 0; k < IsomorphismTest.Vertices.size(); k++) {
+			if (IsomorphismTest.Vertices[k].degree() < 3) {
 				NonK33 = true;
-				cout << "Exit from cycle on " << IsomorphismTest.Vertices[i].name <<  "\n";
+				//cout << "Exit from cycle on " << IsomorphismTest.Vertices[k].name <<  "\n";
 				break;
 			}
 		}
-		if (NonK33) {
-			rotate(CandidateGraph1.Vertices.begin(), CandidateGraph1.Vertices.begin() + 1, CandidateGraph1.Vertices.end()); // Перемещаем вершины в массиве чтобы на следующей итерации получить новый проверяемый граф
-			iteration++;
-			continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем надо
+		if (NonK33) continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем надо
+
+		for (int k = 0; k < 6; k++) { // Добавляем в список вершин-ответов найденные
+			OutputVerts.push_back(IsomorphismTestList[i][k] - 1);
 		}
-
-		CreateAdjacanceMatrix(IsomorphismTest, IsomorphismTestMatrix);
-
-
-
-		rotate(CandidateGraph1.Vertices.begin(), CandidateGraph1.Vertices.begin() + 1, CandidateGraph1.Vertices.end()); // Перемещаем вершины в массиве чтобы на следующей итерации получить новый проверяемый граф
-		iteration++;
-	} while (iteration<CandidateGraph1.Vertices.size()-5+2); // Выход когда проверили все перестановки
-
-
-	//---Собираем граф из 6 вершин-кандидатов-1
-	//---Дополнительные условия для оптимизации
-	//---Генерируем МИ данного графа
-	//Проверяем совпадение МИ графа-образца и сгенерированной МИ при всех возможных перестановках строк
-	//Слепить в аутпут все найденные изоморфизмы
-
-
+	}
+	CleanVector(OutputVerts);
+	graph Output;
+	for (int k = 0; k < OutputVerts.size(); k++) { // Добавляем в ответ все вершины
+		Output.Vertices.push_back(CandidateGraph1.Vertices[OutputVerts[k]]);
+	}
+	//Output.DisplayAllIncidenceList();
+	CleanAllIncidenceList(Output);
 	if (Output.empty()) {
 		cout << "No K3,3-isomorphic subgraph found.\n\n";
 	} else cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
@@ -474,7 +459,7 @@ bool Planar(graph& inpG) {
 	if (GetSubgraph_K5(inpG).empty() && GetSubgraph_K33(inpG).empty()) return true; else return false;
 }
 
-// Удаление ребёр для превращения графа в планарный.
+// Удаление ребёр для превращения графа в планарный. ---TODO REVIEW
 void MakePlanar(graph& input) {
 	cout << "Trying to make graph planar\n";
 	graph inpG = input; // Создаём граф внутри функции, из которого будем исключать вершины и делать иные вещи для поиска ответа. Оригинальный же затронем только удалением рёбер.
@@ -487,9 +472,6 @@ void MakePlanar(graph& input) {
 		return;
 	}
 
-#ifdef DEBUG
-	cout << "Trying find common edges for two non-planar subgraphs\n";
-#endif
 	vector<int> potentialAnswer; // Массив рёбер, которые будем пробовать удалить. 
 	GetCommonEdges(Subgraph_K5, Subgraph_K33, potentialAnswer); // В первую очередь - общие для двух непланарных подграфов рёбра.
 	for (int i=0; i < Subgraph_K5.Vertices.size(); i++) { // Далее просто добавляем туда все рёбра непланарных подграфов
@@ -509,11 +491,9 @@ void MakePlanar(graph& input) {
 	for (int i = 0; i < potentialAnswer.size(); i++) cout << potentialAnswer[i] << " ";
 	cout << "\n\n";
 #endif
-		int iteration = 0;
-		int maxiteration = potentialAnswer.size();
+		int iteration = 0, maxiteration = potentialAnswer.size();
 		vector<int> needtodelete; // Массив рёбер, удаление которых необходимо для планарности
-		graph t_Subgraph_K5; 
-		graph t_Subgraph_K33; // Временные графы, используемые для проверки планарности после удаления рёбер в циклах
+		graph t_Subgraph_K5, t_Subgraph_K33; // Временные графы, используемые для проверки планарности после удаления рёбер в циклах
 
 		do {
 #ifdef DEBUG
@@ -536,8 +516,7 @@ void MakePlanar(graph& input) {
 				if (GetSubgraph_K5(t_Subgraph_K5).empty()) {
 					isReadyK5 = true;
 #ifdef DEBUG
-					cout << "Made K5 planar\n";
-					cout << "Added edge " << potentialAnswer[i] << " to the answer\n\n";
+					cout << "Made K5 planar\nAdded edge " << potentialAnswer[i] << " to the answer\n\n";
 #endif
 					needtodelete.push_back(potentialAnswer[i]);
 					DeleteEdge(input, potentialAnswer[i]);
@@ -562,8 +541,7 @@ void MakePlanar(graph& input) {
 				if (GetSubgraph_K33(t_Subgraph_K33).empty()) {
 					isReadyK33 = true;
 #ifdef DEBUG
-					cout << "Made K33 planar\n";
-					cout << "Added edge " << potentialAnswer[i] << " to the answer\n\n";
+					cout << "Made K33 planar\nAdded edge " << potentialAnswer[i] << " to the answer\n\n";
 #endif
 					needtodelete.push_back(potentialAnswer[i]);
 					DeleteEdge(input, potentialAnswer[i]);
@@ -594,7 +572,7 @@ void MakePlanar(graph& input) {
 			iteration++;
 		} while (iteration<=maxiteration); // Принудительно завершаем проверку если проверили все рёбра и не помогло
 
-		//CleanVector(needtodelete);
+		CleanVector(needtodelete);
 		cout << "Minimal list of edges to be deleted: ";
 		for (int i = 0; i < needtodelete.size(); i++) {
 			cout << needtodelete[i] << " ";
@@ -613,8 +591,8 @@ int main() {
 		filename[10] = _getch();
 		inp = GetGraphFromFile(filename);
 		
-		graph k33=GetSubgraph_K33(inp);
-		WriteGraphToFile(k33, "test_output.txt");
+		MakePlanar(inp);
+		WriteGraphToFile(inp, "test_output.txt");
 
 		cout << "\n--- Press q to exit ---\n\n";
 	} while (_getch() != 'q');
