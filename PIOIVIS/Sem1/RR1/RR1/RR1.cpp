@@ -334,43 +334,34 @@ bool NextCombination(vector<int>& a, int n) {
 	return false;
 }
 
-// Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых) ---TODO REVIEW
+// Поиск подграфа, изоморфного К5 (Вернее максимального подграфа, где содержатся несколько таковых)
 graph GetSubgraph_K5(graph& inpG) { 
 #ifdef DEBUG
 	cout << "Trying to find K5-isomorphic subgraph.\n";
 #endif
 
-	vector<int> CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
+	graph CandidatesLevel1; // 1 уровень кандидатов (по степени вершины >3)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (inpG.Vertices[i].degree() > 3) {
-			CandidatesLevel1.push_back(i);
+			CandidatesLevel1.Vertices.push_back(inpG.Vertices[i]);
 		}
 	}
-	if (CandidatesLevel1.size() < 5) { // Возвращаем пустой подграф если кандидатов 1 уровня < 5
+	if (CandidatesLevel1.Vertices.size() < 5) { // Возвращаем пустой подграф если кандидатов 1 уровня < 5
 #ifdef DEBUG
 		cout << "No K5-isomorphic subgraph found.\n\n";
 #endif
 		return {};
 	}
+	CleanAllIncidenceList(CandidatesLevel1);
 
 	graph Output; // 2 уровень кандидатов (по смежности с 4 вершинами-кандидитами 1 уровня), сразу пишутся в аутпут
 
-	for (int i = 0; i < CandidatesLevel1.size(); i++) {
-		int NeighboorCandidatesLevel1 = 0;
-
-		for (int k = 0; k < CandidatesLevel1.size(); k++) {
-			if(Neighboors(inpG, i, k) && i!=k) NeighboorCandidatesLevel1++;
-		}
-		if (NeighboorCandidatesLevel1 > 3) {
-#ifdef DEBUG_K5
-			cout << "Vertex " << inpG.Vertices[CandidatesLevel1[i]].name << "\t-> Output.\n";
-#endif
-			Output.Vertices.push_back(inpG.Vertices[CandidatesLevel1[i]]);
+	for (int i = 0; i < CandidatesLevel1.Vertices.size(); i++) {
+		if (CandidatesLevel1.Vertices[i].degree() > 3) {
+			Output.Vertices.push_back(CandidatesLevel1.Vertices[i]);
 		}
 	}
-#ifdef DEBUG_K5
-	cout << "\n";
-#endif
+
 	if (Output.Vertices.size() < 5) { // Возвращаем пустой подграф если кандидатов 2 уровня < 5
 #ifdef DEBUG
 		cout << "No K5-isomorphic subgraph found.\n\n";
@@ -385,7 +376,7 @@ graph GetSubgraph_K5(graph& inpG) {
 	return Output;
 }
 
-// Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
+// Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых) ---TODO нужен дополнительный критерий т.к. граф не полный
 graph GetSubgraph_K33(graph& inpG) {
 	graph CandidateGraph1; // Подграф из кандидатов 1 уровня
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
@@ -416,37 +407,93 @@ graph GetSubgraph_K33(graph& inpG) {
 	vector<int> OutputVerts;
 
 	for (int i = 0; i < IsomorphismTestList.size(); i++) {
-		//cout << "\nNow on iteration " << i+1 << "\n";
-		//for (int k = 0; k < 6; k++) { cout << IsomorphismTestList[i][k] << " ";
-		//cout << "\n";
+		cout << "\nCHECKING GRAPH \n";
 
 		graph IsomorphismTest;
 		for (int k = 0; k < 6; k++) { // Собираем проверяемый граф из собранных ранее вершин
-			IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[IsomorphismTestList[i][k]-1]);
-		} 
+			IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[IsomorphismTestList[i][k] - 1]);
+		}
 		CleanAllIncidenceList(IsomorphismTest);
-		//IsomorphismTest.DisplayAllIncidenceList();
 		bool NonK33 = false;
 		for (int k = 0; k < IsomorphismTest.Vertices.size(); k++) {
 			if (IsomorphismTest.Vertices[k].degree() < 3) {
 				NonK33 = true;
-				//cout << "Exit from cycle on " << IsomorphismTest.Vertices[k].name <<  "\n";
 				break;
 			}
 		}
 		if (NonK33) continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем надо
 
+		vector<int> PartsVerticesNumbers = { 1,2,3,4,5,6 }; // Массив номеров вершин проверяемого графа, из которых мы будем формировать доли. Нумерация на один больше т.к. функция сочетаний требует
+		vector<vector<int>> PartsTestList; // Массив всех комбинаций вершин которые могут быть долей
+		PartsTestList.push_back(PartsVerticesNumbers);
+		for (int k = 0; NextCombination(PartsVerticesNumbers, 3); k++) {
+			PartsTestList.push_back({});
+			for (int m = 0; m < 3; m++) {
+				PartsTestList[k + 1].push_back(PartsVerticesNumbers[m]);
+			}
+		}
+		
+		vector<int> part1, part2;
+		for (int k = 0; k < PartsTestList.size(); k++) { // Формирование доль которые будем проверять
+			part1.clear();
+			part2.clear();
+			for (int m = 0; m < PartsTestList[k].size(); m++) {
+				part1.push_back(PartsTestList[k][m]-1);
+			}
+			for (int m = 0; m < 6; m++) {
+				if(!count(part1.begin(), part1.end(), m)) part2.push_back(m);
+			}
+
+			int NeighboorsCounter1, NeighboorsCounter2;
+			for (int m = 0; m < part1.size(); m++) {
+				NeighboorsCounter1 = 0;
+				vector<int> neighboors;
+				GetNeighboorVertices(IsomorphismTest, part1[m], neighboors); // Выясняем сколько у каждой вершины первой доли соседей во второй
+				for (int n = 0; n < neighboors.size(); n++) {
+					if (count(part2.begin(), part2.end(), neighboors[n])) NeighboorsCounter1++;
+				}
+				if (NeighboorsCounter1 != 3) break;
+			}
+			if (NeighboorsCounter1 != 3) continue; // Если найденных соседей не 3 смотрим следующее деление на доли
+			for (int m = 0; m < part2.size(); m++) {
+				NeighboorsCounter2 = 0;
+				vector<int> neighboors;
+				GetNeighboorVertices(IsomorphismTest, part2[m], neighboors); // Выясняем сколько у каждой вершины первой доли соседей во второй
+				for (int n = 0; n < neighboors.size(); n++) {
+					if (count(part1.begin(), part1.end(), neighboors[n])) NeighboorsCounter2++;
+				}
+				if (NeighboorsCounter2 != 3) break;
+			}
+
+			if (NeighboorsCounter1==3 && NeighboorsCounter2 == 3) { // Если подходит, деление на доли найдено.
+				break;
+			}
+		}
+
+		cout << "\n";
+		for (int k = 0; k < part1.size(); k++) cout << IsomorphismTest.Vertices[part1[k]].name << " ";
+		cout << "\n";
+		for (int k = 0; k < part2.size(); k++) cout << IsomorphismTest.Vertices[part2[k]].name << " ";
+		cout << "\n";
+
+		CleanAllIncidenceList(IsomorphismTest);
+		
+		IsomorphismTest.DisplayAllIncidenceList();
+
 		for (int k = 0; k < 6; k++) { // Добавляем в список вершин-ответов найденные
 			OutputVerts.push_back(IsomorphismTestList[i][k] - 1);
 		}
+		//break; // Возвращаем один изоморфизм и на этом всё
 	}
+
 	CleanVector(OutputVerts);
 	graph Output;
 	for (int k = 0; k < OutputVerts.size(); k++) { // Добавляем в ответ все вершины
 		Output.Vertices.push_back(CandidateGraph1.Vertices[OutputVerts[k]]);
 	}
-	//Output.DisplayAllIncidenceList();
 	CleanAllIncidenceList(Output);
+	cout << "\nOUTPUT IS\n";
+	Output.DisplayAllIncidenceList();
 	if (Output.empty()) {
 		cout << "No K3,3-isomorphic subgraph found.\n\n";
 	} else cout << "Succesfully returned K3,3-isomorphic subgraph.\n\n";
@@ -591,7 +638,9 @@ int main() {
 		filename[10] = _getch();
 		inp = GetGraphFromFile(filename);
 		
-		MakePlanar(inp);
+		//MakePlanar(inp);
+
+		graph k33=GetSubgraph_K33(inp);
 		WriteGraphToFile(inp, "test_output.txt");
 
 		cout << "\n--- Press q to exit ---\n\n";
