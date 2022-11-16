@@ -1,14 +1,11 @@
 ﻿#include <iostream>
 #include <vector>
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <conio.h>
-#include <algorithm>
 
 #define DEBUG
 //#define DEBUG_K5
-#define DEBUG_K33
 //#define DEBUG2
 
 using namespace std;
@@ -169,24 +166,21 @@ void GetCommonVertices(graph& inpG1, graph& inpG2, vector<int>& commonVertices) 
 				commonVertices.push_back(i);
 #ifdef DEBUG
 				cout << "Found common vertex " << inpG1.Vertices[i].name << "\n";
-#endif // DEBUG
+#endif
 				//}
 			}
 		}
 	}
 #ifdef DEBUG
-	if (!commonVertices.size()) cout << "No common vertices found.\n";
-	else cout << "Found " << commonVertices.size() << " common vertices\n\n";
-#endif // DEBUG
+	cout << "Found " << commonVertices.size() << " common vertices\n\n";
+#endif
 }
 
 // Получение имён рёбер, инцидентных данным вершинам
 void GetCommonEdges(vertex& inpV1, vertex inpV2, vector<int>& commonEdgesArray) {
 	for (int i = 0; i < inpV1.IncidenceList.size(); i++) {
 		for (int k = 0; k < inpV2.IncidenceList.size(); k++) {
-			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) {
-				commonEdgesArray.push_back(inpV1.IncidenceList[i]);
-			}
+			if (inpV1.IncidenceList[i] == inpV2.IncidenceList[k]) commonEdgesArray.push_back(inpV1.IncidenceList[i]);
 		}
 	}
 }
@@ -201,19 +195,11 @@ void GetCommonEdges(graph& inpG1, graph& inpG2, vector<int>& commonEdgesArray) {
 			GetCommonEdges(inpG1.Vertices[commonVertices[i]], inpG2.Vertices[commonVertices[k]], commonEdgesArray);
 		}
 	}
-#ifdef DEBUG
-	if (!commonEdgesArray.size()) {
-		cout << "No common edges found.\n";
-		return;
-	}
-#endif // DEBUG
 	CleanVector(commonEdgesArray); // Чистка от дубликатов
 #ifdef DEBUG
-	for (int i = 0; i < commonEdgesArray.size(); i++) {
-		cout << "Found common edge " << commonEdgesArray[i] << "\n";
-	}
+	for (int i = 0; i < commonEdgesArray.size(); i++) cout << "Found common edge " << commonEdgesArray[i] << "\n";
 	cout << "Found " << commonEdgesArray.size() << " common edges\n\n";
-#endif // DEBUG
+#endif
 }
 
 // Получение номера [из СИ данной вершины] ребра по его имени.
@@ -223,7 +209,7 @@ int GetEdgeNumber(vertex& inpV, int edgeName) {
 	}
 #ifdef DEBUG
 	cout << "No match for edge " << edgeName << " and vertex " << inpV.name << "\n";
-#endif // DEBUG
+#endif
 	return 0;
 }
 
@@ -254,7 +240,7 @@ void ExcludeAllVertices(graph& inpG) {
 	bool isReady;
 	do {
 		for (int i = 0; i < inpG.Vertices.size(); ) {
-			if (!ExcludeVertex(inpG, i)) i++; // Удаление всех возможных вершин
+			if (!ExcludeVertex(inpG, i)) i++; // Исключение всех возможных вершин
 		}
 
 		isReady = true;
@@ -286,7 +272,7 @@ void DeleteEdge(graph& inpG, int inpE) {
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		for (int k = 0; k < inpG.Vertices[i].IncidenceList.size(); k++) {
 			if (inpG.Vertices[i].IncidenceList[k] == inpE) {
-				inpG.Vertices[i].IncidenceList.erase(inpG.Vertices[i].IncidenceList.begin() + k);
+				inpG.Vertices[i].IncidenceList.erase(inpG.Vertices[i].IncidenceList.begin() + k); // Удаляем ребро из СИ всех вершин графа
 #ifdef DEBUG2
 				cout << "deleted edge number " << k + 1 << " from vertex " << inpG.Vertices[i].name << "\n";
 #endif 
@@ -308,15 +294,15 @@ void CleanIncidenceList(graph& inpG, int inpV) {
 	for (int i = 0; i < inpG.Vertices[inpV].IncidenceList.size(); i++) {
 		for (int k = 0; k < neighboors.size(); k++) {
 			if (count(inpG.Vertices[neighboors[k]].IncidenceList.begin(), inpG.Vertices[neighboors[k]].IncidenceList.end(), inpG.Vertices[inpV].IncidenceList[i])) {
-				nonOddEdges.push_back(inpG.Vertices[inpV].IncidenceList[i]);
+				nonOddEdges.push_back(inpG.Vertices[inpV].IncidenceList[i]); // Ищем рёбра, общие для данной вершины и её соседей
 			}
 		}
 	}
-	inpG.Vertices[inpV].IncidenceList=nonOddEdges;
+	inpG.Vertices[inpV].IncidenceList=nonOddEdges; // Перезаписываем этот набор рёбер в ее СИ
 }
 
 void CleanAllIncidenceList(graph& inpG) {
-	for (int i = 0; i < inpG.Vertices.size(); i++)	CleanIncidenceList(inpG, i);
+	for (int i = 0; i < inpG.Vertices.size(); i++) CleanIncidenceList(inpG, i);
 #ifdef DEBUG2
 	cout << "Cleaned incidence lists for " << inpG.Vertices.size() << " vertices.\n\n";
 #endif
@@ -339,7 +325,6 @@ graph GetSubgraph_K5(graph& inpG) {
 #ifdef DEBUG
 	cout << "Trying to find K5-isomorphic subgraph.\n";
 #endif
-
 	graph CandidatesLevel1; // Формируем граф из вершин - кандидатов 1 уровня (по степени вершины >3)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (inpG.Vertices[i].degree() > 3) {
@@ -355,30 +340,29 @@ graph GetSubgraph_K5(graph& inpG) {
 	CleanAllIncidenceList(CandidatesLevel1); // Очищаем подграф от рёбер, ведущих в пустоту
 
 	graph Output; // 2 уровень кандидатов (по смежности с 4 и более вершинами-кандидитами 1 уровня), сразу пишутся в аутпут
-
 	for (int i = 0; i < CandidatesLevel1.Vertices.size(); i++) {
 		if (CandidatesLevel1.Vertices[i].degree() > 3) {
 			Output.Vertices.push_back(CandidatesLevel1.Vertices[i]);
 		}
-
-		if (Output.Vertices.size() < 5) { // Возвращаем пустой подграф если кандидатов 2 уровня < 5
-#ifdef DEBUG
-			cout << "No K5-isomorphic subgraph found.\n\n";
-#endif
-			return {};
-		}
-
-		CleanAllIncidenceList(Output); // Вновь очищаем СИ
-#ifdef DEBUG
-		cout << "Succesfully returned K5-isomorphic subgraph.\n\n";
-#endif
-		return Output;
 	}
+	if (Output.Vertices.size() < 5) { // Возвращаем пустой подграф если кандидатов 2 уровня < 5
+#ifdef DEBUG
+		cout << "No K5-isomorphic subgraph found. 2\n\n";
+#endif
+		return {};
+	}
+
+	CleanAllIncidenceList(Output); // Вновь очищаем СИ
+#ifdef DEBUG
+	cout << "Succesfully returned K5-isomorphic subgraph.\n\n";
+#endif
+	return Output;
 }
+
 
 // Поиск подграфа, изоморфного К3,3 (Вернее максимального подграфа, где содержатся несколько таковых)
 graph GetSubgraph_K33(graph& inpG) {
-	graph CandidateGraph1; // Подграф из кандидатов 1 уровня
+	graph CandidateGraph1; // Подграф из кандидатов 1 уровня (по степени вершины >2)
 	for (int i = 0; i < inpG.Vertices.size(); i++) {
 		if (inpG.Vertices[i].degree() > 2) CandidateGraph1.Vertices.push_back(inpG.Vertices[i]);
 	}
@@ -395,7 +379,7 @@ graph GetSubgraph_K33(graph& inpG) {
 	vector<int> VerticesNumbers; // Массив номеров вершин графа кандидатов-1, из которых мы будем формировать проверяемый граф
 	for (int i = 0; i < CandidateGraph1.Vertices.size(); i++) VerticesNumbers.push_back(i+1);
 
-	vector<vector<int>> IsomorphismTestList = { {} };  // Формируем список списков вершин, из которых будут состоять проверяемые графы
+	vector<vector<int>> IsomorphismTestList = { {} };  // Формируем список сочетаний номеров вершин по 6, из которых будут состоять проверяемые графы
 	for (int k = 0; k < 6; k++) IsomorphismTestList[0].push_back(VerticesNumbers[k]); // Помимо прочих сочетаний, добавляем также изначальные 6 вершин
 	for (int i = 0; NextCombination(VerticesNumbers, 6); i++) { 
 		IsomorphismTestList.push_back({});
@@ -406,7 +390,7 @@ graph GetSubgraph_K33(graph& inpG) {
 
 	graph IsomorphismTest;
 	for (int i = 0; i < IsomorphismTestList.size(); i++) {;
-		for (int k = 0; k < 6; k++) { // Собираем проверяемый граф из собранных ранее вершин
+		for (int k = 0; k < 6; k++) { // Собираем проверяемый граф из выбранных ранее вершин
 			IsomorphismTest.Vertices.push_back(CandidateGraph1.Vertices[IsomorphismTestList[i][k] - 1]);
 		}
 		CleanAllIncidenceList(IsomorphismTest);
@@ -417,10 +401,11 @@ graph GetSubgraph_K33(graph& inpG) {
 				break;
 			}
 		}
-		if (NonK33) continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем надо
+		if (NonK33) continue; // Идем на следующую проверку если в получившемся графе степени вершин меньше чем 3
 
-		vector<int> PartsVerticesNumbers = { 1,2,3,4,5,6 }; // Массив номеров вершин проверяемого графа, из которых мы будем формировать доли. Нумерация на один больше т.к. функция сочетаний требует
-		vector<vector<int>> PartsTestList; // Массив всех комбинаций вершин которые могут быть долей
+		vector<int> PartsVerticesNumbers = { 1,2,3,4,5,6 }; // Массив номеров вершин проверяемого графа, из которых мы будем формировать доли
+		//Нумерация не с нуля т.к. функция поиска сочетаний работает с натуральными последовательными числами. В индексах далее это учтено
+		vector<vector<int>> PartsTestList; // Формируем список всех сочетаний вершин которые могут быть долей
 		PartsTestList.push_back(PartsVerticesNumbers);
 		for (int k = 0; NextCombination(PartsVerticesNumbers, 3); k++) {
 			PartsTestList.push_back({});
@@ -429,11 +414,11 @@ graph GetSubgraph_K33(graph& inpG) {
 			}
 		}
 		
-		vector<int> part1, part2; // Проверка сформированных потенциальных доль
+		vector<int> part1, part2; // Проверка сформированных потенциальных доль на соответствие графу К3,3
 		for (int k = 0; k < PartsTestList.size(); k++) { 
 			part1.clear();
 			part2.clear();
-			for (int m = 0; m < PartsTestList[k].size(); m++) {
+			for (int m = 0; m < PartsTestList[k].size(); m++) { // Формируем долю согласно проверяемому списку
 				part1.push_back(PartsTestList[k][m]-1);
 			}
 			for (int m = 0; m < 6; m++) {
@@ -450,7 +435,7 @@ graph GetSubgraph_K33(graph& inpG) {
 				}
 				if (NeighboorsCounter1 != 3) break;
 			}
-			if (NeighboorsCounter1 != 3) continue; // Если найденных соседей не 3 смотрим следующее деление на доли
+			if (NeighboorsCounter1 != 3) continue; // Если найденных соседей не 3 смотрим следующее сочетание вершин
 			for (int m = 0; m < part2.size(); m++) {
 				NeighboorsCounter2 = 0;
 				vector<int> neighboors;
@@ -461,16 +446,10 @@ graph GetSubgraph_K33(graph& inpG) {
 				if (NeighboorsCounter2 != 3) break;
 			}
 
-			if (NeighboorsCounter1 == 3 && NeighboorsCounter2 == 3) {
-				break;
-			}
-			else {
-				part1.clear();
-				part2.clear();
-			} // Если по количеству соседей подходит, деление на доли найдено.
+			if (NeighboorsCounter1 == 3 && NeighboorsCounter2 == 3) break; // Если по количеству соседей всё подходит, деление на доли найдено, выходим из цикла.
 		}
 
-		if (part1.size() == 0 || part2.size() == 0) continue; // Смотрим следующий изоморфизм если этот оказался не дольным
+		if (part1.size() == 0 || part2.size() == 0) continue; // Смотрим следующий изоморфизм если в данном деление на доли не как в К3,3
 
 		for (int m = 0; m < 3; m++) { // Удаление рёбер между вершинами одной доли
 			for (int n = 0; n < 3; n++) {
@@ -484,7 +463,7 @@ graph GetSubgraph_K33(graph& inpG) {
 				}
 			}
 		}
-		break; // Возвращаем один изоморфизм и на этом всё
+		break; // Возвращаем изоморфизм и на этом всё
 	}
 	CleanAllIncidenceList(IsomorphismTest);
 	/*cout << "\nOUTPUT IS\n";
