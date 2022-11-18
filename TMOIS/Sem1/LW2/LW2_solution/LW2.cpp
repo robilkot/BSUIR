@@ -55,7 +55,7 @@ void difference(vector<float>& A, vector<float>& B, vector<float>& D) { // Фу�
 	bool notinB;
 	for (int i = 0; i < A.size(); i++) { // Проходим по элементам множества А
 		notinB = true;
-		for (int k = 0; k < B.size(); i++) { // Проходим по элементам множества В
+		for (int k = 0; k < B.size(); k++) { // Проходим по элементам множества В
 			if (A[i] == B[k]) notinB=false;
 		}
 		if (notinB) D.push_back(A[i]); // Если элемент мн-ва А не найден во мн-ве В, добавляем в D
@@ -100,6 +100,21 @@ void cartesianproduct(vector<float>& A, vector<float>& B) { // Функция н
 
 int main()
 {
+	cout << "\nChoose way of defining sets: \n1 - manually\n2 - by expression\nInput number: "; //Предложение пользователю выбрать операцию (объединение или пересечение)
+	switch (_getch()) {
+	case '1': {
+		cout << "Defining set manually\n";
+		break;
+	}
+	case '2': {
+		cout << "Defining sets by expressions\n";
+		break;
+	}
+	default: {
+		cout << "\nYou have input wrong number, try again\n"; //Просим повторить ввод
+		return 0;
+	}
+	}
 
 	// ---TODO выбор способа задания множества
 	int n1, n2;
