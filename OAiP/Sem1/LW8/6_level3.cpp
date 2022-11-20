@@ -1,21 +1,41 @@
-#include <iostream>
+﻿#include <iostream>
 #include <cmath>
 #include <conio.h>
-#include <regex>
 
 using namespace std;
 
-float input_num() {
-    regex reg_num("^[\\+-]?([0-9]+\\.?[0-9]*|\\.?[0-9]+)$");
-    string inp;
-    cin >> inp;
-    while (!regex_match(inp, reg_num)) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "\nNon-numeric, pls re-input:\n";
-        cin >> inp;
-    }
-    return stof(inp);
+float input_num() { // Проверка на числовой ввод
+	bool ping = true;
+	int done = 0;
+	float output = 0;
+	do {
+		char check[256];
+		cout << "Enter number (double or integer)\n";
+		cin.getline(check, 256);
+		bool point = false;
+		for (int i = 0; i < strlen(check); i++) {
+			if (isdigit(check[i])) done++;
+			else if (i != 0 && i != (strlen(check) - 1) && check[i] == '.' && point == false) {
+				done++;
+				point = true;
+			}
+			else if (i == 0 && check[i] == '-' && i != (strlen(check) - 1)) {
+				done++;
+			}
+			else {
+				cout << "Error\n";
+				ping = false;
+				break;
+			}
+			if (done == strlen(check)) {
+				ping = true;
+				break;
+			}
+		}
+		output = atof(check);
+		done = 0;
+	} while (ping == false);
+	return output;
 }
 
 double f(double x) {
