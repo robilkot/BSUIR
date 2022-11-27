@@ -6,7 +6,7 @@ using namespace std;
 
 void showSet(string operation, vector<float>& result) //Функция вывода множества в консоль
 {
-	cout << "\nThe result of " << operation << " of sets A and B = ( ";
+	cout << "\nThe result of " << operation << " is ( ";
 	for (int i = 0; i < result.size(); i++) cout << result[i] << " "; //Поэлементный вывод множества D в консоль
 	cout << ")\n";
 }
@@ -70,10 +70,6 @@ void symdifference(vector<float>& A, vector<float>& B, vector<float>& D) { // Ф
 	unite(diffAB, diffBA, D); // Объединяем результаты
 }
 
-void filluniversum(vector<float>& U) { // Функция заполнения универсума натуральными числами от 1 до 100
-	for (int i = 1; i < 101; i++) U.push_back(i);
-}
-
 void complement(vector<float>& U, vector<float>& A, vector<float>& D) { // Функция нахождения дополнения множества
 	D.clear();
 	difference(U, A, D); // Находим разность универсума и данного множества
@@ -101,36 +97,60 @@ void cartesianproduct(vector<float>& A, vector<float>& B) { // Функция н
 int main()
 {
 	cout << "\nChoose way of defining sets: \n1 - manually\n2 - by expression\nInput number: "; //Предложение пользователю выбрать операцию (объединение или пересечение)
-	switch (_getch()) {
-	case '1': {
-		cout << "Defining set manually\n";
-		break;
-	}
-	case '2': {
-		cout << "Defining sets by expressions\n";
-		break;
-	}
-	default: {
-		cout << "\nYou have input wrong number, try again\n"; //Просим повторить ввод
-		return 0;
-	}
-	}
+	bool proceed = false, byexpression = false;
+	do {
+		switch (_getch()) {
+		case '1': {
+			cout << "\nFilling set manually\n";
+			proceed = true;
+			break;
+		}
+		case '2': {
+			cout << "\nFilling sets by expressions\n";
+			proceed = true;
+			byexpression = true;
+			break;
+		}
+		default: {
+			cout << "\nYou have input wrong number, try again\n"; // Просим повторить ввод если неправильное число
+			break;
+		}
+		}
+	} while (!proceed);
 
-	// ---TODO выбор способа задания множества
 	int n1, n2;
-	cout << "\nEnter cardinality of set A: ";
+	cout << "\nEnter cardinality of set A: \n";
 	cin >> n1; //Ввод пользователем мощности множества А
 	vector<float> A(n1);
-	createSet(A, 'A'); //Вызов функции создания множества А
+	if (!byexpression) createSet(A, 'A'); //Вызов функции создания множества А
 
-	cout << "\nEnter cardinality of set B: ";
+	cout << "\nEnter cardinality of set B: \n";
 	cin >> n2; //Ввод пользователем мощности множества B
 	vector<float> B(n2);
-	createSet(B, 'B'); //Вызов функции создания множества B
+	if (!byexpression) createSet(B, 'B'); //Вызов функции создания множества B
+	
+	if(byexpression) generateSets(A, B); //Вызов функции заполнения множеств высказываниями
 
-	vector<float> D,U;
+	showSet("view", A); // Вывод множеств на экран
+	showSet("view", B);
 
-	cout << "\nChoose operation on sets: \n1 - union\n2 - intersection\nInput number: "; //Предложение пользователю выбрать операцию (объединение или пересечение)
+	cout << "\nFilling the universal set\n";
+
+	vector<float> D,U; // Создаем универсум и далее заполняем
+	unite(A, B, U);
+	showSet("view", U);
+
+	cout << "\nChoose operation on sets: \n";
+	cout << "1 - union\n";
+	cout << "2 - intersection\n";
+	cout << "3 - A\\B\n";
+	cout << "4 - B\\A\n";
+	cout << "5 - symmetrical difference\n";
+	cout << "6 - AxB\n";
+	cout << "7 - BxA\n";
+	cout << "8 - Complement of A\n";
+	cout << "9 - Complement of B\n";
+	cout << "Input number : \n"; //Предложение пользователю выбрать операцию из списка
 	do {
 		switch (_getch()) {
 		case '1': { //Если пользователь выбрал объединение
@@ -151,18 +171,15 @@ int main()
 			system("pause");
 			return 0; //Завершаем работу программы
 		}
-		case '4': { //Если пользователь выбрал симметрическую разность
-			symdifference(A, B, D); //Выполняем симметрическую разность
-			showSet("symmetrical difference", D); //Выводим в консоль результат (множество D)
+		case '4': { //Если пользователь выбрал разность
+			difference(B, A, D); //Выполняем разность
+			showSet("difference", D); //Выводим в консоль результат (множество D)
 			system("pause");
 			return 0; //Завершаем работу программы
 		}
-		case '5': { //Если пользователь выбрал дополнение
-			filluniversum(U); // Задаём универсум
-			complement(U, A, D); //Находим дополнение
-			showSet("complement", D); //Выводим в консоль результат (множество D)
-			//complement(U, B, D); //Находим дополнение
-			//showSet("complement", D); //Выводим в консоль результат (множество D)
+		case '5': { //Если пользователь выбрал симметрическую разность
+			symdifference(A, B, D); //Выполняем симметрическую разность
+			showSet("symmetrical difference", D); //Выводим в консоль результат (множество D)
 			system("pause");
 			return 0; //Завершаем работу программы
 		}
@@ -171,6 +188,24 @@ int main()
 			system("pause");
 			return 0; //Завершаем работу программы
 		}
+		case '7': { //Если пользователь выбрал декартово произведение
+			cartesianproduct(B, A); //Находим декартово произведение и выводим в консоль результат (множество D)
+			system("pause");
+			return 0; //Завершаем работу программы
+		}
+		case '8': { //Если пользователь выбрал дополнение
+			complement(U, A, D); //Находим дополнение
+			showSet("complement", D); //Выводим в консоль результат (множество D)
+			system("pause");
+			return 0; //Завершаем работу программы
+		}
+		case '9': { //Если пользователь выбрал дополнение
+			complement(U, B, D); //Находим дополнение
+			showSet("complement", D); //Выводим в консоль результат (множество D)
+			system("pause");
+			return 0; //Завершаем работу программы
+		}
+		
 		default: { //Если пользователь ввел неверное число
 			cout << "\nYou have input wrong number, try again\n"; //Просим повторить ввод
 		}
