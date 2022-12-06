@@ -29,6 +29,8 @@
 Поблагодари, если это место оказалось для тебя полезным :wink:
 
 ---
-_А это одно из моих любимых мест недалеко от Минска. Красиво, правда?_
+_Зимой Минск выглядит ещё красивее, правда?_
 
-![](https://lh3.googleusercontent.com/drive-viewer/AJc5JmQVfzMrtZmuDBwVyj39c0cWN7LZePxW_kjgJrnyVmLZF4fgkP5OrY01tpITlrGvf1dyEq661EE=w1920-h1080)
+![DSC_8405](https://user-images.githubusercontent.com/82116328/206007698-e20ee016-29bd-4425-abf9-a3de748ca1fc.jpg)
+
+<!---![](https://lh3.googleusercontent.com/drive-viewer/AJc5JmQVfzMrtZmuDBwVyj39c0cWN7LZePxW_kjgJrnyVmLZF4fgkP5OrY01tpITlrGvf1dyEq661EE=w1920-h1080)-->
