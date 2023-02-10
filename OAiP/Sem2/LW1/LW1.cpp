@@ -7,7 +7,7 @@
 #include <iostream>
 #include <conio.h>
 
-unsigned long long  AckermannRecursive(unsigned long long m, unsigned long long n) {
+unsigned long long AckermannRecursive(unsigned long long m, unsigned long long n) {
 	if (m == 0)
 		return n + 1;
 	else
@@ -18,7 +18,7 @@ unsigned long long  AckermannRecursive(unsigned long long m, unsigned long long 
 int main()
 {
 	do {
-		unsigned long long  m = 2, n = 1;
+		unsigned long long  m = 1, n = 1;
 		std::cout << "Input non-negative m and n:\n";
 		std::cin >> m >> n;
 
