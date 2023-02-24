@@ -9,4 +9,5 @@
 !*.cpp
 !*.sln
 !*.vcxproj
+!*.gwf
 **/x64
