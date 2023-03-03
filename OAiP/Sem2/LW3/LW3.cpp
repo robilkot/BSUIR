@@ -7,7 +7,7 @@ struct Stack
     Stack* next = nullptr;
 };
 
-Stack* pushOntoStack(Stack* top, int in)
+Stack* pushToStack(Stack* top, int in)
 {
     Stack* t = new Stack;
     t->info = in;
@@ -23,6 +23,15 @@ void viewStack(Stack* top)
         std::cout << t->info << "\n";
         t = t->next;
     }
+}
+
+Stack* popFromStack(Stack* top)
+{
+    Stack* t = nullptr;
+    if (top != nullptr) t = top->next;
+    delete top;
+
+    return t;
 }
 
 void deleteAll(Stack* top)
@@ -61,21 +70,25 @@ int main()
     bool exit = 0;
 
     do {
-        std::cout << "Press q to exit, 1 to push element to stack, 2 to view stack, 3 to swap max and min in stack\n";
+        std::cout << "Press q to exit, 1 to push element to stack, 2 to pop element from stack, 3 to view stack, 4 to swap max and min in stack\n";
         switch (_getch()) {
         case 'q': exit = 1; break;
         case '1': {
             int pushed = 0;
             std::cout << "Input new value:\n";
             std::cin >> pushed;
-            top = pushOntoStack(top, pushed);
+            top = pushToStack(top, pushed);
             break;
         }
         case '2': {
-            viewStack(top);
+            top = popFromStack(top);
             break;
         }
         case '3': {
+            viewStack(top);
+            break;
+        }
+        case '4': {
             swapMaxAndMin(top);
             break;
         }
