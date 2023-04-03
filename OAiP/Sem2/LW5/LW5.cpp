@@ -53,7 +53,7 @@ std::string toIpn(std::string normalExpression)
 	{
 		if (isdigit(c)) ipnExpression += c;
 		else if (c == ')') {
-			while (top->info != '(') {
+			while (top != nullptr && top->info != '(') {
 				ipnExpression += top->info;
 				top = popFromStack(top);
 			}
@@ -102,8 +102,8 @@ int calculateIpn(std::string ipnExpression)
 		if (isdigit(c)) top = pushToStack(top, c - '0'); // Кидаем операнд в стек. - '0' т.к. чар
 		else {
 			int operand1, operand2;
-			operand1 = top->info;
-			operand2 = top->next->info;
+			operand2 = top->info;
+			operand1 = top->next->info;
 			top = popFromStack(top);
 			top = popFromStack(top);
 
@@ -116,7 +116,7 @@ int calculateIpn(std::string ipnExpression)
 			}
 		}
 	}
-	int answer = top->info;
+	int answer = top == nullptr ? 0 : top->info;
 
 	deleteAll(top);
 	return answer;
