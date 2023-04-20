@@ -36,7 +36,7 @@ Graphic createGraphic(char x) //Функция создания графика �
 	for (size_t i = 0; i < graphSize; i++) {
 		int first = 0, second = 0;
 		cin >> first >> second; //Ввод пользователем каждого элемента графика
-		result.emplace(pair<int,int>(first,second));
+		result.emplace(pair<int, int>(first, second));
 	}
 
 	return result;
@@ -101,7 +101,7 @@ template<typename T>
 void intersect(const T& A, const T& B, T& D) //Операция пересечения множеств
 {
 	D.clear(); // На входе в функцию имеем пустое множество D
-	
+
 	for (auto i = A.begin(); i != A.end(); i++) // Проходим по всем элементам множества А
 		for (auto k = B.begin(); k != B.end(); k++)// Для каждого выбранного элемента мн-ва A проходим всем по элементам множества B
 			if (*i == *k) D.emplace(*i); // и сравниваем выбранные элементы. Если совпали, добавляем выбранный элемент мн-ва A во мн-во D
@@ -148,7 +148,7 @@ void symdifference(const Match& A, const Match& B, Match& D)
 void cartesianproduct(const Set& A, const Set& B, Graphic& D) { // Функция нахождения декартова произведения множеств
 	for (const auto& element1 : A) {
 		for (const auto& element2 : B) {
-			D.emplace(pair<int,int>(element1, element2));
+			D.emplace(pair<int, int>(element1, element2));
 		}
 	}
 }
@@ -179,13 +179,13 @@ void inversion(const Match& A, Match& D) // Функция нахождения 
 
 template<typename T>
 void composition(const T& A, const T& B, T& D) // Функция нахождения симметрической разности множеств
-{ 
+{
 	D.clear();
 
 	for (const auto& a : A) {
 		for (const auto& b : B) {
 			if (a.second == b.first) // Если есть пары для "склейки" и новой пары нету в итоговом графике, добавляем ее туда
-				D.emplace(pair<int,int>( a.first, b.second ));
+				D.emplace(pair<int, int>(a.first, b.second));
 		}
 	}
 }
@@ -200,8 +200,8 @@ void composition(const Match& A, const Match& B, Match& D) // Функция н�
 
 void image(const Match& A, const Set& M, Set& D)
 {
-	for (auto& pair : get<2>(A)) {
-		for (auto& element : M) {
+	for (const auto& pair : get<2>(A)) {
+		for (const auto& element : M) {
 			if (pair.first == element)
 				D.emplace(pair.second);
 		}
@@ -210,8 +210,8 @@ void image(const Match& A, const Set& M, Set& D)
 
 void prototype(const Match& A, const Set& M, Set& D)
 {
-	for (auto& pair : get<2>(A)) {
-		for (auto& element : M) {
+	for (const auto& pair : get<2>(A)) {
+		for (const auto& element : M) {
 			if (pair.second == element)
 				D.emplace(pair.first);
 		}
@@ -220,12 +220,16 @@ void prototype(const Match& A, const Set& M, Set& D)
 
 void restriction(const Match& A, const Set& M, Match& D)
 {
+	D = A;
+	get<0>(D) = M;
 
+	erase_if(get<2>(D), [&](auto const& pair) { return !count(M.begin(), M.end(), pair.first); });
 }
 
 void continuation(const Match& A, Match& D)
 {
-
+	D = A;
+	cartesianproduct(get<0>(D), get<1>(D), get<2>(D));
 }
 
 int main() {
@@ -237,8 +241,6 @@ int main() {
 
 	Match Dmatch;
 	Set Dset; // Результирующие множество и соответствие (зависит от операции)
-
-	Set M, N, W; // todo: Написать задание множеств M и N пользователем
 
 	cout << "\nChoose operation on Graphics: \n"
 		<< "1 - union\n"
@@ -307,19 +309,27 @@ int main() {
 		}
 
 		case '9': { // Если пользователь выбрал образ
+			Set M = createSet('M');
+
 			image(A, M, Dset);
 			show(Dset, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
 		case '10': { // Если пользователь выбрал прообраз
-			prototype(A, N, Dset); 
+			Set N = createSet('N');
+
+			prototype(A, N, Dset);
 			show(Dset, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
 
 		case '11': { // Если пользователь выбрал сужение
+			Set W;
+			for (int i = 10; i < 25; i++) // Задание множества W
+				W.emplace(i);
+
 			restriction(A, W, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
