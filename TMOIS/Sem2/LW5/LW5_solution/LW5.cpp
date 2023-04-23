@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <string>
 #include <set>
 #include <tuple>
 #include <conio.h>
@@ -258,57 +259,60 @@ int main() {
 		<< "Input number : \n"; // Предложение пользователю выбрать операцию из списка
 
 	do {
-		switch (_getch()) {
-		case '1': { // Если пользователь выбрал объединение
+		int operation;
+		cin >> operation;
+		
+		switch (operation) {
+		case 1: { // Если пользователь выбрал объединение
 			unite(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '2': { // Если пользователь выбрал пересечение
+		case 2: { // Если пользователь выбрал пересечение
 			intersect(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '3': { // Если пользователь выбрал разность
+		case 3: { // Если пользователь выбрал разность
 			difference(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '4': { // Если пользователь выбрал разность
+		case 4: { // Если пользователь выбрал разность
 			difference(B, A, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '5': { // Если пользователь выбрал симметрическую разность
+		case 5: { // Если пользователь выбрал симметрическую разность
 			symdifference(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '6': { // Если пользователь выбрал дополнение
+		case 6: { // Если пользователь выбрал дополнение
 			complement(A, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '7': { // Если пользователь выбрал инверсию
+		case 7: { // Если пользователь выбрал инверсию
 			inversion(A, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '8': { // Если пользователь выбрал дополнение
+		case 8: { // Если пользователь выбрал дополнение
 			composition(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
 
-		case '9': { // Если пользователь выбрал образ
+		case 9: { // Если пользователь выбрал образ
 			Set M = createSet('M');
 
 			image(A, M, Dset);
@@ -316,7 +320,7 @@ int main() {
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '10': { // Если пользователь выбрал прообраз
+		case 10: { // Если пользователь выбрал прообраз
 			Set N = createSet('N');
 
 			prototype(A, N, Dset);
@@ -325,7 +329,7 @@ int main() {
 			return 0; // Завершаем работу программы
 		}
 
-		case '11': { // Если пользователь выбрал сужение
+		case 11: { // Если пользователь выбрал сужение
 			Set W;
 			for (int i = 10; i < 25; i++) // Задание множества W
 				W.emplace(i);
@@ -335,7 +339,7 @@ int main() {
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case '12': { // Если пользователь выбрал продолжение
+		case 12: { // Если пользователь выбрал продолжение
 			continuation(A, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
