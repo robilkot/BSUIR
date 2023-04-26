@@ -175,7 +175,9 @@ void inversion(const T& A, T& D) // Функция нахождения инве
 
 void inversion(const Match& A, Match& D) // Функция нахождения инверсии
 {
-	inversion(get<2>(A), get<2>(D));
+	D = A;
+	swap(get<1>(D), get<0>(D)); // Смена областей отправления и прибытия
+	inversion(get<2>(A), get<2>(D)); // Инверсия графика
 }
 
 template<typename T>
@@ -256,6 +258,7 @@ int main() {
 		<< "10 - Prototype of N for A\n"
 		<< "11 - Restriction of A on W\n"
 		<< "12 - Continuation of A on Z\n"
+		<< "13 - Complement of B\n"
 		<< "Input number : \n"; // Предложение пользователю выбрать операцию из списка
 
 	do {
@@ -293,7 +296,7 @@ int main() {
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case 6: { // Если пользователь выбрал дополнение
+		case 6: { // Если пользователь выбрал дополнение A
 			complement(A, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
@@ -305,7 +308,7 @@ int main() {
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case 8: { // Если пользователь выбрал дополнение
+		case 8: { // Если пользователь выбрал композицию
 			composition(A, B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
@@ -341,6 +344,13 @@ int main() {
 		}
 		case 12: { // Если пользователь выбрал продолжение
 			continuation(A, Dmatch);
+			show(Dmatch, 'D');
+			system("pause");
+			return 0; // Завершаем работу программы
+		}
+
+		case 13: { // Если пользователь выбрал дополнение B
+			complement(B, Dmatch);
 			show(Dmatch, 'D');
 			system("pause");
 			return 0; // Завершаем работу программы
