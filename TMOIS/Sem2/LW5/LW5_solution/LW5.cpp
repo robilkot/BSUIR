@@ -251,18 +251,19 @@ int main() {
 		<< "3 - A\\B\n"
 		<< "4 - B\\A\n"
 		<< "5 - symmetrical difference\n"
-		<< "6 - Complement of A\n"
+		//<< "6 - Complement of A\n"
 		<< "7 - Inversion of A\n"
 		<< "8 - Composition of A and B\n"
 		<< "9 - Image of M for A\n"
 		<< "10 - Prototype of N for A\n"
 		<< "11 - Restriction of A on W\n"
 		<< "12 - Continuation of A on Z\n"
-		<< "13 - Complement of B\n"
+		//<< "13 - Complement of B\n"
 		<< "Input number : \n"; // Предложение пользователю выбрать операцию из списка
 
+	int operation = -1;
+
 	do {
-		int operation;
 		cin >> operation;
 		
 		switch (operation) {
@@ -296,22 +297,22 @@ int main() {
 			system("pause");
 			return 0; // Завершаем работу программы
 		}
-		case 6: { // Если пользователь выбрал дополнение A
-			complement(A, Dmatch);
-			show(Dmatch, 'D');
-			system("pause");
-			return 0; // Завершаем работу программы
-		}
+		//case 6: { // Если пользователь выбрал дополнение A
+		//	complement(A, Dmatch);
+		//	show(Dmatch, 'D');
+		//	_getch();
+		//	return 0; // Завершаем работу программы
+		//}
 		case 7: { // Если пользователь выбрал инверсию
 			inversion(A, Dmatch);
 			show(Dmatch, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 		case 8: { // Если пользователь выбрал композицию
 			composition(A, B, Dmatch);
 			show(Dmatch, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 
@@ -320,7 +321,7 @@ int main() {
 
 			image(A, M, Dset);
 			show(Dset, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 		case 10: { // Если пользователь выбрал прообраз
@@ -328,36 +329,36 @@ int main() {
 
 			prototype(A, N, Dset);
 			show(Dset, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 
 		case 11: { // Если пользователь выбрал сужение
 			Set W;
-			for (int i = 10; i < 25; i++) // Задание множества W
+			for (int i = 10; i <= 25; i++) // Задание множества W
 				W.emplace(i);
 
 			restriction(A, W, Dmatch);
 			show(Dmatch, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 		case 12: { // Если пользователь выбрал продолжение
 			continuation(A, Dmatch);
 			show(Dmatch, 'D');
-			system("pause");
+			_getch();
 			return 0; // Завершаем работу программы
 		}
 
-		case 13: { // Если пользователь выбрал дополнение B
-			complement(B, Dmatch);
-			show(Dmatch, 'D');
-			system("pause");
-			return 0; // Завершаем работу программы
-		}
+		//case 13: { // Если пользователь выбрал дополнение B
+		//	complement(B, Dmatch);
+		//	show(Dmatch, 'D');
+		//	_getch();
+		//	return 0; // Завершаем работу программы
+		//}
 
 		default: { // Если пользователь ввел неверное число
-			cout << "\nYou have input wrong number, try again\n"; // Просим повторить ввод
+			cout << "\nYou have input wrong number, try again\n"; // Просим повторить ввод.
 		}
 		}
 	} while (true);
