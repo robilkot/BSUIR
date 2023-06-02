@@ -1,100 +1,119 @@
 #include <iostream>
-#include <conio.h>
+#include <string>
 
-struct Stack
-{
-    int info = 0;
-    Stack* next = nullptr;
+using namespace std;
+
+struct DataNode {
+	size_t key = 0;
+	string data = "empty";
 };
 
-Stack* pushToStack(Stack* top, int in)
-{
-    Stack* t = new Stack;
-    t->info = in;
-    t->next = top;
-    return t;
+struct Stack {
+	Stack* next = nullptr;
+	DataNode dataNode;
+};
+
+void pushToStack(Stack*& stack, DataNode dataNode) {
+	Stack* newElement = new Stack;
+	newElement->dataNode = dataNode;
+	newElement->next = stack;
+	stack = newElement;
 }
 
-void viewStack(Stack* top)
-{
-    std::cout << "Stack:\n";
-    Stack* t = top;
-    while (t != NULL) {
-        std::cout << t->info << "\n";
-        t = t->next;
-    }
+void deleteStack(Stack*& stack) {
+	while (stack != nullptr) {
+		Stack* toDelete = stack;
+		stack = stack->next;
+		delete toDelete;
+	}
 }
 
-Stack* popFromStack(Stack* top)
-{
-    Stack* t = nullptr;
-    if (top != nullptr) t = top->next;
-    delete top;
-
-    return t;
+DataNode popFromStack(Stack*& stack) {
+	DataNode dataNode;
+	if (stack == nullptr) {
+		cout << "Stack is empty!\n";
+	}
+	else {
+		dataNode = stack->dataNode;
+		Stack* toDelete = stack;
+		stack = stack->next;
+		delete toDelete;
+	}
+	return dataNode;
 }
 
-void deleteAll(Stack* top)
-{
-    while (top != NULL) {
-        Stack* t = top;
-        top = (top)->next;
-        delete t;
-    }
+
+void showStack(Stack* stack) {
+	if (stack == nullptr) {
+		cout << "Stack is empty!\n";
+		return;
+	}
+	cout << "Stack:\n";
+	while (stack != nullptr) {
+		cout << stack->dataNode.key << " - " << stack->dataNode.data << "\n";
+		stack = stack->next;
+	}
 }
 
-void swapMaxAndMin(Stack* top)
-{
-    if (top == nullptr) return;
+void swapMinAndMax(Stack*& stack) {
+	if (stack == nullptr) return;
 
-    int max = top->info, min = top->info;
-    Stack* maxptr = top, * minptr = top;
+	Stack* iterStack = stack;
 
-    for (Stack* node = top; node != NULL; node = node->next) {
-        if (node->info > max) {
-            max = node->info; // find max
-            maxptr = node;
-        }
-        else if (node->info < min) {
-            min = node->info; // find min
-            minptr = node;
-        }
-    }
+	size_t maxKey = stack->dataNode.key,
+		minKey = stack->dataNode.key;
 
-    std::swap(minptr->info, maxptr->info);
+	Stack* min = stack;
+	Stack* minPrev = stack;
+	Stack* max = stack;
+	Stack* maxPrev = stack;
+
+	while (iterStack->next != nullptr) {
+		if (iterStack->next->dataNode.key > maxKey) {
+			maxKey = iterStack->next->dataNode.key;
+			max = iterStack->next;
+			maxPrev = iterStack;
+		}
+		if (iterStack->next->dataNode.key < minKey) {
+			minKey = iterStack->next->dataNode.key;
+			min = iterStack->next;
+			minPrev = iterStack;
+		}
+
+		iterStack = iterStack->next;
+	}
+
+	if (minPrev != min) minPrev->next = max; else stack = max;
+	if (maxPrev != max) maxPrev->next = min; else stack = min;
+
+	swap(min->next, max->next);
 }
 
 int main()
 {
-    Stack* top = nullptr;
-    bool exit = 0;
+	Stack* stack = nullptr;
 
-    do {
-        std::cout << "Press q to exit, 1 to push element to stack, 2 to pop element from stack, 3 to view stack, 4 to swap max and min in stack\n";
-        switch (_getch()) {
-        case 'q': exit = 1; break;
-        case '1': {
-            int pushed = 0;
-            std::cout << "Input new value:\n";
-            std::cin >> pushed;
-            top = pushToStack(top, pushed);
-            break;
-        }
-        case '2': {
-            top = popFromStack(top);
-            break;
-        }
-        case '3': {
-            viewStack(top);
-            break;
-        }
-        case '4': {
-            swapMaxAndMin(top);
-            break;
-        }
-        }
-    } while (!exit);
+	pushToStack(stack, { 2, "one" });
+	pushToStack(stack, { 1, "two" });
+	pushToStack(stack, { 8, "three" });
+	pushToStack(stack, { 4, "four" });
+	pushToStack(stack, { 5, "one" });
+	pushToStack(stack, { 6, "two" });
+	pushToStack(stack, { 7, "four" });
+	pushToStack(stack, { 3, "three" });
 
-    deleteAll(top);
-    return 0;
+	//showStack(stack);
+
+	//cout << dataNode.data << "\n";
+
+	showStack(stack);
+
+	swapMinAndMax(stack);
+
+	showStack(stack);
+
+	DataNode popTest;
+	for (int i = 0; i < 10; i++) popTest = popFromStack(stack);
+
+	deleteStack(stack);
 }
