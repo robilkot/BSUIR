@@ -130,9 +130,6 @@
     <ClCompile Include="LW1.cpp" />
     <ClCompile Include="LW1_Set.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="LW1_Set.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
