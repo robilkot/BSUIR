@@ -20,38 +20,38 @@ void CantorSet::clear() {
 	this->elements.clear();
 }
 
-void CantorSet::push() const {
+void CantorSet::push() {
 	this->elements.emplace(CantorSet());
 	this->isEmpty = false;
 }
-void CantorSet::push(char element) const {
+void CantorSet::push(char element) {
 	this->elements.emplace(CantorSet(element));
 	this->isEmpty = false;
 }
-void CantorSet::push(string element) const {
+void CantorSet::push(const string& element) {
 	this->elements.emplace(CantorSet(element));
 	this->isEmpty = false;
 }
-void CantorSet::push(CantorSet element) const {
+void CantorSet::push(const CantorSet& element) {
 	this->elements.emplace(element);
 	this->isEmpty = false;
 }
 
-void CantorSet::pop(string element) {
+void CantorSet::pop(const string& element) {
 	CantorSet toDelete(element);
 	auto equals = [&](auto const& element) { return element == toDelete; };
 	std::erase_if(this->elements, equals);
 
 	if (this->elements.size() == 0) this->isEmpty = true;
 }
-void CantorSet::pop(CantorSet toDelete) {
+void CantorSet::pop(const CantorSet& toDelete) {
 	auto equals = [&](auto const& element) { return element == toDelete; };
 	std::erase_if(this->elements, equals);
 
 	if (this->elements.size() == 0) this->isEmpty = true;
 }
 
-CantorSet CantorSet::boolean() {
+CantorSet CantorSet::boolean() const {
 	CantorSet result;
 
 	size_t totalCombinations = pow(2, this->cardinality());
@@ -144,14 +144,11 @@ bool CantorSet::operator == (const CantorSet& set) const {
 		this->data == set.data &&
 		this->isEmpty == set.isEmpty;
 }
-bool CantorSet::operator [](string element) {
+bool CantorSet::operator [](string element) const {
 	CantorSet toFind(element);
 	return this->elements.count(toFind);
 }
-bool CantorSet::operator [](CantorSet element) {
-	return this->elements.count(element);
-}
-bool CantorSet::operator [](const CantorSet element) const {
+bool CantorSet::operator [](const CantorSet& element) const {
 	return this->elements.count(element);
 }
 
