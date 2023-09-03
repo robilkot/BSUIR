@@ -1,5 +1,5 @@
 # Что это за место такое?
-Это [мой](https://vk.com/robilkot) репозиторий, где есть разные работы, связанные с БГУИРом:
+Это [мой](https://t.me/robilkot) репозиторий, где есть разные работы, связанные с БГУИРом:
 
 <details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/PIOIVIS/> <b>Представление и Обработка Информации в Интеллектуальных Системах</b> </a></summary>
 <br />
@@ -29,6 +29,24 @@
 В корне также лежат шаблоны, используемые в работах.
 </details>
 
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/PPOIS/> <b>Проектирование Программного Обеспечния Интеллектуальных Систем</b> </a></summary>
+<br />
+<em>Варианты</em>:
+
+3 семестр: ЛР1 - Множество; ЛР2 - Документооборот; ЛР3 - система "аэропорт"; ЛР4 - 8; РР - 6.4 через списки инцидентности
+
+4 семестр:
+</details>
+
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OTIS/> <b>Общая Теория Интеллектуальных Систем</b> </a></summary>
+<br />
+<em>Варианты</em>:
+
+3 семестр: ЛР - Вагон метрополитена
+
+4 семестр:
+</details>
+
 [**Теоретико-Множественные Основы Интеллектуальных Систем**](https://github.com/robilkot/BSUIR/tree/main/TMOIS/)
 
 [**Английский язык**](https://github.com/robilkot/BSUIR/tree/main/English)
@@ -39,8 +57,8 @@
 
 ---
 
-![DSC_2149 (Среднее)](https://user-images.githubusercontent.com/82116328/229605054-54dda3c8-56c8-4df8-bc8f-b51da0cecbf7.jpg)
+![IMG000](https://github.com/robilkot/BSUIR/assets/82116328/9b38af47-b962-4b7c-bc6a-6b3fb86ffd4a)
+
+<!--- Универсал ![DSC_2149 (Среднее)](https://user-images.githubusercontent.com/82116328/229605054-54dda3c8-56c8-4df8-bc8f-b51da0cecbf7.jpg)-->
 
 <!--- ЗИМА ![DSC_8405](https://user-images.githubusercontent.com/82116328/206007698-e20ee016-29bd-4425-abf9-a3de748ca1fc.jpg)--> 
-
-<!--- ЛЕТО ![](https://lh3.googleusercontent.com/drive-viewer/AJc5JmQVfzMrtZmuDBwVyj39c0cWN7LZePxW_kjgJrnyVmLZF4fgkP5OrY01tpITlrGvf1dyEq661EE=w1920-h1080)-->
