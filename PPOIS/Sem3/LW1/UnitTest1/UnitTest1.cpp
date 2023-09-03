@@ -219,9 +219,18 @@ namespace CantorSetUnitTest
 
 		TEST_METHOD(boolean1)
 		{
-			string expectedSet = "{}";
+			string expectedSet = "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}";
 
-			CantorSet testSet("{}");
+			CantorSet testSet("{a,b,c}");
+			CantorSet boolean1 = testSet.boolean();
+
+			Assert::AreEqual(expectedSet, boolean1.toString());
+		}
+		TEST_METHOD(boolean2)
+		{
+			string expectedSet = "{{},{a},{c},{d},{{b,c}},{a,c},{a,d},{a,{b,c}},{c,d},{c,{b,c}},{d,{b,c}},{a,c,d},{a,c,{b,c}},{a,d,{b,c}},{c,d,{b,c}},{a,c,d,{b,c}}}";
+
+			CantorSet testSet("{a,{b,c},c,d}");
 			CantorSet boolean1 = testSet.boolean();
 
 			Assert::AreEqual(expectedSet, boolean1.toString());

@@ -54,9 +54,21 @@ void CantorSet::pop(CantorSet toDelete) {
 CantorSet CantorSet::boolean() {
 	CantorSet result;
 
-	size_t resultCardinality = pow(2, this->cardinality());
+	size_t totalCombinations = pow(2, this->cardinality());
 
-	// Я не хочу рекурсию писать((( Можно начать с одного элемента и приписывать все рекурсивно?
+	for (size_t combinationIndex = 0; combinationIndex < totalCombinations; combinationIndex++) {
+		CantorSet currentCombination;
+
+		for (size_t bitMask = combinationIndex, bitShift = 0; bitMask > 0; bitMask >>= 1, bitShift++) {
+			if (bitMask & 1) {
+				auto it = this->elements.begin();
+				std::advance(it, bitShift);
+				currentCombination.push(*it);
+			}
+		}
+
+		result.push(currentCombination);
+	}
 
 	return result;
 }

@@ -129,7 +129,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CantorSet.cpp" />
-    <ClCompile Include="LW1.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CantorSet.h" />
