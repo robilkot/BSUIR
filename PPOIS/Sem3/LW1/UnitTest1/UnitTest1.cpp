@@ -68,6 +68,14 @@ namespace CantorSetUnitTest
 			Assert::AreEqual(expectedSet, testSet.toString());
 			Assert::AreEqual((size_t)3, testSet.cardinality());
 		}
+		TEST_METHOD(nestedSubsets_char)
+		{
+			const char* const expectedSet = "{a,{{e,f}},{d,{c}}}";
+			CantorSet testSet(expectedSet);
+
+			Assert::AreEqual(string(expectedSet), testSet.toString());
+			Assert::AreEqual((size_t)3, testSet.cardinality());
+		}
 	};
 
 	TEST_CLASS(CantorSetModification)
@@ -106,6 +114,16 @@ namespace CantorSetUnitTest
 			Assert::AreEqual((size_t)3, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
 		}
+		TEST_METHOD(pushString_char)
+		{
+			const char* const expectedSet = "{a,b,{c,d}}";
+			CantorSet testSet("{a,b}");
+
+			testSet.push("{c,d}");
+
+			Assert::AreEqual((size_t)3, testSet.cardinality());
+			Assert::AreEqual(string(expectedSet), testSet.toString());
+		}
 		TEST_METHOD(pushSet)
 		{
 			string expectedSet = "{a,b,{c,d}}";
@@ -127,6 +145,16 @@ namespace CantorSetUnitTest
 
 			Assert::AreEqual((size_t)2, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
+		}
+		TEST_METHOD(popString_char)
+		{
+			const char* const expectedSet = "{a,b}";
+			CantorSet testSet("{a,b,{c,{e,d}}}");
+
+			testSet.pop("{c,{d,e}}");
+
+			Assert::AreEqual((size_t)2, testSet.cardinality());
+			Assert::AreEqual(string(expectedSet), testSet.toString());
 		}
 		TEST_METHOD(popElement)
 		{

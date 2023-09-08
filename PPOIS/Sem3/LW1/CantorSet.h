@@ -26,9 +26,11 @@ public:
 	void push();
 	void push(char element);
 	void push(const string& element);
+	void push(const char* const element);
 	void push(const CantorSet& element);
 
 	void pop(const string& element);
+	void pop(const char* const element);
 	void pop(const CantorSet& toDelete);
 
 	CantorSet boolean() const;
@@ -36,12 +38,14 @@ public:
 	CantorSet();
 	CantorSet(char element);
 	CantorSet(const string& element);
+	CantorSet(const char* const element);
 
 	string toString() const;
 
 	bool operator<(const CantorSet& set) const;
 	bool operator==(const CantorSet& set) const;
 
+	bool operator[](const char* const element) const;
 	bool operator[](const string& element) const;
 	bool operator[](const CantorSet& element) const;
 

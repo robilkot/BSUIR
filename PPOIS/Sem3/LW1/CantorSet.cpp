@@ -32,11 +32,22 @@ void CantorSet::push(const string& element) {
 	elements.emplace(CantorSet(element));
 	isEmpty = false;
 }
+void CantorSet::push(const char* const element) {
+	elements.emplace(CantorSet(element));
+	isEmpty = false;
+}
 void CantorSet::push(const CantorSet& element) {
 	elements.emplace(element);
 	isEmpty = false;
 }
 
+void CantorSet::pop(const char* const element) {
+	CantorSet toDelete(element);
+	auto equals = [&](const auto& element) { return element == toDelete; };
+	std::erase_if(elements, equals);
+
+	if (elements.empty()) isEmpty = true;
+}
 void CantorSet::pop(const string& element) {
 	CantorSet toDelete(element);
 	auto equals = [&](const auto& element) { return element == toDelete; };
@@ -77,6 +88,10 @@ CantorSet::CantorSet() {};
 CantorSet::CantorSet(char element) {
 	data = element;
 	isEmpty = false;
+};
+CantorSet::CantorSet(const char* const element) {
+	string setNotation(element);
+	*this = CantorSet(setNotation);
 };
 CantorSet::CantorSet(const string& element) {
 	if (element.length() == 1) {
@@ -145,6 +160,10 @@ bool CantorSet::operator == (const CantorSet& set) const {
 		isEmpty == set.isEmpty;
 }
 bool CantorSet::operator [](const string& element) const {
+	CantorSet toFind(element);
+	return elements.count(toFind);
+}
+bool CantorSet::operator [](const char* const element) const {
 	CantorSet toFind(element);
 	return elements.count(toFind);
 }
