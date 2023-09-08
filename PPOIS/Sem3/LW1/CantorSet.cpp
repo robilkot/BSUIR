@@ -14,54 +14,54 @@ size_t CantorSet::cardinality() const {
 }
 
 void CantorSet::clear() {
-	this->isEmpty = true;
-	this->data = 0;
-	this->offset = 0;
-	this->elements.clear();
+	isEmpty = true;
+	data = 0;
+	offset = 0;
+	elements.clear();
 }
 
 void CantorSet::push() {
-	this->elements.emplace(CantorSet());
-	this->isEmpty = false;
+	elements.emplace(CantorSet());
+	isEmpty = false;
 }
 void CantorSet::push(char element) {
-	this->elements.emplace(CantorSet(element));
-	this->isEmpty = false;
+	elements.emplace(CantorSet(element));
+	isEmpty = false;
 }
 void CantorSet::push(const string& element) {
-	this->elements.emplace(CantorSet(element));
-	this->isEmpty = false;
+	elements.emplace(CantorSet(element));
+	isEmpty = false;
 }
 void CantorSet::push(const CantorSet& element) {
-	this->elements.emplace(element);
-	this->isEmpty = false;
+	elements.emplace(element);
+	isEmpty = false;
 }
 
 void CantorSet::pop(const string& element) {
 	CantorSet toDelete(element);
-	auto equals = [&](auto const& element) { return element == toDelete; };
-	std::erase_if(this->elements, equals);
+	auto equals = [&](const auto& element) { return element == toDelete; };
+	std::erase_if(elements, equals);
 
-	if (this->elements.size() == 0) this->isEmpty = true;
+	if (elements.empty()) isEmpty = true;
 }
 void CantorSet::pop(const CantorSet& toDelete) {
-	auto equals = [&](auto const& element) { return element == toDelete; };
-	std::erase_if(this->elements, equals);
+	auto equals = [&](const auto& element) { return element == toDelete; };
+	std::erase_if(elements, equals);
 
-	if (this->elements.size() == 0) this->isEmpty = true;
+	if (elements.empty()) isEmpty = true;
 }
 
 CantorSet CantorSet::boolean() const {
 	CantorSet result;
 
-	size_t totalCombinations = pow(2, this->cardinality());
+	size_t totalCombinations = pow(2, cardinality());
 
 	for (size_t combinationIndex = 0; combinationIndex < totalCombinations; combinationIndex++) {
 		CantorSet currentCombination;
 
 		for (size_t bitMask = combinationIndex, bitShift = 0; bitMask > 0; bitMask >>= 1, bitShift++) {
 			if (bitMask & 1) {
-				auto it = this->elements.begin();
+				auto it = elements.begin();
 				std::advance(it, bitShift);
 				currentCombination.push(*it);
 			}
@@ -75,30 +75,30 @@ CantorSet CantorSet::boolean() const {
 
 CantorSet::CantorSet() {};
 CantorSet::CantorSet(char element) {
-	this->data = element;
-	this->isEmpty = false;
+	data = element;
+	isEmpty = false;
 };
-CantorSet::CantorSet(string element) {
+CantorSet::CantorSet(const string& element) {
 	if (element.length() == 1) {
 		*this = CantorSet(element[0]);
 		return;
 	}
 
-	for (int i = 1; i < element.size(); i++, this->offset++) {
+	for (int i = 1; i < element.size(); i++, offset++) {
 		switch (element[i]) {
 		default: {
-			this->push(element[i]);
+			push(element[i]);
 			break;
 		}
 		case '{': {
 			CantorSet subset(element.substr(i));
-			this->push(subset);
-			this->offset += subset.offset;
+			push(subset);
+			offset += subset.offset;
 			i += subset.offset;
 			break;
 		}
 		case '}': {
-			this->offset++; // needed because cycle increment doesn't work after returning
+			offset++; // needed because cycle increment doesn't work after returning
 			return;
 		}
 		case ',': break;
@@ -109,47 +109,47 @@ CantorSet::CantorSet(string element) {
 string CantorSet::toString() const {
 	string result;
 
-	if (this->isSingleElement()) {
-		result = this->data;
+	if (isSingleElement()) {
+		result = data;
 		return result;
 	}
-	if (this->isEmpty)
-		return "{}";
-
+	
 	result += '{';
-	for (const auto& element : this->elements)
-		result += element.toString() + ',';
+	if (!isEmpty) {
+		for (const auto& element : this->elements)
+			result += element.toString() + ',';
 
-	result.pop_back(); // erase last comma
+		result.pop_back(); // erase last comma
+	}
 	result += '}';
 
 	return result;
 }
 
 bool CantorSet::operator < (const CantorSet& set) const {
-	int cardinality1 = this->cardinality(),
+	int cardinality1 = cardinality(),
 		cardinality2 = set.cardinality();
 
 	if (cardinality1 == cardinality2) {
-		if (this->isSingleElement() && set.isSingleElement())
-			return this->data < set.data;
+		if (isSingleElement() && set.isSingleElement())
+			return data < set.data;
 
-		return this->elements < set.elements;
+		return elements < set.elements;
 	}
 
 	return cardinality1 < cardinality2;
 }
 bool CantorSet::operator == (const CantorSet& set) const {
-	return  this->elements == set.elements &&
-		this->data == set.data &&
-		this->isEmpty == set.isEmpty;
+	return  elements == set.elements &&
+		data == set.data &&
+		isEmpty == set.isEmpty;
 }
-bool CantorSet::operator [](string element) const {
+bool CantorSet::operator [](const string& element) const {
 	CantorSet toFind(element);
-	return this->elements.count(toFind);
+	return elements.count(toFind);
 }
 bool CantorSet::operator [](const CantorSet& element) const {
-	return this->elements.count(element);
+	return elements.count(element);
 }
 
 CantorSet CantorSet::operator + (const CantorSet& set) const {
@@ -162,7 +162,7 @@ CantorSet CantorSet::operator + (const CantorSet& set) const {
 }
 CantorSet& CantorSet::operator += (const CantorSet& set) {
 	for (const auto& element : set.elements)
-		this->push(element);
+		push(element);
 
 	return *this;
 }
@@ -177,7 +177,7 @@ CantorSet CantorSet::operator - (const CantorSet& set) const {
 }
 CantorSet& CantorSet::operator -= (const CantorSet& set) {
 	for (const auto& element : set.elements)
-		this->pop(element);
+		pop(element);
 
 	return *this;
 }
@@ -185,7 +185,7 @@ CantorSet& CantorSet::operator -= (const CantorSet& set) {
 CantorSet CantorSet::operator * (const CantorSet& set) const {
 	CantorSet result;
 
-	for (const auto& element : this->elements) {
+	for (const auto& element : elements) {
 		if (set[element])
 			result.push(element);
 	}
@@ -194,11 +194,11 @@ CantorSet CantorSet::operator * (const CantorSet& set) const {
 }
 CantorSet& CantorSet::operator *= (const CantorSet& set) {
 	CantorSet currentSet = *this;
-	this->clear();
+	clear();
 
 	for (const auto& element : currentSet.elements) {
 		if (set[element])
-			this->push(element);
+			push(element);
 	}
 
 	return *this;

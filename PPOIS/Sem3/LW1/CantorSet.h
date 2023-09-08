@@ -35,14 +35,14 @@ public:
 
 	CantorSet();
 	CantorSet(char element);
-	CantorSet(string element);
+	CantorSet(const string& element);
 
 	string toString() const;
 
 	bool operator<(const CantorSet& set) const;
 	bool operator==(const CantorSet& set) const;
 
-	bool operator[](string element) const;
+	bool operator[](const string& element) const;
 	bool operator[](const CantorSet& element) const;
 
 	CantorSet operator+(const CantorSet& set) const;
