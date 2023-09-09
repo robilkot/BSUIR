@@ -133,6 +133,8 @@ CantorSet CantorSet::parseString(string& element) const {
 		}
 		}
 	}
+
+	return result;
 }
 
 string CantorSet::toString() const {
@@ -158,7 +160,7 @@ string CantorSet::toString() const {
 }
 
 bool CantorSet::operator < (const CantorSet& set) const {
-	int cardinality1 = cardinality(),
+	size_t cardinality1 = cardinality(),
 		cardinality2 = set.cardinality();
 
 	if (cardinality1 == cardinality2) {

@@ -116,7 +116,8 @@ namespace CantorSetUnitTest
 			string expectedSet = "{a,b,{c,d}}";
 			CantorSet testSet("{a,b}");
 			
-			testSet.push("{c,d}");
+			string toPush = "{c,d}";
+			testSet.push(toPush);
 
 			Assert::AreEqual((size_t)3, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
@@ -148,7 +149,8 @@ namespace CantorSetUnitTest
 			string expectedSet = "{a,b}";
 			CantorSet testSet("{a,b,{c,{e,d}}}");
 
-			testSet.pop("{c,{d,e}}");
+			string toPop = "{c,{d,e}}";
+			testSet.pop(toPop);
 
 			Assert::AreEqual((size_t)2, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
@@ -274,6 +276,24 @@ namespace CantorSetUnitTest
 	TEST_CLASS(CantorSetOperators)
 	{
 	public:
+		TEST_METHOD(squareBrackets_string)
+		{
+			string expectedSet = "{a,b,d,{c,d},{e,{f,g}}}";
+
+			CantorSet testSet1(expectedSet);
+			string toFind = "{c,d}";
+
+			Assert::IsTrue(testSet1[toFind]);
+		}
+		TEST_METHOD(squareBrackets_char)
+		{
+			string expectedSet = "{a,b,d,{c,d},{e,{f,g}}}";
+
+			CantorSet testSet1(expectedSet);
+			const char* const toFind = "{e,{f,g}}";
+
+			Assert::IsTrue(testSet1[toFind]);
+		}
 		TEST_METHOD(union1)
 		{
 			string expectedSet = "{a,b,d,{c,d},{e,{f,g}}}";
