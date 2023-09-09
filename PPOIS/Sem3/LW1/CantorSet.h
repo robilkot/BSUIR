@@ -11,8 +11,9 @@ class CantorSet {
 private:
 	bool isEmpty = true;
 	char data = 0;
-	size_t offset = 0;
 	set<CantorSet> elements;
+
+	CantorSet parseString(string& element) const;
 
 public:
 	bool empty() const;
@@ -34,10 +35,10 @@ public:
 	void pop(const CantorSet& toDelete);
 
 	CantorSet boolean() const;
-
+	
 	CantorSet();
 	CantorSet(char element);
-	CantorSet(const string& element);
+	CantorSet(string element);
 	CantorSet(const char* const element);
 
 	string toString() const;

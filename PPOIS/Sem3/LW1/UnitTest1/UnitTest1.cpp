@@ -25,7 +25,7 @@ namespace CantorSetUnitTest
 		{
 			CantorSet testSet;
 
-			Assert::AreEqual(true, testSet.empty());
+			Assert::IsTrue(testSet.empty());
 			Assert::AreEqual((size_t) 0, testSet.cardinality());
 		}
 		TEST_METHOD(singleElement)
@@ -76,6 +76,13 @@ namespace CantorSetUnitTest
 			Assert::AreEqual(string(expectedSet), testSet.toString());
 			Assert::AreEqual((size_t)3, testSet.cardinality());
 		}
+		TEST_METHOD(invalidSetTest)
+		{
+			string expectedSet = "{{{e,f}";
+			
+			auto func = [&] { CantorSet testSet(expectedSet); };
+			Assert::ExpectException<std::invalid_argument>(func);
+		}
 	};
 
 	TEST_CLASS(CantorSetModification)
@@ -88,7 +95,7 @@ namespace CantorSetUnitTest
 
 			testSet.push();
 
-			Assert::AreEqual(false, testSet.empty());
+			Assert::IsFalse(testSet.empty());
 			Assert::AreEqual((size_t)1, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
 		}
@@ -100,7 +107,7 @@ namespace CantorSetUnitTest
 			testSet.push('a');
 			testSet.push("b");
 
-			Assert::AreEqual(false, testSet.empty());
+			Assert::IsFalse(testSet.empty());
 			Assert::AreEqual((size_t)2, testSet.cardinality());
 			Assert::AreEqual(expectedSet, testSet.toString());
 		}
@@ -176,7 +183,7 @@ namespace CantorSetUnitTest
 			testSet.clear();
 
 			Assert::AreEqual((size_t)0, testSet.cardinality());
-			Assert::AreEqual(true, testSet.empty());
+			Assert::IsTrue(testSet.empty());
 			Assert::AreEqual(expectedSet, testSet.toString());
 		}
 	};
@@ -188,38 +195,38 @@ namespace CantorSetUnitTest
 		{
 			CantorSet testSet("{}");
 
-			Assert::AreEqual(false, testSet.isSingleElement());
+			Assert::IsFalse(testSet.isSingleElement());
 		}
 		TEST_METHOD(isSingleElement2)
 		{
 			CantorSet testSet("{b,c}");
 
-			Assert::AreEqual(false, testSet.isSingleElement());
+			Assert::IsFalse(testSet.isSingleElement());
 		}
 		TEST_METHOD(isSingleElement3)
 		{
 			CantorSet testSet("d");
 
-			Assert::AreEqual(true, testSet.isSingleElement());
+			Assert::IsTrue(testSet.isSingleElement());
 		}
 
 		TEST_METHOD(isEmpty1)
 		{
 			CantorSet testSet("{}");
 
-			Assert::AreEqual(true, testSet.empty());
+			Assert::IsTrue(testSet.empty());
 		}
 		TEST_METHOD(isEmpty2)
 		{
 			CantorSet testSet("{a}");
 
-			Assert::AreEqual(false, testSet.empty());
+			Assert::IsFalse(testSet.empty());
 		}
 		TEST_METHOD(isEmpty3)
 		{
 			CantorSet testSet("{{a,b}}");
 
-			Assert::AreEqual(false, testSet.empty());
+			Assert::IsFalse(testSet.empty());
 		}
 
 		TEST_METHOD(toString1)

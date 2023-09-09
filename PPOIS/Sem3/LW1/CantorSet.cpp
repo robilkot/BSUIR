@@ -16,7 +16,6 @@ size_t CantorSet::cardinality() const {
 void CantorSet::clear() {
 	isEmpty = true;
 	data = 0;
-	offset = 0;
 	elements.clear();
 }
 
@@ -93,33 +92,48 @@ CantorSet::CantorSet(const char* const element) {
 	string setNotation(element);
 	*this = CantorSet(setNotation);
 };
-CantorSet::CantorSet(const string& element) {
+CantorSet::CantorSet(string element) {
 	if (element.length() == 1) {
 		*this = CantorSet(element[0]);
 		return;
 	}
 
-	for (int i = 1; i < element.size(); i++, offset++) {
-		switch (element[i]) {
+	size_t openBrackets = std::count(element.begin(), element.end(), '{');
+	size_t closeBrackets = std::count(element.begin(), element.end(), '}');
+	if (openBrackets != closeBrackets) throw std::invalid_argument("Number of brackets doesn;t match");
+
+	*this = parseString(element);
+};
+
+CantorSet CantorSet::parseString(string& element) const {
+	CantorSet result;
+
+	if (element.size() < 2) return result;
+	if (element[0] == '{') element.erase(0, 1);
+
+	while (!element.empty()) {
+		switch (element[0]) {
 		default: {
-			push(element[i]);
+			result.push(element[0]);
+			element.erase(0, 1);
 			break;
 		}
 		case '{': {
-			CantorSet subset(element.substr(i));
-			push(subset);
-			offset += subset.offset;
-			i += subset.offset;
+			CantorSet subset = parseString(element);
+			result.push(subset);
 			break;
 		}
 		case '}': {
-			offset++; // needed because cycle increment doesn't work after returning
-			return;
+			element.erase(0, 1);
+			return result;
 		}
-		case ',': break;
+		case ',': {
+			element.erase(0, 1);
+			break;
+		}
 		}
 	}
-};
+}
 
 string CantorSet::toString() const {
 	string result;
@@ -128,14 +142,16 @@ string CantorSet::toString() const {
 		result = data;
 		return result;
 	}
-	
-	result += '{';
-	if (!isEmpty) {
-		for (const auto& element : this->elements)
-			result += element.toString() + ',';
 
-		result.pop_back(); // erase last comma
+	if (isEmpty) {
+		return "{}";
 	}
+
+	result += '{';
+	for (const auto& element : this->elements)
+		result += element.toString() + ',';
+
+	result.pop_back(); // erase last comma
 	result += '}';
 
 	return result;
