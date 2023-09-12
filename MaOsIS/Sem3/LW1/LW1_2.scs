@@ -1,0 +1,15 @@
+nrel_divisible
+    => nrel_main_idtf: [кратный] (* <- lang_ru;; *);
+    => nrel_main_idtf: [divisible] (* <- lang_eng;; *);
+    => nrel_first_domain: concept_integer;
+    => nrel_second_domain: concept_integer;
+    => nrel_domain_of_definition: concept_integer;
+
+    <|- asymmetric_relation;
+    <- antisymmetric_relation;
+    <- reflexive_relation;
+    <- transitive_relation;
+    <- binary_relation;;
+
+subjdomain_arithmetics
+    -> rrel_studied_relation_class: nrel_divisible;;

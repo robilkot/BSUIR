@@ -7,10 +7,10 @@
 
 1 семестр: ЛР1 - 82; ЛР3 - 71; ЛР4 - regex для пароля; РР - 6.4 через списки инцидентности
 
-2 семестр: ЛР1 - 21, ЛР2 - 1, ПЗ1 - 25, ПЗ2 - 15, РР - 6.4, Практика - параграф 1.1.3 монографии
+2 семестр: ЛР1 - 21; ЛР2 - 1; ПЗ1 - 25; ПЗ2 - 15; РР - 6.4; Практика - параграф 1.1.3 монографии
 </details>
 
-<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OAiP> <b>Основы Аалгоритмизации и Программирования</b> </a></summary>
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OAiP> <b>Основы Алгоритмизации и Программирования</b> </a></summary>
 <br />
 
 <em>Варианты</em>:
@@ -44,8 +44,26 @@
 
 3 семестр: ЛР - Вагон метрополитена
 
+</details>
+
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/OS/> <b>Операционные Системы</b> </a></summary>
+<br />
+<em>Варианты</em>:
+
+3 семестр: ЛР1 - 1; ЛР2 - ; ЛР3 - ; ЛР4 - ;
+
+</details>
+
+
+<details><summary><a href=https://github.com/robilkot/BSUIR/tree/main/MaOsIS/> <b>Математические Основы Интеллектуальных Систем</b> </a></summary>
+<br />
+<em>Варианты</em>:
+
+3 семестр: ЛР - Понятия "трапеция", "кратный*"
+
 4 семестр:
 </details>
+
 
 [**Теоретико-Множественные Основы Интеллектуальных Систем**](https://github.com/robilkot/BSUIR/tree/main/TMOIS/)
 
