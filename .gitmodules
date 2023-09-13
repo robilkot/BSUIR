@@ -1,3 +1,3 @@
-[submodule "PPOIS/Sem3/LW1"]
-	path = PPOIS/Sem3/LW1
-	url = https://github.com/robilkot/BSUIR_PPOIS_Sem3_LW1
+[submodule "PPOIS"]
+	path = PPOIS
+	url = https://github.com/robilkot/BSUIR_PPOIS

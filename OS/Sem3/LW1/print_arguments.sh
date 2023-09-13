@@ -1,3 +1,3 @@
 #! /bin/bash
 
-echo "$@" | tee $1
+echo "$@"
