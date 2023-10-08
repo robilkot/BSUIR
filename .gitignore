@@ -12,4 +12,5 @@
 !*.vcxproj
 !*.gwf
 !*.scs
+!*.nb
 **/x64
