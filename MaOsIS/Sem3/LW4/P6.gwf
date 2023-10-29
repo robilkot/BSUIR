@@ -1,34 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GWF version="2.0">
     <staticSector>
-        <node type="node/const/perm/relation" idtf="nrel_main_idtf" shapeColor="0" id="2704070789088" parent="2704067547232" left="0" top="0" right="93" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" x="530.137" y="442.832" haveBus="false" idtf_pos="0">
+        <node type="node/var/perm/general" idtf="" shapeColor="0" id="1948012817408" parent="1948011802352" x="452.985" y="515.672" haveBus="false" idtf_pos="0">
             <content type="0" mime_type="" content_visibility="false" file_name=""/>
         </node>
-        <node type="node/const/perm/general" idtf="" shapeColor="0" id="2704070785344" parent="2704067547232" x="432.972" y="553.376" haveBus="false" idtf_pos="0">
-            <content type="1" mime_type="content/term" content_visibility="true" file_name=""><![CDATA[Предметная область пассажирского железнодорожного транспорта]]></content>
-        </node>
-        <node type="node/const/perm/relation" idtf="nrel_private_subject_domain" shapeColor="0" id="2704070789504" parent="2704067547232" left="0" top="0" right="171" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" x="290.95" y="286.945" haveBus="false" idtf_pos="3">
+        <node type="node/const/perm/group" idtf="concept_passenger_rolling_stock" shapeColor="0" id="1948012815328" parent="1948011802352" left="0" top="0" right="194" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" x="530.858" y="415.799" haveBus="false" idtf_pos="3">
             <content type="0" mime_type="" content_visibility="false" file_name=""/>
         </node>
-        <node type="node/var/perm/struct" idtf="" shapeColor="0" id="2704068129920" parent="2704067547232" x="435.45" y="398.445" haveBus="false" idtf_pos="0">
+        <node type="node/const/perm/group" idtf="concept_rolling_stock" shapeColor="0" id="1948012813664" parent="1948011802352" left="0" top="0" right="132" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" x="357.368" y="416.049" haveBus="false" idtf_pos="3">
             <content type="0" mime_type="" content_visibility="false" file_name=""/>
         </node>
-        <node type="node/const/perm/struct" idtf="subject_domain_of_railway_transport" shapeColor="0" id="2704070790336" parent="2704067547232" left="0" top="0" right="222" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" x="135.95" y="398.945" haveBus="false" idtf_pos="0">
-            <content type="0" mime_type="" content_visibility="false" file_name=""/>
-        </node>
-        <pair type="pair/var/pos/perm/orient/membership" idtf="" shapeColor="0" id="2704070171616" parent="2704067547232" id_b="2704068129920" id_e="2704070785344" b_x="435.45" b_y="398.445" e_x="432.972" e_y="553.376" dotBBalance="0" dotEBalance="0">
+        <pair type="pair/var/pos/perm/orient/membership" idtf="" shapeColor="0" id="1948013244656" parent="1948011802352" id_b="1948012813664" id_e="1948012817408" b_x="357.368" b_y="416.049" e_x="452.985" e_y="515.672" dotBBalance="0" dotEBalance="0">
             <points/>
         </pair>
-        <pair type="pair/var/pos/perm/orient/membership" idtf="" shapeColor="0" id="2704069803488" parent="2704067547232" id_b="2704070789088" id_e="2704070171616" b_x="530.137" b_y="442.832" e_x="0" e_y="0" dotBBalance="0" dotEBalance="0.477285">
+        <pair type="pair/var/neg/perm/orient/membership" idtf="" shapeColor="0" id="1948013244896" parent="1948011802352" id_b="1948012815328" id_e="1948012817408" b_x="530.858" b_y="415.799" e_x="452.985" e_y="515.672" dotBBalance="0" dotEBalance="0">
             <points/>
         </pair>
-        <pair type="pair/var/pos/perm/orient/membership" idtf="" shapeColor="0" id="2704069809280" parent="2704067547232" id_b="2704070789504" id_e="2704069751952" b_x="290.95" b_y="286.945" e_x="0" e_y="0" dotBBalance="0" dotEBalance="0.522059">
-            <points/>
-        </pair>
-        <pair type="pair/var/-/perm/orient" idtf="" shapeColor="0" id="2704069751952" parent="2704067547232" id_b="2704070790336" id_e="2704068129920" b_x="135.95" b_y="398.945" e_x="435.45" e_y="398.445" dotBBalance="0" dotEBalance="0">
-            <points/>
-        </pair>
-        <contour type="contour/const/perm" idtf="P6" shapeColor="0" id="2704067547232" parent="0" left="0" top="0" right="24" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" idtf_pos_x="-47" idtf_pos_y="-200">
+        <contour type="contour/const/perm" idtf="P6" shapeColor="0" id="1948011802352" parent="0" left="0" top="0" right="24" bottom="25" textColor="164" text_angle="0" text_font="Times New Roman" font_size="10" idtf_pos_x="-47" idtf_pos_y="-200">
             <points>
                 <point x="101.45" y="640.445"/>
                 <point x="102.45" y="237.445"/>

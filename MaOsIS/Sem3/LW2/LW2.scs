@@ -10,31 +10,26 @@ section_subject_domain_of_railway_transport
         concept_rolling_stock (* => nrel_main_idtf: [Железнодорожный подвижной состав] (* <- lang_ru;;*);;*);
         concept_subway_rolling_stock (* => nrel_main_idtf: [Подвижной состав метрополитена] (* <- lang_ru;;*);;*);
         concept_tram (* => nrel_main_idtf: [Трамвай] (* <- lang_ru;;*);;*);
-        nrel_transportation (* => nrel_main_idtf: [Перевозка] (* <- lang_ru;;*);;*);
+        nrel_transportation;
         
     => nrel_section_decomposition:...
 	(*
 		<- sc_node_tuple;;
 		-> subject_domain_of_passenger_railway_transport (* => nrel_main_idtf: [Предметная область пассажирского железнодорожного транспорта] (* <- lang_ru;;*);; *);;
 		-> subject_domain_of_freight_railway_transport (* => nrel_main_idtf: [Предметная область грузового железнодорожного транспорта] (* <- lang_ru;;*);; *);;
-        -> subject_domain_of_city_public_railway_transport (*  => nrel_main_idtf: [Предметная область городского железнодорожного общественного транспорта] (* <- lang_ru;;*);;
+        -> subject_domain_of_city_public_railway_transport (*  => nrel_main_idtf: [Предметная область городского железнодорожного общественного транспорта] (* <- lang_ru;;*);; *);;
+        -> subject_domain_of_trams (*  => nrel_main_idtf: [Предметная область трамваев] (* <- lang_ru;;*);; *);;
+        -> subject_domain_of_subway (*  => nrel_main_idtf: [Предметная область метрополитена] (* <- lang_ru;;*);; *);;
 	*);;
-	
-	-> subject_domain_of_trams (*  => nrel_main_idtf: [Предметная область трамваев] (* <- lang_ru;;*);; *);;
-	-> subject_domain_of_subway (*  => nrel_main_idtf: [Предметная область метрополитена] (* <- lang_ru;;*);; *);; *);;
-
 
 section_subject_domain_of_railway_transport
     = [*
         subject_domain_of_railway_transport
-
 			=> nrel_main_idtf:
 			[Предметная область железнодорожного транспорта] (* <- lang_ru;;*);
 			[Subject domain of railway transport] (* <- lang_en;;*);
-			<- subject_domain;
-			<- sc_node_struct;;
+			<- subject_domain;;
 	*];;
-    
     
 subject_domain_of_railway_transport
     => nrel_private_subject_domain:
@@ -63,10 +58,59 @@ subject_domain_of_railway_transport
 	-> rrel_explored_relation:
 		nrel_transportation;;
     
+nrel_transportation
+<- relation;
+<- sc_node_norole_relation;
+=> nrel_main_idtf: [Перевозка] (* <- lang_ru;;*);;
 
+subject_domain_of_subway
+=> nrel_main_idtf:
+			[Subject domain of subway] (* <- lang_en;;*);
+			[Themenbereich U-Bahn] (* <- lang_de;;*);
+<- not_enough_formed_structure;;
+
+subject_domain_of_trams
+=> nrel_main_idtf:
+			[Subject domain of trams] (* <- lang_en;;*);
+<- not_enough_formed_structure;
+<- atomic_section;;
+ 
 sc_node_struct ->
+    subject_domain_of_railway_transport;
     subject_domain_of_subway;
     subject_domain_of_trams;
     subject_domain_of_passenger_railway_transport;
     subject_domain_of_city_public_railway_transport;
     subject_domain_of_freight_railway_transport;;
+
+concept_freight_rolling_stock
+<- concept_rolling_stock;
+=> nrel_main_idtf: [Грузовой подвижной состав] (* <- lang_ru;;*);;
+
+concept_passenger_rolling_stock
+<- concept_rolling_stock;
+=> nrel_main_idtf: [Пассажирский подвижной состав] (* <- lang_ru;;*);;
+
+concept_rolling_stock ->
+81_717;
+VL80T;
+ER9T;
+BKG1;;
+
+VL80T
+=> nrel_main_idtf: [Электровоз ВЛ80Т] (* <- lang_ru;;*);
+<- concept_freight_rolling_stock;
+<- concept_passenger_rolling_stock;;
+
+81_717
+=> nrel_main_idtf: [Вагон метрополитена 81-717] (* <- lang_ru;;*);
+<- concept_passenger_rolling_stock;;
+
+ER9T
+=> nrel_main_idtf: [Электропоезд ЭР9Т] (* <- lang_ru;;*);
+<- concept_passenger_rolling_stock;;
+
+BKG1
+=> nrel_main_idtf: [Электровоз БКГ1] (* <- lang_ru;;*);
+<- concept_freight_rolling_stock;
+<|- concept_passenger_rolling_stock;;
