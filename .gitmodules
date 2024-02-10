@@ -1,6 +1,6 @@
 [submodule "PPOIS"]
 	path = PPOIS
 	url = https://github.com/robilkot/BSUIR_PPOIS
-[submodule "OTIS/Sem3/LW5"]
-	path = OTIS/Sem3/LW5
+[submodule "OTIS/LW5"]
+	path = OTIS/LW5
 	url = https://github.com/robilkot/GraphEditor
