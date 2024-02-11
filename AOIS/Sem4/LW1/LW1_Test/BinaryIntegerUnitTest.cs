@@ -1,9 +1,11 @@
 using LW1;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
 namespace LW1_Test
 {
+    [ExcludeFromCodeCoverage]
     public class BinaryIntegerUnitTest
     {
         [Fact]
@@ -44,8 +46,14 @@ namespace LW1_Test
         [Theory]
         [InlineData(0, 5, 5)]
         [InlineData(5, 0, 5)]
-        [InlineData(-15, 22, 7)]
-        [InlineData(22, -15, 7)]
+        [InlineData(-13, 25, 12)]
+        [InlineData(25, -13, 12)]
+        [InlineData(13, -25, -12)]
+        [InlineData(-25, 13, -12)]
+        [InlineData(13, 25, 38)]
+        [InlineData(25, 13, 38)]
+        [InlineData(-13, -25, -38)]
+        [InlineData(-25, -13, -38)]
         [InlineData(-55, 55, 0)]
         [InlineData(55, -55, 0)]
         public void BinaryInteger_Addition_ResultShouldEqualExpected(int val1, int val2, int result)
@@ -61,10 +69,14 @@ namespace LW1_Test
         [Theory]
         [InlineData(0, 5, 0)]
         [InlineData(5, 0, 0)]
-        [InlineData(-15, 22, -330)]
-        [InlineData(22, -15, -330)]
-        [InlineData(-55, 55, -3025)]
-        [InlineData(55, -55, -3025)]
+        [InlineData(-13, 25, -325)]
+        [InlineData(25, -13, -325)]
+        [InlineData(13, -25, -325)]
+        [InlineData(-25, 13, -325)]
+        [InlineData(13, 25, 325)]
+        [InlineData(25, 13, 325)]
+        [InlineData(-13, -25, 325)]
+        [InlineData(-25, -13, 325)]
         [InlineData(12, 10, 120)]
         [InlineData(10, 12, 120)]
         public void BinaryInteger_Multiplication_ResultShouldEqualExpected(int val1, int val2, int result)
