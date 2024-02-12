@@ -3,20 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using static LW1.Helper;
 
 
-//BinaryFloat fa = new(ReadFloat());
+BinaryFloat float1 = new(ReadFloat());
 
-//ShowDetails(fa);
+ShowDetails(float1);
 
-//BinaryFloat fb = new(ReadFloat());
+BinaryFloat float2 = new(ReadFloat());
 
-//ShowDetails(fb);
-
-//BinaryFloat fc = fa + fb;
-
-//ShowDetails(fc);
-
-BinaryFloat float1 = new(1.5f);
-BinaryFloat float2 = new(3.5f);
+ShowDetails(float2);
 
 BinaryFloat float3 = float1 + float2;
 
