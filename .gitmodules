@@ -4,3 +4,6 @@
 [submodule "OTIS/LW5"]
 	path = OTIS/LW5
 	url = https://github.com/robilkot/GraphEditor
+[submodule "AOIS"]
+	path = AOIS
+	url = https://github.com/robilkot/BSUIR_AOIS
