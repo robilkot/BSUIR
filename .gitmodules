@@ -7,3 +7,6 @@
 [submodule "AOIS"]
 	path = AOIS
 	url = https://github.com/robilkot/BSUIR_AOIS
+[submodule "LOIS"]
+	path = LOIS
+	url = https://github.com/robilkot/BSUIR_LOIS
