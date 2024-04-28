@@ -1,0 +1,19 @@
+subject_domain_of_bibliographic_sources
+=>nrel_main_idtf: 
+	[Предметная область библиографических источников] 
+	(* <- lang_ru;; *);
+	[Subject domain of bibliographic sources] 
+	(* <- lang_en;; *);
+<- subject_domain;
+<= nrel_private_subject_domain: subject_domain_of_bibliography;
+-> rrel_maximum_studied_object_class:
+	concept_publication;
+-> rrel_not_maximum_studied_object_class:
+    concept_independent_source;
+    concept_component_of_document;
+    concept_official_document;
+	concept_volume_of_other_publication;
+	concept_single_volume_publication;
+	concept_multi_volume_publication;
+	concept_electronic_publication;
+	concept_printed_publication;;

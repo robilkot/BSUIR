@@ -1,0 +1,14 @@
+subject_domain_of_independent_sources
+=>nrel_main_idtf: 
+	[Предметная область самостоятельных библиографических источников] 
+	(* <- lang_ru;; *);
+	[Subject domain of independent bibliographic sources] 
+	(* <- lang_en;; *);
+<- subject_domain;
+<= nrel_private_subject_domain: subject_domain_of_bibliographic_sources;
+-> rrel_maximum_studied_object_class:
+	concept_independent_source;
+-> rrel_not_maximum_studied_object_class:
+	concept_educational_materials;
+	concept_collection_of_articles;
+    concept_textbook;;
