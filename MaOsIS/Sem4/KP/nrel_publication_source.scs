@@ -1,0 +1,16 @@
+nrel_publication_source
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Источник публикации*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Publication source*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_component_of_document;
+	=>nrel_second_domain: concept_publication;
+	
+	=> nrel_definition: [source where the work was published] (*<-lang_en;;*);
+	=> nrel_definition: [источник, где была опубликована работа] (*<-lang_ru;;*);;

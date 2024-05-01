@@ -1,0 +1,16 @@
+nrel_cover_image
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Cover image*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Изображение обложки*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: concept_image;
+	
+	=> nrel_definition: [cover image of a publication](*<-lang_en;;*);
+	=> nrel_definition: [изображение обложки публикации] (*<-lang_ru;;*);;
