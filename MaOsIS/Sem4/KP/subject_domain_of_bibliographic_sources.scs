@@ -6,6 +6,9 @@ subject_domain_of_bibliographic_sources
 	(* <- lang_en;; *);
 <- subject_domain;
 <= nrel_private_subject_domain: subject_domain_of_bibliography;
+=> nrel_private_subject_domain:
+	subject_domain_of_independent_sources;
+	subject_domain_of_components_of_a_document;
 -> rrel_maximum_studied_object_class:
 	concept_publication;
 -> rrel_not_maximum_studied_object_class:
@@ -16,4 +19,19 @@ subject_domain_of_bibliographic_sources
 	concept_single_volume_publication;
 	concept_multi_volume_publication;
 	concept_electronic_publication;
-	concept_printed_publication;;
+	concept_printed_publication;
+-> rrel_explored_relation:
+	nrel_publication_source;
+	nrel_journal_issue;
+	nrel_cover_image;
+	nrel_author;
+	nrel_title;
+	nrel_year_of_publication;
+	nrel_date_of_publication;
+	nrel_editor;
+	nrel_original_language;
+	nrel_pages_amount;
+	nrel_pages_range;
+	nrel_publication_city;
+	nrel_publisher;
+	nrel_electronic_resource_link;;
