@@ -1,0 +1,23 @@
+nrel_pages_range
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Pages range*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Диапазон страниц*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: concept_page_range;
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Диапазон страниц*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:  [Def. (Pages range*)](*<-lang_en;; *);;
+		<= nrel_definition: [a diapason of pages in a publication](*<-lang_en;;*);;
+		<= nrel_definition: [диапазон страниц в публикации] (*<-lang_ru;;*);;
+	*);;
+

@@ -1,0 +1,23 @@
+nrel_publication_city
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Publication city*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Город публикации*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: ...; 
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Город публикации*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:	[Def. (Publication city*)](*<-lang_en;; *);;
+		<= nrel_definition: [город, где публикация была созданна](*<-lang_ru;;*);;
+		<= nrel_definition: [city where the publication was made](*<-lang_en;;*);;
+	*);;
+

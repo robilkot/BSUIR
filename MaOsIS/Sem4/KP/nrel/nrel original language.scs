@@ -1,0 +1,23 @@
+nrel_original_language
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Original language*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Язык оригинала*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: ...; 
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Язык оригинала*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:	[Def. (Original language*)](*<-lang_en;; *);;
+		<= nrel_definition: [язык на котором был написан оригинал](*<-lang_ru;;*);;
+		<= nrel_definition: [language that was originally used in publication](*<-lang_en;;*);;
+	*);;
+

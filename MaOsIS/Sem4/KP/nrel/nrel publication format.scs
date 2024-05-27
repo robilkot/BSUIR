@@ -1,0 +1,23 @@
+nrel_publication_format
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Publication format*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Формат публикации*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: concept_publication_format; 
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Формат публикации*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:  [Def. (Publication format*)](*<-lang_en;; *);;
+		<= nrel_definition: [формат в котором публикация была издана](*<-lang_ru;;*);;
+		<= nrel_definition: [format of the publication](*<-lang_en;;*);;
+	*);;
+

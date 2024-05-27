@@ -1,0 +1,23 @@
+nrel_editor
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Editor*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Редактор*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: ...; 
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Редактор*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:  [Def. (Editor*)](*<-lang_en;; *);;
+		<= nrel_definition: [тот кто редактировал публикацию](*<-lang_ru;;*);;
+		<= nrel_definition: [the one who edited the publication](*<-lang_en;;*);;
+	*);;
+

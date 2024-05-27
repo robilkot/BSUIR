@@ -1,0 +1,23 @@
+nrel_pages_amount
+    <- relation;
+    <- binary_relation;
+    <- oriented_relation;
+    <- antireflexive_relation;
+    <- asymmetric_relation;
+	<- antitransitive_relation;
+
+	=>nrel_main_idtf:[Amount of pages*](*<-lang_en;;*);
+	=>nrel_main_idtf:[Издатель*](*<-lang_ru;;*);
+	
+	=>nrel_first_domain: concept_publication;
+	=>nrel_second_domain: concept_pages_amount (*=>nrel_amount:...;;*);
+	
+	->rrel_key_sc_element:
+	...
+	(*
+		=> nrel_main_idtf:  [Опр. (Количество страниц*)](*<-lang_ru;; *);;
+		=> nrel_main_idtf:  [Def. (Pages amount*)](*<-lang_en;; *);;
+		<= nrel_definition: [amount of pages in a publication](*<-lang_en;;*);;
+		<= nrel_definition: [количество страниц в публикации] (*<-lang_ru;;*);;
+	*);;
+

@@ -1,0 +1,16 @@
+subject_domain_of_official_documents
+=>nrel_main_idtf: 
+	[Предметная область официальных документа] 
+	(* <- lang_ru;; *);
+	[Subject domain of official documents] 
+	(* <- lang_en;; *);
+<- subject_domain;
+<= nrel_private_subject_domain: subject_domain_of_bibliographic_sources;
+-> rrel_maximum_studied_object_class:
+	concept_official_document;
+-> rrel_not_maximum_studied_object_class:
+	concept_constitution;
+	concept_law;
+	concept_order;
+	concept_letter;;
+	
