@@ -13,4 +13,8 @@
 !*.gwf
 !*.scs
 !*.nb
+!*.cs
+!*.csproj
+!*.docx
+!*.pdf
 **/x64
