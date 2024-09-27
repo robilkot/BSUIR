@@ -17,4 +17,5 @@
 !*.csproj
 !*.docx
 !*.pdf
+!*.sql
 **/x64
