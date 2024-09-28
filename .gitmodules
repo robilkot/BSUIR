@@ -10,3 +10,6 @@
 [submodule "LOIS"]
 	path = LOIS
 	url = https://github.com/robilkot/BSUIR_LOIS
+[submodule "PBZ"]
+	path = PBZ
+	url = https://github.com/robilkot/BSUIR_PBZ
