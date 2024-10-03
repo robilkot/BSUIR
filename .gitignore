@@ -18,4 +18,6 @@
 !*.docx
 !*.pdf
 !*.sql
+!*.ipynb
+!*.csv
 **/x64
