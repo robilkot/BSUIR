@@ -1,0 +1,143 @@
+@startuml
+
+'skinparam linetype ortho
+skinparam nodesep 10
+skinparam ranksep 20
+
+' === Цепочки обсуждений в подсистеме “Список отзывов” ===
+package DiscussionChains {
+
+class Review <<data>> #lightgreen {
+    +id: int
+    +title: string
+    +text: string
+    +author: User
+    +rating: Integer 
+	
+	+replies: List[int]
+} 
+
+note left of Review::replies
+	New field.
+	
+	Notes are obtained by client
+	from ReviewsController
+	by ids in the list.
+end note
+
+}
+
+' ===  Возможность создания локаций с доступом для конкретных групп пользователей (например, клубы по приглашению) ===
+package WhitelistedLocations {
+
+class Location <<data>> #lightgreen {
+    +id: int
+    +name: string
+    +geolocation: string
+    +photoUrls: List[string]
+    +nearestEvent: option[Event]
+    +reviewsIds: List[int]
+	+administratorsEmails: List[string]
+	
+	+whitelist: option[List[string]]
+}
+
+note left of Location::whitelist
+	New field.
+	
+	List of allowed users'
+	emails to grant access
+end note
+
+class LocationsController #lightgreen {
+    -locationsService: ILocationsService
+    +getLocations(ctx: RequestContext): HTMLDocument
+    +addLocation(ctx: RequestContext, location: Location)
+    +updateLocation(ctx: RequestContext, location: Location)
+    +deleteLocation(ctx: RequestContext, id: int)
+    +addAdministrator(ctx: RequestContext, locationId: int, email: string)
+    +removeAdministrator(ctx: RequestContext, locationId: int, email: string)
+	
+	-filterByWhitelist(ctx: RequestContext, locations List[Location]): List[Location]
+}
+
+note left of LocationsController::filterByWhitelist
+	New method.
+	
+	Used to provide only locations
+	where current user email (stored in JWT)
+	is whitelisted.
+	Called from getLocations()
+end note
+
+}
+
+' === “Рецензии” помимо обычных отзывов для предоставления возможности авторитетным критикам оставить свое мнение о мероприятии.
+
+package Critiques {
+enum Role #lightgreen {
+	USER,
+	ADMINISTRATOR,
+	MANAGER,
+	CRITIQUE
+}
+	
+note bottom of Role
+	New enum value
+end note
+
+
+class Review <<data>> {
+    +id: int
+    +title: string
+    +body: ReviewBody
+    +author: User
+    +rating: Integer 
+} 
+
+abstract class ReviewBody #lightgreen {
+
+}
+
+class TextReviewBody <<data>> {
+	+text: string
+}
+
+class MarkdownReviewBody <<data>> #beige {
+	+mdText: string
+}
+
+MarkdownReviewBody ..|> ReviewBody
+TextReviewBody ..|> ReviewBody
+Review *-- ReviewBody
+
+note bottom of MarkdownReviewBody
+	New derived class
+	
+	Critique reviews are 
+	separatly-styled markdown texts.
+	This also has to be reflected 
+	in HTML templates
+end note
+
+class ReviewsController #lightgreen {
+    -ReviewsService: IReviewsService
+    +getReview(ctx: RequestContext, reviewId: int): Review
+    +addReview(ctx: RequestContext, Review: Review)
+    +updateReview(ctx: RequestContext, Review: Review)
+    +deleteReview(ctx: RequestContext, id: int)
+	
+	-authorizeCritique(ctx: RequestContext): bool
+}
+
+note bottom of ReviewsController
+	New method
+	
+	Checks by content of JWT if the user 
+	can leave critique reviews.
+end note
+
+}
+
+
+@enduml

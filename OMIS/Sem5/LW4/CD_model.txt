@@ -33,6 +33,12 @@ class Event <<data>> {
     +reviewsIds: List[int]
 }
 
+note right of Event::reviewsIds
+	Notes are obtained by client
+	from ReviewsController
+	by ids in the list
+end note
+
 class Location <<data>> {
     +id: int
     +name: string
@@ -40,19 +46,36 @@ class Location <<data>> {
     +photoUrls: List[string]
     +nearestEvent: option[Event]
     +reviewsIds: List[int]
-	+administrators: List[User]
+	+administratorsEmails: List[string]
 }
+
+note right of Location::reviewsIds
+	Notes are obtained by client
+	from ReviewsController
+	by ids in the list
+end note
 
 class Review <<data>> {
     +id: int
     +title: string
-    +text: string
+    +body: ReviewBody
     +author: User
-    +rating: Integer
+    +rating: Integer 
+} 
+
+abstract class ReviewBody {
+
 }
 
+class TextReviewBody <<data>> {
+	+text: string
+}
+
+TextReviewBody ..|> ReviewBody
+Review *-- ReviewBody
+
 Location "1" --> "0..1" Event
-Location "*" --> "*" User
+Location "*" --> "*" User: contains email from account
 Review "*" --> "1" User
 
 ' === SERVICES === 
@@ -82,7 +105,7 @@ IAuthService ..> User: <<Use>>
 
 class ReviewsService{
     -repository: IReviewsRepository 
-    +getReviews(): List[Review]
+    +getReviews(reviewsIds: List[int]): List[Review]
     +addReview(Review: Review)
     +updateReview(Review: Review)
     +deleteReview(id: int)
@@ -106,7 +129,7 @@ IReviewsService ..> Review: <<Use>>
 class EventsService{
     -repository: IEventsRepository 
     -locationsService: ILocationsService 
-    +getEvents(): List[Event]
+    +getEvents(location: Location): List[Event]
     +addEvent(Event: Event)
     +updateEvent(Event: Event)
     +deleteEvent(id: int)
@@ -117,7 +140,7 @@ class EventsService{
 EventsService o.. ILocationsService
 
 interface IEventsService {
-    +getEvents(): List[Event]
+    +getEvents(location: Location): List[Event]
     +addEvent(Event: Event)
     +updateEvent(Event: Event)
     +deleteEvent(id: int)

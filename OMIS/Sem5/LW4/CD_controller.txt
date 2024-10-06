@@ -94,20 +94,21 @@ LocationsController o-- ILocationsService
 
 class EventsController {
     -EventsService: IEventsService
-    +getEvents(ctx: RequestContext): HTMLDocument
+    +getEvents(ctx: RequestContext, location: Location): HTMLDocument
     +addEvent(ctx: RequestContext, Event: Event)
     +updateEvent(ctx: RequestContext, Event: Event)
     +deleteEvent(ctx: RequestContext, id: int)
 }
 
 interface IEventsController {
-    +getEvents(ctx: RequestContext): HTMLDocument
+    +getEvents(ctx: RequestContext, location: Location): HTMLDocument
     +addEvent(ctx: RequestContext, Event: Event)
     +updateEvent(ctx: RequestContext, Event: Event)
     +deleteEvent(ctx: RequestContext, id: int)
 }
 
 EventsController ..> RequestContext : <<use>>
+EventsController ..> Location : <<use>>
 EventsController ..> Event: <<use>>
 EventsController --|> Controller 
 EventsController ..|> IEventsController 
@@ -120,14 +121,13 @@ EventsController o-- IEventsService
 
 class ReviewsController {
     -ReviewsService: IReviewsService
-    +getReviews(ctx: RequestContext): HTMLDocument
+    +getReview(ctx: RequestContext, reviewId: int): Review
     +addReview(ctx: RequestContext, Review: Review)
     +updateReview(ctx: RequestContext, Review: Review)
     +deleteReview(ctx: RequestContext, id: int)
 }
 
 interface IReviewsController {
-    +getReviews(ctx: RequestContext): HTMLDocument
     +addReview(ctx: RequestContext, Review: Review)
     +updateReview(ctx: RequestContext, Review: Review)
     +deleteReview(ctx: RequestContext, id: int)
