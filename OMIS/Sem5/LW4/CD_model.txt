@@ -1,0 +1,235 @@
+@startuml
+
+'skinparam linetype ortho
+skinparam nodesep 10
+skinparam ranksep 20
+
+' === Model ===
+
+enum Role {
+USER,
+ADMINISTRATOR,
+MANAGER
+}
+
+User "*"-->"1" Role
+
+class User <<data>> {
+    +id: int
+    +avatarUrl: string
+    +dateOfBirth: Date
+    +name: string
+    +email: string
+    +password: option[string]
+    +roles: list[Role]
+}
+
+class Event <<data>> {
+    +id: int
+    +name: string
+    +dateTime: DateTime
+    +rating: float
+    +location: Location
+    +reviewsIds: List[int]
+}
+
+class Location <<data>> {
+    +id: int
+    +name: string
+    +geolocation: string
+    +photoUrls: List[string]
+    +nearestEvent: option[Event]
+    +reviewsIds: List[int]
+	+administrators: List[User]
+}
+
+class Review <<data>> {
+    +id: int
+    +title: string
+    +text: string
+    +author: User
+    +rating: Integer
+}
+
+Location "1" --> "0..1" Event
+Location "*" --> "*" User
+Review "*" --> "1" User
+
+' === SERVICES === 
+
+interface IAuthService  {
+    +register(user: User): bool
+    +login(email: string, password: string): bool
+    +updateUser(user: User)
+    +deleteUser(email: string)
+}
+
+class AuthService {
+    -authRepository : AuthRepository 
+    +register(user: User): bool
+    +login(email: string, password: string): bool
+    +updateUser(user: User)
+    +deleteUser(email: string)
+}
+
+AuthService ..|> IAuthService  
+AuthService o-- IAuthRepository 
+IAuthService ..> User: <<Use>>
+
+
+
+' === REVIEWS ===
+
+class ReviewsService{
+    -repository: IReviewsRepository 
+    +getReviews(): List[Review]
+    +addReview(Review: Review)
+    +updateReview(Review: Review)
+    +deleteReview(id: int)
+}
+
+interface IReviewsService {
+    +getReviews(): List[Review]
+    +addReview(Review: Review)
+    +updateReview(Review: Review)
+    +deleteReview(id: int)
+}
+
+ReviewsService ..|> IReviewsService
+ReviewsService o-- IReviewsRepository
+IReviewsService ..> Review: <<Use>>
+
+
+
+' === EVENTS ===
+
+class EventsService{
+    -repository: IEventsRepository 
+    -locationsService: ILocationsService 
+    +getEvents(): List[Event]
+    +addEvent(Event: Event)
+    +updateEvent(Event: Event)
+    +deleteEvent(id: int)
+    +getNearestEvent(location: Location): option[Event]
+    -getEventLocation(event: Event): Location
+}
+
+EventsService o.. ILocationsService
+
+interface IEventsService {
+    +getEvents(): List[Event]
+    +addEvent(Event: Event)
+    +updateEvent(Event: Event)
+    +deleteEvent(id: int)
+    +getNearestEvent(location: Location): option[Event]
+}
+
+EventsService o-- IEventsRepository 
+EventsService ..|> IEventsService
+EventsService ..> Location: <<Use>>
+IEventsService ..> Event: <<Use>>
+
+
+
+' === LOCATIONS ===
+
+class LocationsService{
+    -repository: ILocationsRepository
+    -eventsService: IEventsService 
+    +getLocations(): List[Location]
+    +addLocation(location: Location)
+    +updateLocation(location: Location)
+    +deleteLocation(id: int)
+	+addAdministrator(locationId: int, email: string)
+	+removeAdministrator(locationId: int, email: string)
+    -getNearestEvent(location: Location): Event
+}
+
+LocationsService o.. IEventsService
+
+interface ILocationsService {
+    +getLocations(): List[Location]
+    +addLocation(location: Location)
+    +updateLocation(location: Location)
+    +deleteLocation(id: int)
+	+addAdministrator(locationId: int, email: string)
+	+removeAdministrator(locationId: int, email: string)
+}
+
+ILocationsService ..> Location: <<Use>>
+LocationsService o-- ILocationsRepository 
+LocationsService..|> ILocationsService
+LocationsService ..> Event: <<Use>>
+
+
+
+' === REPO ===
+
+interface IAuthRepository  {
+    +getUser(email: string): User
+    +createUser(user: User)
+    +updateUser(user: User)
+    +deleteUser(email: string)
+}
+class AuthRepository {
+    -databaseContext: DbContext
+    +getUser(email: string): User
+    +createUser(user: User)
+    +updateUser(user: User)
+    +deleteUser(email: string)
+}
+
+interface IReviewsRepository  {
+    +getReviews(): List[Review]
+    +addReview(Review: Review)
+    +updateReview(Review: Review)
+    +deleteReview(id: int)
+}
+	
+interface IEventsRepository  {
+	+getEvents(): List[Event]
+    +addEvent(Event: Event)
+    +updateEvent(Event: Event)
+    +deleteEvent(id: int)
+    +getNearestEvent(location: Location): option[Event]
+}
+	
+interface ILocationsRepository  {
+	+getLocations(): List[Location]
+    +addLocation(location: Location)
+    +updateLocation(location: Location)
+    +deleteLocation(id: int)
+}
+
+class ServicesRepository {
+	+getReviews(): List[Review]
+    +addReview(Review: Review)
+    +updateReview(Review: Review)
+    +deleteReview(id: int)
+	
+	+getEvents(): List[Event]
+    +addEvent(Event: Event)
+    +updateEvent(Event: Event)
+    +deleteEvent(id: int)
+    +getNearestEvent(location: Location): option[Event]
+	
+    +getLocations(): List[Location]
+    +addLocation(location: Location)
+    +updateLocation(location: Location)
+    +deleteLocation(id: int)
+}
+
+AuthRepository ..|> IAuthRepository 
+ServicesRepository ..|> IReviewsRepository  
+ServicesRepository ..|> ILocationsRepository  
+ServicesRepository ..|> IEventsRepository  
+
+IAuthRepository ..> User: <<Use>>
+IReviewsRepository ..> Review: <<Use>>
+IEventsRepository ..> Event: <<Use>>
+IEventsRepository ..> Location: <<Use>>
+ILocationsRepository ..> Location: <<Use>>
+
+note left of LocationsService: getNearestEvent(location) may be redundant\nif using ORM that automatically\njoins locations and events tables
+
+@enduml

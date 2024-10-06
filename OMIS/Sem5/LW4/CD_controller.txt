@@ -1,0 +1,142 @@
+@startuml
+
+'skinparam linetype ortho
+skinparam nodesep 10
+skinparam ranksep 20
+
+
+interface IAuthService
+interface ILocationsService
+interface IEventsService
+interface IReviewsService
+
+
+' === COMMON ===
+
+class RequestContext <<data>> {
+    +token: option[JWTtoken]
+}
+
+abstract class Controller {
+    -HTMLPageFactory: HTMLPageFactory
+    #validateAccessToken(token: JWTtoken): bool
+}
+
+class HTMLPageFactory
+"Controller" o-- HTMLPageFactory
+
+
+' === AUTH ===
+
+interface IAuthController {
+	+profileGet(ctx: RequestContext): HTMLDocument
+    +registerGet(ctx: RequestContext): HTMLDocument
+    +registerPost(ctx: RequestContext, user: User)
+	+loginGet(ctx: RequestContext): HTMLDocument
+    +loginPost(ctx: RequestContext, email: string, password: string): JWTtoken
+    +updateUser(ctx: RequestContext, user: User)
+    +deleteUser(ctx: RequestContext, email: string)
+}
+
+class AuthController {
+    -authService: IAuthService
+	+profileGet(ctx: RequestContext): HTMLDocument
+    +registerGet(ctx: RequestContext): HTMLDocument
+    +registerPost(ctx: RequestContext, user: User)
+	+loginGet(ctx: RequestContext): HTMLDocument
+    +loginPost(ctx: RequestContext, email: string, password: string): JWTtoken
+    +updateUser(ctx: RequestContext, user: User)
+    +deleteUser(ctx: RequestContext, email: string)
+    -validateEmail(email: string): bool
+    -validatePassword(password: string): bool
+}
+
+AuthController ..> RequestContext : <<use>>
+AuthController ..> User : <<use>>
+AuthController --|> Controller 
+AuthController ..|> IAuthController 
+AuthController o-- IAuthService
+
+
+
+' === LOCATIONS ===
+
+class LocationsController {
+    -locationsService: ILocationsService
+    +getLocations(ctx: RequestContext): HTMLDocument
+    +addLocation(ctx: RequestContext, location: Location)
+    +updateLocation(ctx: RequestContext, location: Location)
+    +deleteLocation(ctx: RequestContext, id: int)
+    +addAdministrator(ctx: RequestContext, locationId: int, email: string)
+    +removeAdministrator(ctx: RequestContext, locationId: int, email: string)
+}
+
+interface ILocationsController {
+    +getLocations(ctx: RequestContext): HTMLDocument
+    +addLocation(ctx: RequestContext, location: Location)
+    +updateLocation(ctx: RequestContext, location: Location)
+    +deleteLocation(ctx: RequestContext, id: int)
+    +addAdministrator(ctx: RequestContext, locationId: int, email: string)
+    +removeAdministrator(ctx: RequestContext, locationId: int, email: string)
+}
+
+LocationsController ..> RequestContext : <<use>>
+LocationsController ..> Location: <<use>>
+LocationsController --|> Controller 
+LocationsController ..|> ILocationsController 
+LocationsController o-- ILocationsService
+
+
+
+
+
+' === EVENTS ===
+
+class EventsController {
+    -EventsService: IEventsService
+    +getEvents(ctx: RequestContext): HTMLDocument
+    +addEvent(ctx: RequestContext, Event: Event)
+    +updateEvent(ctx: RequestContext, Event: Event)
+    +deleteEvent(ctx: RequestContext, id: int)
+}
+
+interface IEventsController {
+    +getEvents(ctx: RequestContext): HTMLDocument
+    +addEvent(ctx: RequestContext, Event: Event)
+    +updateEvent(ctx: RequestContext, Event: Event)
+    +deleteEvent(ctx: RequestContext, id: int)
+}
+
+EventsController ..> RequestContext : <<use>>
+EventsController ..> Event: <<use>>
+EventsController --|> Controller 
+EventsController ..|> IEventsController 
+EventsController o-- IEventsService
+
+
+
+
+' === REVIEWS ===
+
+class ReviewsController {
+    -ReviewsService: IReviewsService
+    +getReviews(ctx: RequestContext): HTMLDocument
+    +addReview(ctx: RequestContext, Review: Review)
+    +updateReview(ctx: RequestContext, Review: Review)
+    +deleteReview(ctx: RequestContext, id: int)
+}
+
+interface IReviewsController {
+    +getReviews(ctx: RequestContext): HTMLDocument
+    +addReview(ctx: RequestContext, Review: Review)
+    +updateReview(ctx: RequestContext, Review: Review)
+    +deleteReview(ctx: RequestContext, id: int)
+}
+
+ReviewsController ..> RequestContext : <<use>>
+ReviewsController ..> Review: <<use>>
+ReviewsController --|> Controller 
+ReviewsController ..|> IReviewsController 
+ReviewsController o-- IReviewsService
+
+@enduml

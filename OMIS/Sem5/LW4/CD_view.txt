@@ -1,0 +1,27 @@
+@startuml
+
+'skinparam linetype ortho
+skinparam nodesep 10
+skinparam ranksep 20
+
+' === View ===
+
+class HTMLPageFactory {
+	-pageTemplatesSource: IPageTemplateSource
+	+create(data: Any): HTMLDocument
+}
+
+interface IPageTemplateSource {
+	+getByName: HTMLPageTemplate
+}
+
+class FilePageTemplateSource {
+	+getByName: HTMLPageTemplate
+}
+
+FilePageTemplateSource --|> IPageTemplateSource
+IPageTemplateSource --o HTMLPageFactory
+
+note left of IPageTemplateSource: Page template is string content\nused to create HTML page via\ndata substitution
+
+@enduml
