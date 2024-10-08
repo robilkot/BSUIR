@@ -23,7 +23,7 @@ abstract class Controller {
 }
 
 class HTMLPageFactory
-"Controller" o-- HTMLPageFactory
+Controller "HTMLPageFactory" o-- HTMLPageFactory
 
 
 ' === AUTH ===
@@ -55,7 +55,7 @@ AuthController ..> RequestContext : <<use>>
 AuthController ..> User : <<use>>
 AuthController --|> Controller 
 AuthController ..|> IAuthController 
-AuthController o-- IAuthService
+AuthController "authService" o-- IAuthService
 
 
 
@@ -84,7 +84,7 @@ LocationsController ..> RequestContext : <<use>>
 LocationsController ..> Location: <<use>>
 LocationsController --|> Controller 
 LocationsController ..|> ILocationsController 
-LocationsController o-- ILocationsService
+LocationsController "locationsService" o-- ILocationsService
 
 
 
@@ -112,7 +112,7 @@ EventsController ..> Location : <<use>>
 EventsController ..> Event: <<use>>
 EventsController --|> Controller 
 EventsController ..|> IEventsController 
-EventsController o-- IEventsService
+EventsController "eventsService" o-- IEventsService
 
 
 
@@ -137,6 +137,31 @@ ReviewsController ..> RequestContext : <<use>>
 ReviewsController ..> Review: <<use>>
 ReviewsController --|> Controller 
 ReviewsController ..|> IReviewsController 
-ReviewsController o-- IReviewsService
+ReviewsController "reviewsService" o-- IReviewsService
+
+
+
+
+class Application <<injector>> <<singleton>> {
+	+getRequiredController(httpRequest: HTTPRequest): Controller
+}
+
+note right of Application
+	Implemented by framework. Creates controller 
+	instances per request and calls methods 
+	corresponding to endpoints
+end note
+
+Application ..> Controller : <<use>>
+Application ..> ReviewsController : <<instantiate>>
+Application ..> EventsController : <<instantiate>>
+Application ..> LocationsController : <<instantiate>>
+Application ..> AuthController : <<instantiate>>
+
+Application ..> Controller : <<call>>
+Application ..> ReviewsController : <<call>>
+Application ..> EventsController : <<call>>
+Application ..> LocationsController : <<call>>
+Application ..> AuthController : <<call>>
 
 @enduml

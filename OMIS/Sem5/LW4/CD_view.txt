@@ -2,7 +2,7 @@
 
 'skinparam linetype ortho
 skinparam nodesep 10
-skinparam ranksep 20
+skinparam ranksep 40
 
 ' === View ===
 
@@ -20,8 +20,18 @@ class FilePageTemplateSource {
 }
 
 FilePageTemplateSource --|> IPageTemplateSource
-IPageTemplateSource --o HTMLPageFactory
+IPageTemplateSource --o "pageTemplatesSource" HTMLPageFactory
 
 note left of IPageTemplateSource: Page template is string content\nused to create HTML page via\ndata substitution
+
+
+class Application <<injector>> <<singleton>> {
+	+getRequiredService(type: Class | Interface): object
+}
+
+note right of Application : DI container implemented by framework
+
+
+Application ..> HTMLPageFactory : <<instantiate>>
 
 @enduml

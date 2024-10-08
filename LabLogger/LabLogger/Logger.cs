@@ -1,5 +1,8 @@
-﻿namespace LabLogger
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace LabLogger
 {
+    [ExcludeFromCodeCoverage]
     public static class Logger
     {
         public static Levels Level = 0;
@@ -12,7 +15,7 @@
             Debug = 8
         }
         private static HashSet<ILoggingService> s_loggingService = [];
-        public static void Log(string message, Levels level = Levels.Info)
+        public static void Log(object message, Levels level = Levels.Info)
         {
             foreach (var service in s_loggingService)
             {

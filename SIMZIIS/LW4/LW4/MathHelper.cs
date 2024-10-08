@@ -9,7 +9,7 @@
 
             while (exponent > 0)
             {
-                if ((exponent & 1) == 1)
+                if (exponent % 2 == 1)
                     result = (result * @base) % module;
 
                 exponent /= 2;
