@@ -19,7 +19,7 @@ class FilePageTemplateSource {
 	+getByName: HTMLPageTemplate
 }
 
-FilePageTemplateSource --|> IPageTemplateSource
+FilePageTemplateSource ..|> IPageTemplateSource
 IPageTemplateSource --o "pageTemplatesSource" HTMLPageFactory
 
 note left of IPageTemplateSource: Page template is string content\nused to create HTML page via\ndata substitution
@@ -33,5 +33,6 @@ note right of Application : DI container implemented by framework
 
 
 Application ..> HTMLPageFactory : <<instantiate>>
+Application ..> FilePageTemplateSource : <<instantiate>>
 
 @enduml

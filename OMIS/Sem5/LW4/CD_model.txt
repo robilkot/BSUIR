@@ -2,7 +2,7 @@
 
 'skinparam linetype ortho
 skinparam nodesep 10
-skinparam ranksep 20
+skinparam ranksep 40
 
 ' === Model ===
 
@@ -265,6 +265,8 @@ note right of Application : DI container implemented by framework
 
 
 Application ..> ReviewsService : <<instantiate>>
+Application ..> ServicesRepository : <<instantiate>>
+Application ..> AuthRepository : <<instantiate>>
 Application ..> EventsService : <<instantiate>>
 Application ..> LocationsService : <<instantiate>>
 Application ..> AuthService : <<instantiate>>
