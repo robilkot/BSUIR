@@ -13,3 +13,6 @@
 [submodule "PBZ"]
 	path = PBZ
 	url = https://github.com/robilkot/BSUIR_PBZ
+[submodule "NumericMethods"]
+	path = NumericMethods
+	url = https://github.com/robilkot/BSUIR_NumericMethods
