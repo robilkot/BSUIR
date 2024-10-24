@@ -1,0 +1,97 @@
+@startuml
+
+'skinparam linetype ortho
+'skinparam sep 10
+'skinparam ranksep 20
+
+
+' === AUTH
+
+[*] --> LoginPage : OneEvent: start
+LoginPage --> [*]
+LoginPage : entry / AuthController::LoginGet()
+LoginPage : do / AuthController::LoginPost()
+
+LoginPage --> RegisterPage : Register button clicked
+RegisterPage --> LoginPage : Register completed/cancelled
+RegisterPage : entry / AuthController::RegisterGet()
+RegisterPage : do / AuthController::RegisterPost()
+
+RegisterPage --> RegisterPage : Register unsuccesful
+LoginPage --> LoginPage : Login unsuccesful
+
+LoginPage --> LocationsPage : Login succesful
+
+
+' === LOCATIONS
+
+LocationsPage : entry / LocationsController::GetLocations()
+LocationsPage : do / LocationsController::AddLocation()
+
+LocationsEditPopup : do / LocationsController::UpdateLocation()
+LocationsEditPopup : do / LocationsController::DeleteLocation()
+
+LocationsPage --> EventsPage
+LocationsPage --> ProfilePage
+
+
+' LocationsPage --> [*]
+LocationsPage --> LocationsDetailsPopup : Location card clicked
+LocationsPage --> LocationsEditPopup : Add location button clicked
+LocationsDetailsPopup --> LocationsPage : Location details popup closed
+LocationsDetailsPopup --> LocationsEditPopup : Edit location button clicked
+LocationsEditPopup --> LocationsDetailsPopup : Ok/Cancel editing location button clicked
+LocationsEditPopup --> LocationsPage : Delete location button clicked
+
+LocationsDetailsPopup --> LocationsAdministratorsPopup : Edit administrators button clicked
+LocationsAdministratorsPopup --> LocationsDetailsPopup : Administrators popup closed
+LocationsAdministratorsPopup : do / LocationsController::AddAdministrator()
+LocationsAdministratorsPopup : do / LocationsController::RemoveAdministrator()
+
+LocationsDetailsPopup : entry / ReviewsController::GetReviews()
+LocationsDetailsPopup : do / LocationsController::UpdateLocation()
+LocationsDetailsPopup : do / ReviewsController::AddReview()
+LocationsDetailsPopup : do / ReviewsController::DeleteReview()
+LocationsDetailsPopup : do / ReviewsController::UpdateReview()
+
+
+' === EVENTS
+
+
+EventsPage --> ProfilePage
+EventsPage --> LocationsPage
+
+EventsPage : entry / EventsController::GetEvents()
+EventsPage : do / EventsController::AddEvent()
+
+EventEditPopup : do / EventsController::UpdateEvent()
+EventEditPopup : do / EventsController::DeleteEvent()
+
+' EventsPage --> [*]
+EventsPage --> EventDetailsPopup : Event card clicked
+EventsPage --> EventEditPopup : Add event button clicked
+EventDetailsPopup --> EventEditPopup : Edit event button clicked
+EventEditPopup --> EventDetailsPopup : Ok/Cancel editing event button clicked
+EventDetailsPopup --> EventsPage : Event details popup closed
+EventEditPopup --> EventsPage : Delete event button clicked
+
+EventDetailsPopup : entry / ReviewsController::GetReviews()
+EventDetailsPopup : do / ReviewsController::AddReview()
+EventDetailsPopup : do / ReviewsController::DeleteReview()
+EventDetailsPopup : do / ReviewsController::UpdateReview()
+
+
+' === PROFILES
+
+' ProfilePage --> [*]
+ProfilePage --> EventsPage
+ProfilePage --> LocationsPage
+ProfilePage --> LoginPage : Logout
+ProfilePage : entry / AuthController::ProfileGet()
+ProfilePage : entry / ReviewsController::GetReviews()
+ProfilePage : do / AuthController::Logout()
+ProfilePage : do / AuthController::UpdateUser()
+
+
+
+@enduml

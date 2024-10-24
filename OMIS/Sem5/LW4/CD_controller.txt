@@ -34,6 +34,7 @@ interface IAuthController {
     +registerPost(ctx: RequestContext, user: User)
 	+loginGet(ctx: RequestContext): HTMLDocument
     +loginPost(ctx: RequestContext, email: string, password: string): JWTtoken
+    +logoutPost(ctx: RequestContext, email)
     +updateUser(ctx: RequestContext, user: User)
     +deleteUser(ctx: RequestContext, email: string)
 }
@@ -45,6 +46,7 @@ class AuthController {
     +registerPost(ctx: RequestContext, user: User)
 	+loginGet(ctx: RequestContext): HTMLDocument
     +loginPost(ctx: RequestContext, email: string, password: string): JWTtoken
+	+logoutPost(ctx: RequestContext, email)
     +updateUser(ctx: RequestContext, user: User)
     +deleteUser(ctx: RequestContext, email: string)
     -validateEmail(email: string): bool
@@ -121,6 +123,7 @@ EventsController "eventsService" o-- IEventsService
 
 class ReviewsController {
     -ReviewsService: IReviewsService
+    +getReviews(ctx: RequestContext, reviewAuthor: id): List[Review]
     +getReview(ctx: RequestContext, reviewId: int): Review
     +addReview(ctx: RequestContext, Review: Review)
     +updateReview(ctx: RequestContext, Review: Review)
@@ -128,6 +131,8 @@ class ReviewsController {
 }
 
 interface IReviewsController {
+    +getReviews(ctx: RequestContext, reviewAuthor: id): List[Review]
+    +getReview(ctx: RequestContext, reviewId: int): Review
     +addReview(ctx: RequestContext, Review: Review)
     +updateReview(ctx: RequestContext, Review: Review)
     +deleteReview(ctx: RequestContext, id: int)

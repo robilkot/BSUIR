@@ -83,6 +83,7 @@ Review "* author" --> "1" User
 interface IAuthService  {
     +register(user: User): bool
     +login(email: string, password: string): bool
+	+logout(token: JWTToken): bool
     +updateUser(user: User)
     +deleteUser(email: string)
 }
@@ -91,6 +92,7 @@ class AuthService {
     -authRepository : AuthRepository 
     +register(user: User): bool
     +login(email: string, password: string): bool
+	+logout(token: JWTToken): bool
     +updateUser(user: User)
     +deleteUser(email: string)
 }
@@ -106,13 +108,15 @@ IAuthService ..> User: <<Use>>
 class ReviewsService{
     -reviewsRepository: IReviewsRepository 
     +getReviews(reviewsIds: List[int]): List[Review]
+    +getReviews(reviewAuthor: id): List[Review]
     +addReview(Review: Review)
     +updateReview(Review: Review)
     +deleteReview(id: int)
 }
 
 interface IReviewsService {
-    +getReviews(): List[Review]
+    +getReviews(reviewsIds: List[int]): List[Review]
+    +getReviews(reviewAuthor: id): List[Review]
     +addReview(Review: Review)
     +updateReview(Review: Review)
     +deleteReview(id: int)
