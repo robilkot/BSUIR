@@ -23,7 +23,7 @@ left_r[:, :, [1, 2]] = 0
 
 # Take only G and B channels from right image
 right_gb = right_image_shifted.copy()
-right_gb[:, :, 0] = 0
+right_gb[:, :, [0, 1]] = 0
 
 anaglyph_image = cv2.addWeighted(left_r, 1, right_gb, 1, 0)
 
