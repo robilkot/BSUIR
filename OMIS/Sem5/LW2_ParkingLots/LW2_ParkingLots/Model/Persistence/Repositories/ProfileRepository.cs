@@ -10,6 +10,24 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
                 FullName = "Tim Robilko",
                 Email = "timur.robilko@gmail.com",
                 PhoneNumber = "1234567890",
+            },
+            new ApplicationUser() {
+                Id = "1",
+                FullName = "Netim Robilko",
+                Email = "netimur.robilko@gmail.com",
+                PhoneNumber = "1234567890",
+            },
+            new ApplicationUser() {
+                Id = "2",
+                FullName = "Tim Nerobilko",
+                Email = "timur.nerobilko@gmail.com",
+                PhoneNumber = "1234567890",
+            },
+            new ApplicationUser() {
+                Id = "3",
+                FullName = "Netim Nerobilko",
+                Email = "netimur.nerobilko@gmail.com",
+                PhoneNumber = "1234567890",
             }
             ];
         public Task<ApplicationUser> GetUserAsync(int id)

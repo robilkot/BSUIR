@@ -5,7 +5,7 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
     {
         public Task ProcessPayment(int userId, decimal amount, int parkingLotId)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

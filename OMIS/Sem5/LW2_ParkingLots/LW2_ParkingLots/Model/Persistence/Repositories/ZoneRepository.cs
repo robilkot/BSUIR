@@ -4,7 +4,24 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
 {
     public class ZoneRepository : IZoneRepository
     {
-        private static List<ParkingZone> _zonesList = []; // todo init
+        private static List<ParkingZone> _zonesList = [
+            new() {
+                Id = 1,
+                Address = "minsk",
+                ParkingLots = [],
+            },
+            new() {
+                Id = 2,
+                Address = "moscow",
+                ParkingLots = [],
+            },
+            new() {
+                Id = 3,
+                Address = "spb",
+                ParkingLots = [],
+            }
+            ];
+
         private static int MaxId => _zonesList.Max(z => z.Id);
         public Task AddParkingLotToZoneAsync(int parkingZoneId, ParkingLot parkingLot)
         {
