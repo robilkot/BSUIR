@@ -34,9 +34,11 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
             return Task.FromResult(_lots.First(x => x.Id == id));
         }
 
-        public Task<List<ParkingLot>> GetParkingLotWithFilterAsync(ParkingLotFilter filter, int parkingZoneId)
+        public async Task<List<ParkingLot>> GetParkingLotWithFilterAsync(ParkingLotFilter filter, int parkingZoneId)
         {
-            return Task.FromResult(_lots.ToList());
+            await Task.Delay(250);
+
+            return await Task.FromResult(_lots.ToList());
         }
 
         public Task<bool> SetTimeToLotAsync(int parkingLotId, int userId, DateTime startTime, DateTime endTime)

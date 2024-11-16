@@ -1,0 +1,113 @@
+﻿@page "/"
+
+@using LW2_ParkingLots.Model.Persistence
+@using LW2_ParkingLots.Model.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+
+<PageTitle>Profile</PageTitle>
+
+@inject NavigationManager Navigation
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f1f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .registration-form {
+            background-color: #ece6f0;
+            border-radius: 12px;
+            padding: 30px;
+            width: 300px;
+            box-shadow: 0 2px 5px 2px rgba(0, 0, 0, 0.25);
+        }
+
+        .registration-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #65558f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .form-button:hover {
+            background-color: #472b96;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<div class="registration-form">
+    <h2>Логин</h2>
+    <div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" placeholder="Введите ваш Email">
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" placeholder="Введите ваш пароль">
+        </div>
+
+        <button class="form-button" @onclick="@(()=>Navigation.NavigateTo("profile"))">Логин</button>
+    </div>
+    <div class="login-link">
+        <a href="forgotPassword">Забыл пароль</a>
+        <a href="register">Регистрация</a>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+}

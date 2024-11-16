@@ -1,0 +1,66 @@
+﻿@page "/editProfile"
+
+@using LW2_ParkingLots.Model.Persistence
+@using LW2_ParkingLots.Model.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@* @attribute [Authorize] *@
+
+<PageTitle>Profile</PageTitle>
+
+@inject NavigationManager Navigation
+@inject IProfileService _profileService
+
+<div>
+    <div class="layout-rectangle1" style="float: left; width: 7%">
+
+    </div>
+    <div class="layout-rectangle1" style="float: left; width: 93%">
+        <div style="height: 90%">
+            <div class="layout-rectangle1" style="float: left; width: 60%">
+                <div class="rectangle1" style="height: 1rem"></div>
+                <div class="layout-rectangle1">
+                    <label style="display:block;">Номер телефона</label>
+                    <input type="number" value="@user.PhoneNumber" />
+                </div>
+
+                <div class="rectangle1" style="height: 1rem"></div>
+                <div class="layout-rectangle1">
+                    <label style="display:block;">Email</label>
+                    <input type="email" value="@user.Email" />
+                </div>
+
+                <div class="rectangle1" style="height: 1rem"></div>
+                <div class="layout-rectangle1">
+                    <label style="display:block;">Имя</label>
+                    <input type="text" value="@user.FullName" />
+                </div>
+
+                <div class="rectangle1" style="height: 1rem"></div>
+            </div>
+            <div class="layout-rectangle1" style="float: left; width: 40%">
+                <div class="rectangle1" style="height: 30rem; padding: 2rem; text-align: center">
+                    <img src="user.png" width="150" height="150" style="margin: auto;  display: block" />
+                    <input type="button" value="Выберите фото" style="width: 15rem; margin: 2rem 0"/>
+                </div>
+            </div>
+        </div>
+
+        <NavLink class="nav-link" href="profile" style="height: 10%; margin: auto 0; padding: 0; text-align: center">
+            <label>Профиль</label>
+        </NavLink>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private ApplicationUser user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await _profileService.GetUserAsync(0);
+    }
+}

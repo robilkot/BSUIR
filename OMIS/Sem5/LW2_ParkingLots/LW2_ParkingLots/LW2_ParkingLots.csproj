@@ -25,4 +25,10 @@
     <_ContentIncludedByDefault Remove="Components\Pages\Profile.razor" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Components\Pages\Profile\Login.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

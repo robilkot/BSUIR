@@ -1,0 +1,80 @@
+﻿@page "/profile"
+
+@using LW2_ParkingLots.Model.Persistence
+@using LW2_ParkingLots.Model.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+
+@* @attribute [Authorize] *@
+
+<PageTitle>Profile</PageTitle>
+
+@inject NavigationManager Navigation
+@inject IProfileService _profileService
+
+<div>
+    <div class="layout-rectangle1" style="float: left; width: 7%; padding: 0">
+        <img src="user.png" width="30" height="30" style="margin: 5em auto;  display: block" />
+
+        <NavLink class="nav-link" href="bookingHistory" style="padding: 0; text-align: center">
+            <img src="user.png" width="30" height="30" style="margin: 10em auto 0em auto;  display: block" />
+            <label>История</label>
+        </NavLink>
+        <NavLink class="nav-link" href="currentBookings" style="padding: 0; text-align: center">
+            <img src="user.png" width="30" height="30" style="margin: 1em auto 0em auto;  display: block" />
+            <label>Активные брони</label>
+        </NavLink>
+        <NavLink class="nav-link" href="editProfile" style="padding: 0; text-align: center">
+            <img src="user.png" width="30" height="30" style="margin: 1em auto 0em auto;  display: block" />
+            <label>Редактировать профиль</label>
+        </NavLink>
+        <NavLink class="nav-link" href="profile" style="padding: 0; text-align: center">
+            <img src="user.png" width="30" height="30" style="margin: 1em auto 0em auto;  display: block" />
+            <label>Забронировать место</label>
+        </NavLink>
+        <NavLink class="nav-link" href="profile" style="padding: 0; text-align: center">
+            <img src="user.png" width="30" height="30" style="margin: 1em auto 0em auto;  display: block" />
+            <label>Отзывы</label>
+        </NavLink>
+    </div>
+    <div class="layout-rectangle1" style="float: left; width: 93%">
+        <div class="layout-rectangle1" style="float: left; width: 60%">
+            <div class="rectangle1" style="height: 1rem"></div>
+            <div class="layout-rectangle1">
+                <label>Номер телефона</label>
+                <p>@user.PhoneNumber</p>
+            </div>
+
+            <div class="rectangle1" style="height: 1rem"></div>
+            <div class="layout-rectangle1">
+                <label>Email</label>
+                <p>@user.Email</p>
+            </div>
+
+            <div class="rectangle1" style="height: 1rem"></div>
+            <div class="layout-rectangle1">
+                <label>Имя</label>
+                <p>@user.FullName</p>
+            </div>
+
+            <div class="rectangle1" style="height: 1rem"></div>
+        </div>
+        <div class="layout-rectangle1" style="float: left; width: 40%">
+            <div class="rectangle1" style="height: 30rem; padding: 2rem">
+                <img src="user.png" width="150" height="150" style="margin: auto;  display: block" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private ApplicationUser user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await _profileService.GetUserAsync(0);
+    }
+}
