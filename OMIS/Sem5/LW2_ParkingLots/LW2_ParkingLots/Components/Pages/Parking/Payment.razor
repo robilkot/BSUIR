@@ -1,0 +1,48 @@
+﻿@page "/payment"
+@using System.Globalization
+@using LW2_ParkingLots.Model.Entities
+@using LW2_ParkingLots.Model.Services
+
+<div class="layout-rectangle1">
+    <div style="display: flex; align-items: center; margin-bottom: 5rem;">
+        <h2 style="margin: 0;">Описание платежа</h2>
+        <img src="https://via.placeholder.com/50" alt="icon" style="margin-left: 3rem;">
+    </div>
+
+    <h2>Тут должна быть сумма платежа, но модель платежа в сделку не входила</h2>
+
+    <div style="margin-top: 5rem; margin-bottom: 10rem; padding:1rem; border:solid; border-color: black; border-width: 0.1rem; border-radius: 20px; width: 30%">
+        <b>Новая карта</b>
+        
+        <div>
+            <input style="margin-top: 2rem; margin-bottom: 4rem; display:block; width:26rem" type="text" placeholder="Номер карты"/>
+
+            <div>
+                <input type="text" placeholder="Месяц/год" />    
+                <input  type="text" placeholder="CVV" />
+            </div>
+        </div>
+    </div>
+
+    <button style="margin:0 auto; display:block; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+        Оплатить
+        </button>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/selectTime">Назад</a>
+    </div>
+</div>
+
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private IPaymentService service { get; set; } = default!;
+
+    private async Task ProcessPayment()
+    {
+        await service.ProcessPayment(0, 17.50m, 1);
+    }
+}

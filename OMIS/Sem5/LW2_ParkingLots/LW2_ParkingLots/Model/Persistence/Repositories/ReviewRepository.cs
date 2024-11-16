@@ -5,10 +5,10 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
     public class ReviewRepository : IReviewRepository
     {
         private static readonly List<Review> _reviews = [
-            new(1, "Bad review", 1, DateTime.Now),
-            new(2, "It was great", 5, DateTime.Now),
-            new(3, "Mediocre review", 3, DateTime.Now),
-            new(4, "Good review", 4, DateTime.Now),
+            new(1, "Хороший сервис", 1, DateTime.Now),
+            new(2, "Чудесный сервис", 5, DateTime.Now),
+            new(3, "А похвалите еще сервис", 3, DateTime.Now),
+            new(4, "Ладно", 4, DateTime.Now),
             ];
 
         public Task<Review> AddReviewAsync(Review review)

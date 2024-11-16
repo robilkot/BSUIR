@@ -1,0 +1,67 @@
+﻿@page "/reviews"
+@using System.Globalization
+@using LW2_ParkingLots.Model.Entities
+@using LW2_ParkingLots.Model.Services
+
+<div class="layout-rectangle1" style="float: left; width: 60%">
+    <div style="display: flex; align-items: center; margin-bottom: 5rem;">
+        <img src="https://via.placeholder.com/50" alt="icon" style="margin-right: 3rem;">
+        <h2 style="margin: 0;">Отзывы</h2>
+    </div>
+
+    <div>
+        @foreach (var review in reviews)
+        {
+            <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
+                <div style="padding: 0; text-align: center; margin-right: 3rem">
+                    <img src="https://via.placeholder.com/60" width="60" height="60" style=" border-radius: 50%; margin: 1em auto 0em auto;  display: block" />
+                    <label>Username</label>
+                </div>
+                <div style="flex: 1;">
+                    <div>
+                        <div style="text-align:left; float: left">
+                            <label>Отзыв:</label>
+                        </div>
+                        <div style="text-align:right">
+                            <span style="color: gray;">@review.CreatedAt.ToString("d MMMM yyyy", new CultureInfo("ru-RU"))</span>
+                        </div>
+                    </div>
+
+                    <p style="background-color: #f6f0ff; padding: 10px; border-radius: 16px; margin: 10px 0;">@review.Content</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/profile">Назад</a>
+    </div>
+</div>
+
+<div class="layout-rectangle1" style="float: left; width: 40%">
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <button @onclick="AddReview" style="width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+            Добавить отзыв
+        </button>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private IReviewService service { get; set; }
+
+    private List<Review> reviews = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviews = await service.GetReviewsAsync(0);
+    }
+
+    private void AddReview()
+    {
+        Navigation.NavigateTo("/addReview");
+    }
+}
