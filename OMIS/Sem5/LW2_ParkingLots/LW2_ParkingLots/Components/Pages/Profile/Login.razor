@@ -1,4 +1,5 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
 @using LW2_ParkingLots.Model.Persistence
 @using LW2_ParkingLots.Model.Services
@@ -99,7 +100,8 @@
             <input type="password" placeholder="Введите ваш пароль">
         </div>
 
-        <button class="form-button" @onclick="@(()=>Navigation.NavigateTo("profile"))">Логин</button>
+        <button formtarget="_top" class="form-button" @onclick='() => Navigation.NavigateTo("Profile")'>Логин</button>
+        <button formtarget="_top" class="form-button" @onclick='() => Navigation.NavigateTo("management")'>Админ-панель (debug)</button>
     </div>
     <div class="login-link">
         <a href="forgotPassword">Забыл пароль</a>

@@ -5,19 +5,16 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 
-@* @attribute [Authorize] *@
 
 <PageTitle>Profile</PageTitle>
 
 @inject NavigationManager Navigation
 @inject IProfileService _profileService
 
-<div>
-    <div class="layout-rectangle1" style="float: left; width: 7%; padding: 0">
-        <img src="user.png" width="30" height="30" style="margin: 5em auto;  display: block" />
+    <div class="layout-rectangle1" style="float: left; width: 7%; padding: 0;">
 
         <NavLink class="nav-link" href="bookingHistory" style="padding: 0; text-align: center">
-            <img src="user.png" width="30" height="30" style="margin: 10em auto 0em auto;  display: block" />
+            <img src="user.png" width="30" height="30" style="margin: 18em auto 0em auto;  display: block" />
             <label>История</label>
         </NavLink>
         <NavLink class="nav-link" href="currentBookings" style="padding: 0; text-align: center">
@@ -65,7 +62,6 @@
             </div>
         </div>
     </div>
-</div>
 
 @code {
     [CascadingParameter]

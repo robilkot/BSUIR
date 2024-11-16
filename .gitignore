@@ -20,4 +20,7 @@
 !*.sql
 !*.ipynb
 !*.csv
+!*.razor
+!*.css
+!*.html
 **/x64

@@ -1,0 +1,74 @@
+﻿@page "/ManageUser"
+@rendermode InteractiveServer
+@using System.Globalization
+@using LW2_ParkingLots.Model.Entities
+@using LW2_ParkingLots.Model.Persistence
+@using LW2_ParkingLots.Model.Services
+
+<div class="layout-rectangle1">
+
+    <div class="layout-rectangle1" style="float: left; width: 93%; padding: 0;">
+    <div style="display: flex; align-items: center; margin-bottom: 5rem;">
+        <img src="settings.png" alt="icon" style="margin-right: 3rem;">
+        <h2 style="margin: 0;">Управление пользователем</h2>
+    </div>
+
+    <div style="margin: auto; width: 60%">
+        <table style="width: 100%; border-collapse: collapse; margin: 20px auto; font-family: Arial, sans-serif; background-color: #f8f6fc; border-radius: 8px;">
+            <thead style="background-color: #ece2ff; border-radius: 8px;">
+                <tr>
+                    <th style="padding: 10px; text-align: left;">Номер</th>
+                    <th style="padding: 10px; text-align: left;">ФИО</th>
+                    <th style="padding: 10px; text-align: left;">Номер</th>
+                    <th style="padding: 10px; text-align: left;">Email</th>
+                    <th style="padding: 10px; text-align: left;">Роль</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var booking in users)
+                {
+                    <tr style="background-color: #f9f5fc; border-bottom: 1px solid #e0d8f5;">
+                        <td style="padding: 10px;">@booking.Id</td>
+                        <td style="padding: 10px;">@booking.FullName</td>
+                        <td style="padding: 10px;">@booking.PhoneNumber</td>
+                        <td style="padding: 10px;">@booking.Email</td>
+                        <td style="padding: 10px;">@booking.Role</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/manageUsers">Назад</a>
+    </div>
+</div>
+
+    <div class="layout-rectangle1" style="float: left; width: 7%; padding: 0;">
+
+        <NavLink class="nav-link" style="padding: 0; text-align: center">
+            <img src="settings.png" width="30" height="30" style="margin: 8em auto 0em auto;  display: block" />
+            <label>Отменить бронь</label>
+        </NavLink>
+        <NavLink class="nav-link" href="EditUserRole" style="padding: 0; text-align: center">
+            <img src="settings.png" width="30" height="30" style="margin: 1em auto 0em auto;  display: block" />
+            <label>Изменить роль</label>
+        </NavLink>
+    </div>
+</div>
+
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
+    private IProfileService service { get; set; } = default!;
+
+    private List<ApplicationUser> users = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = (await service.GetUsers()).Take(1).ToList();
+    }
+}

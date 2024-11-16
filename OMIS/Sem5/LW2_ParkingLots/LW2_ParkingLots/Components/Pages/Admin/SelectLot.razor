@@ -1,10 +1,11 @@
-﻿@page "/selectTime"
+﻿@page "/adminSelectLot"
 @rendermode InteractiveServer
 @using System.Globalization
 @using LW2_ParkingLots.Model.Entities
 @using LW2_ParkingLots.Model.Services
 
 <div class="layout-rectangle1">
+    <div class="layout-rectangle1" style="float: left; width: 93%; padding: 0;">
     <div style="display: flex; align-items: center; margin-bottom: 5rem;">
         <img src="https://via.placeholder.com/50" alt="icon" style="margin-right: 3rem;">
         <h2 style="margin: 0;">Список парковочных мест</h2>
@@ -36,26 +37,23 @@
         </table>
     </div>
 
-    <div style="padding-left: 15rem; padding-right: 12rem; float: left; width: 40%; text-align: center">
 
-        <div class="rectangle1" style="padding: 2rem; height: 15rem; border-radius: 20px">
-            <h2 style="margin-top: 3rem; margin-bottom: 1rem">Начало брони</h2>
-            <input style="margin: 1rem; width: 90%; display: block"  type="date" />
-        </div>
-
-        <div class="rectangle1" style="margin-top: 2rem; padding: 2rem; height: 15rem; border-radius: 20px">
-            <h2 style="margin-top: 3rem; margin-bottom: 1rem">Конец брони</h2>
-            <input style="margin: 1rem; width: 90%; display: block" type="date" />
-        </div>
-    </div>
-
-    <button @onclick='() => Navigation.NavigateTo("payment")' style="margin:0 auto; display:block; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
-        Выбрать время
+        <button @onclick='() => Navigation.NavigateTo("manageLot")' style="margin:0 auto; display:block; clear:left; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+        Выбрать место
         </button>
 
     <div style="text-align: center; margin-top: 20px;">
-        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/selectLot">Назад</a>
+        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/management">Назад</a>
     </div>
+
+</div>
+<div class="layout-rectangle1" style="float: left; width: 7%; padding: 0;">
+
+    <NavLink class="nav-link" href="createLot" style="padding: 0; text-align: center">
+        <img src="settings.png" width="30" height="30" style="margin: 8em auto 0em auto;  display: block" />
+        <label>Создать</label>
+    </NavLink>
+</div>
 </div>
 
 
@@ -70,6 +68,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        zones = (await service.GetParkingLotWithFilterAsync(new(), 0)).Take(1).ToList();
+        zones = await service.GetParkingLotWithFilterAsync(new(), 0);
     }
 }

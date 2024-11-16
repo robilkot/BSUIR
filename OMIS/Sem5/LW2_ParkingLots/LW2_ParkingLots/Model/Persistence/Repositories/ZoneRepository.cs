@@ -58,9 +58,11 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
             return Task.FromResult(_zonesList.WithId(parkingZoneId));
         }
 
-        public Task<List<ParkingZone>> GetZonesAsync()
+        public async Task<List<ParkingZone>> GetZonesAsync()
         {
-            return Task.FromResult(_zonesList.ToList());
+            await Task.Delay(250);
+
+            return await Task.FromResult(_zonesList.ToList());
         }
 
         public Task<ParkingZone> SearchZoneByParkingLotAsync(int parkingLotId)

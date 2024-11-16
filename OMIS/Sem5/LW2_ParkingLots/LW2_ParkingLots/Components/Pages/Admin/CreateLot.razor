@@ -1,0 +1,33 @@
+﻿@page "/createLot"
+@rendermode InteractiveServer
+@using System.Globalization
+@using LW2_ParkingLots.Model.Entities
+@using LW2_ParkingLots.Model.Services
+
+<div class="layout-rectangle1">
+    <div style="display: flex; align-items: center; margin-bottom: 5rem;">
+        <img src="settings.png" alt="icon" style="margin-right: 3rem;">
+        <h2 style="margin: 0;">Создание парковочного места</h2>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 8rem 20rem; grid-row-gap: 0.5rem; margin-bottom: 20rem;">
+        <label style="margin: auto;">Номер места</label> <input style="background-color: #d9d9d9; height: 3rem; border:none" placeholder="введите место" />
+        <label style="margin: auto;">Тип места</label> <input style="background-color: #d9d9d9; height: 3rem; border:none" placeholder="введите тип" />
+        <label style="margin: auto;">Для инвалидов</label> <input style="background-color: #d9d9d9; height: 3rem; border:none" placeholder="введите" />
+        <label style="margin: auto;">Цена за час</label> <input style="background-color: #d9d9d9; height: 3rem; border:none" placeholder="введите цену" />
+    </div>
+
+    <button @onclick='() => Navigation.NavigateTo("adminSelectLot")' style="margin:0 auto; display:block; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+        Создать
+    </button>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a style="padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;" href="/adminSelectLot">Назад</a>
+    </div>
+</div>
+
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+}

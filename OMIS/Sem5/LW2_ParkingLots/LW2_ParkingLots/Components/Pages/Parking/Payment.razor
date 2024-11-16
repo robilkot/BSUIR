@@ -1,4 +1,5 @@
 ﻿@page "/payment"
+@rendermode InteractiveServer
 @using System.Globalization
 @using LW2_ParkingLots.Model.Entities
 @using LW2_ParkingLots.Model.Services
@@ -24,7 +25,7 @@
         </div>
     </div>
 
-    <button style="margin:0 auto; display:block; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+    <button @onclick='() => Navigation.NavigateTo("profile")' style="margin:0 auto; display:block; width: 20rem; background-color: #5a3db4; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
         Оплатить
         </button>
 

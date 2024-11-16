@@ -26,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Components\Pages\Admin\ManageUser.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
     <Content Update="Components\Pages\Parking\SelectLot.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>

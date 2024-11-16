@@ -36,6 +36,8 @@ namespace LW2_ParkingLots.Model.Persistence.Repositories
         }
         public async Task<List<ApplicationUser>> GetUsers()
         {
+            await Task.Delay(300);
+
             return await Task.FromResult(_users.ToList());
         }
         public async Task<List<ParkingLot>> GetBookingHistoryAsync(ApplicationUser user)
