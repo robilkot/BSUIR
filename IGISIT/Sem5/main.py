@@ -65,11 +65,11 @@ def get_subway_stations(city: City) -> (set[SubwayStation], set[Coordinate]):
     if lng_min > lng_max:
         lng_min, lng_max = lng_max, lng_min
 
-    lat = lat_min
-    while lat < lat_max:
+    lat = lat_min - STEP / 2
+    while lat < lat_max - STEP / 2:
         lat += STEP
-        lng = lng_min
-        while lng < lng_max:
+        lng = lng_min - STEP / 2
+        while lng < lng_max - STEP:
             lng += STEP
     # if True:
     #     if True:
@@ -78,6 +78,7 @@ def get_subway_stations(city: City) -> (set[SubwayStation], set[Coordinate]):
             params = {
                 "location": f"{lat},{lng}",
                 "radius": 25000,
+                # "type": "transit_station",
                 "type": "subway_station",
                 "key": API_KEY,
             }
