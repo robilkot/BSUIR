@@ -113,13 +113,37 @@ class HttpServer
 
         try
         {
+            var contentLength = 0;
+
+            // Читаем заголовки, чтобы получить Content-Length
+            string line;
+            while (!string.IsNullOrEmpty(line = reader.ReadLine()))
+            {
+                if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
+                {
+                    contentLength = int.Parse(line.Split(":")[1].Trim());
+                }
+            }
+
+            if (contentLength == 0)
+            {
+                WriteResponse(writer, HttpStatusCode.BadRequest, "Missing Content-Length");
+                return;
+            }
+
             using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
             var buffer = new char[1024];
-            int bytesRead;
-            while ((bytesRead = reader.Read(buffer, 0, buffer.Length)) > 0)
+            int totalRead = 0;
+
+            while (totalRead < contentLength)
             {
+                int bytesToRead = Math.Min(buffer.Length, contentLength - totalRead);
+                int bytesRead = reader.Read(buffer, 0, bytesToRead);
+
+                if (bytesRead == 0) break; // Конец данных
                 var data = Encoding.UTF8.GetBytes(buffer, 0, bytesRead);
                 fs.Write(data, 0, data.Length);
+                totalRead += bytesRead;
             }
 
             Log("POST: File saved at {0}", targetPath);
@@ -131,6 +155,7 @@ class HttpServer
             WriteResponse(writer, HttpStatusCode.InternalServerError, "Failed to save file");
         }
     }
+
 
     private void HandleOptionsRequest(StreamWriter writer)
     {
