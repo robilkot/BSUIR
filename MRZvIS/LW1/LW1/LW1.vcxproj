@@ -128,9 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MultiplicationTriple.cpp" />
     <ClCompile Include="MultiplicationTriple.h" />
-    <ClCompile Include="Pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Formatter.h" />

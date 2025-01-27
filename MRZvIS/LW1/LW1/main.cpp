@@ -1,3 +1,13 @@
+// Лабораторная работа №1 по дисциплине МРЗвИС
+// Вариант 1: алгоритм вычисления произведения пары 4-разрядных чисел умножением с младших разрядов со сдвигом множимого (частичного произведения) влево
+// Выполнил студент группы 221701 БГУИР Робилко Тимур Маркович
+//
+// Главный файл программы
+//
+// Источники:
+// - Формальные модели обработки информации и параллельные модели решения задач : учеб.-метод. пособие / В. П. Ивашенко. – Минск : БГУИР, 2020
+
+
 #include <stdio.h>
 #include <cstdint>
 #include <malloc.h>
@@ -7,11 +17,11 @@
 #include "MultiplicationTriple.h"
 
 
-void multiply_with_multiplicand_shift(void* input)
+void multiply_with_multiplicand_shift(PipelineData input)
 {
-    MultiplicationTriple_t* triple = (MultiplicationTriple_t*)input;
+    MultiplicationTriple* triple = (MultiplicationTriple*)input;
 
-    printf("input triple (index %d):\n", triple->index);
+    printf("input triple (index %zu):\n", triple->index);
     triple->print();
 
     if (triple->factor & 1) {
@@ -25,8 +35,7 @@ void multiply_with_multiplicand_shift(void* input)
     triple->print();
 }
 
-
-int main()
+int main(int argc, char** argv)
 {
     uint32_t m; // length
     uint32_t p; // depth
@@ -36,52 +45,53 @@ int main()
 
     //scanf_s("%u %u", &m, &p);
 
-    // init given vectors
-    uint32_t* A = new uint32_t[m];
+    std::vector<uint32_t> A;
+    A.reserve(m);
     for (size_t i = 0; i < m; i++)
     {
-        A[i] = i + 1;
+        A.emplace_back(i);
     }
 
-    uint32_t* B = new uint32_t[m];
+    std::vector<uint32_t> B;
+    B.reserve(m);
     for (size_t i = 0; i < m; i++)
     {
-        B[i] = (i + 1) * 2;
+        B.emplace_back(2 * i);
     }
 
     // init triples for multiplication
-    MultiplicationTriple_t* input = new MultiplicationTriple_t[m];
-
+    std::vector<MultiplicationTriple> input;
+    input.reserve(m);
+    
     for(size_t i = 0; i < m; i++)
     {
-        input[i] = MultiplicationTriple_t{ A[i], B[i], 0, i};
+        input.emplace_back(MultiplicationTriple{ A[i], B[i], 0, i});
     }
 
     // init pipe
-    Pipeline_t pipe{};
+    Pipeline pipe{};
 
     // init pipe steps (we need p shifts for p-digit numbers)
-    PipelineStep_t* steps = new PipelineStep_t[p];
+    std::vector<PipelineStep> steps;
+    steps.reserve(p);
 
     for(size_t i = 0; i < p; i++)
     {
-        steps[i] = PipelineStep_t{ i, NULL, multiply_with_multiplicand_shift };
+        steps.emplace_back(PipelineStep{i, NULL, multiply_with_multiplicand_shift});
     };
 
-    pipe.p_steps = steps;
-    pipe.steps_count = p;
-
+    pipe.steps = steps;
+    
     // init input data struct for pipe referencing actual input data
-    PipelineData_t* pipe_input = new PipelineData_t[m];
+    std::queue<PipelineData> pipe_input;
     
     for (size_t i = 0; i < m; i++)
     {
-        pipe_input[i] = input + i;
-    };
+        pipe_input.emplace((PipelineData) &(input[i]));
+    }
 
-    pipe.p_input = pipe_input;
-    pipe.input_count = m;
-
+    pipe.input = pipe_input;
+    
     // show input data
     printf("\nsource pairs:\n");
     for (int i = 0; i < m; i++) {
@@ -96,19 +106,9 @@ int main()
 
     // show output data
     printf("\nprocessed data:\n");
-    for (int i = 0; i < pipe.input_count; i++) {
-        printf("%d ", input[i].partial_sum);
+    for (size_t i = 0; !pipe.output.empty(); i++) {
+        printf("%zu: %d\n", i, ((MultiplicationTriple*)pipe.output.front())->partial_sum);
+        pipe.output.pop();
     }
     printf("\n\n");
-    
-
-#pragma warning (disable: 6278)
-#pragma warning (disable: 6283)
-    delete steps;
-    delete input;
-    delete pipe_input;
-    delete A;
-    delete B;
-#pragma warning (restore: 6278)
-#pragma warning (restore: 6283)
 }

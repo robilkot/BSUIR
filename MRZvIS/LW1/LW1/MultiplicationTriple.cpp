@@ -1,7 +1,7 @@
 #include "MultiplicationTriple.h"
 
 
-void MultiplicationTripleStruct::print() const
+void MultiplicationTriple::print() const
 {
     printf("mul: ");
     print_number(multiplicand, 8);
