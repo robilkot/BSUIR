@@ -71,19 +71,17 @@ def get_subway_stations(city: City) -> (set[SubwayStation], set[Coordinate]):
         lng = lng_min - STEP / 2
         while lng < lng_max - STEP:
             lng += STEP
-    # if True:
-    #     if True:
-    #         lat, lng = city.location.lat, city.location.lng
             markers.add(Coordinate(lat, lng))
+            # type = "transit_station"
+            type = "subway_station"
             params = {
                 "location": f"{lat},{lng}",
                 "radius": 25000,
-                # "type": "transit_station",
-                "type": "subway_station",
+                "type": type,
                 "key": API_KEY,
             }
 
-            json_filepath = f"{CACHE_DIR}/response_{lat:.5f}_{lng:.5f}.json"
+            json_filepath = f"{CACHE_DIR}/{type}/response_{lat:.5f}_{lng:.5f}.json"
             if os.path.exists(json_filepath):
                 print("Using cached stations info")
                 response = json.loads(open(json_filepath).read())
@@ -92,6 +90,8 @@ def get_subway_stations(city: City) -> (set[SubwayStation], set[Coordinate]):
                 response = requests.get(url, params=params).json()
                 if not os.path.exists(CACHE_DIR):
                     os.makedirs(CACHE_DIR)
+                if not os.path.exists(f"{CACHE_DIR}/{type}"):
+                    os.makedirs(f"{CACHE_DIR}/{type}")
                 f = open(json_filepath, "w")
                 f.write(json.dumps(response))
                 f.close()
@@ -133,6 +133,7 @@ def create_voronoi_map(city: City, stations: set[SubwayStation], markers: set[Co
     for region_idx, color in zip(vor.regions, colors):
         if not -1 in region_idx and region_idx:
             polygon = [vor.vertices[i] for i in region_idx]
+
             try:
                 folium.Polygon(
                     locations=polygon,

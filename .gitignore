@@ -23,4 +23,5 @@
 !*.razor
 !*.css
 !*.html
+!*.py
 **/x64
