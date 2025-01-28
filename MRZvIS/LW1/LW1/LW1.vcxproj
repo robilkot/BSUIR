@@ -127,10 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="input.txt" />
+    <ClInclude Include="InputReader.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MultiplicationTriple.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Arithmetics.h" />
     <ClInclude Include="Formatter.h" />
     <ClInclude Include="Pipeline.h" />
   </ItemGroup>

@@ -45,7 +45,7 @@ class Pipeline
 
     void tick()
     {
-        printf("\n# TICK %zu\n", current_tick);
+        printf("\n# TACT %zu\n", current_tick);
 
         // move output to next steps' input
         for (auto it = steps.end() - 1; it != steps.begin(); it--)
@@ -68,7 +68,7 @@ class Pipeline
         // invoke pipeline steps
         for (auto& step : steps)
         {
-            printf("## STEP %zu:\n", step_index++);
+            printf("## STAGE %zu:\n", step_index++);
             step.execute();
         }
         // save output if ready
