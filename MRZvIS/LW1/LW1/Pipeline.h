@@ -14,6 +14,7 @@
 #include <vector>
 #include <queue>
 #include <functional>
+#include "MultiplicationTriple.h"
 
 typedef void* PipelineData;
 
@@ -37,7 +38,7 @@ class PipelineStep
 class Pipeline
 {
     public:
-    std::vector<PipelineStep> steps;
+    std::vector<PipelineStep> stages;
     std::queue<PipelineData> input;
     std::queue<PipelineData> output;
 
@@ -45,10 +46,35 @@ class Pipeline
 
     void tick()
     {
-        printf("\n# TACT %zu\n", current_tick);
+        std::cout << "\nTACT " << current_tick << "\n\n";
+
+        std::cout << "Input queue:\n";
+        auto input_copy = input;
+        while(!input_copy.empty())
+        {
+            auto ptr = input_copy.front();
+            input_copy.pop();
+            auto x = *((MultiplicationTriple*)ptr);
+            
+            std::cout << x.multiplicand << ", " <<  x.factor << "\n";
+        }
+        std::cout << "\n";
+
+        // invoke pipeline steps
+        for (auto& stage : stages)
+        {
+            std::cout << "Stage " << stage.index << "\n";
+            stage.execute();
+            std::cout << "\n";
+        }
+        // save output if ready
+        if (stages.back().data != NULL)
+        {
+            output.push(stages.back().data);
+        }
 
         // move output to next steps' input
-        for (auto it = steps.end() - 1; it != steps.begin(); it--)
+        for (auto it = stages.end() - 1; it != stages.begin(); it--)
         {
             it->data = (it - 1)->data;
         }
@@ -56,26 +82,25 @@ class Pipeline
         // move input data for first step
         if (input.empty())
         {
-            steps[0].data = NULL; // if input queue is exhausted
+            stages[0].data = NULL; // if input queue is exhausted
         }
         else
         {
-            steps[0].data = input.front();
+            stages[0].data = input.front();
             input.pop();
         }
 
-        size_t step_index = 0;
-        // invoke pipeline steps
-        for (auto& step : steps)
+        std::cout << "Output:\n";
+        auto output_copy = output;
+        while (!output_copy.empty())
         {
-            printf("## STAGE %zu:\n", step_index++);
-            step.execute();
+            auto ptr = output_copy.front();
+            output_copy.pop();
+            auto x = *((MultiplicationTriple*)ptr);
+
+            std::cout << x.partial_sum << "\n";
         }
-        // save output if ready
-        if (steps.back().data != NULL)
-        {
-            output.push(steps.back().data);
-        }
+        std::cout << "\n";
 
         current_tick++;
     }

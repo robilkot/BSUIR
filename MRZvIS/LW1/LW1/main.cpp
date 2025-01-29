@@ -32,7 +32,7 @@ int main(int argc, char** argv)
         std::cout << "\n";
 
 
-        auto output = multiply_pairs(A, B);
+        const auto& output = multiply_pairs(A, B);
 
 
         // show output data

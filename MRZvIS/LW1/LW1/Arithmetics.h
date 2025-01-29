@@ -51,10 +51,10 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
 
     for (size_t i = 0; i < bit_size; i++)
     {
-        steps.emplace_back(PipelineStep{ i, NULL, multiply_with_multiplicand_shift });
+        steps.emplace_back(PipelineStep{ i + 1, NULL, multiply_with_multiplicand_shift });
     };
 
-    pipe.steps = steps;
+    pipe.stages = steps;
 
     // init input data struct for pipe referencing actual input data
     std::queue<PipelineData> pipe_input;
@@ -67,7 +67,8 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
     pipe.input = pipe_input;
 
     // run model
-    for (size_t i = 0; i < bit_size + A.size() - 1; i++) {
+    for (size_t i = 0; i < bit_size + A.size(); i++) {
+        system("cls");
         pipe.tick();
         getchar();
     }
@@ -78,7 +79,7 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
         pipe.output.pop();
     }
 
-    std::cout << "\ntotal tacts: " << pipe.current_tick << "\n";
+    std::cout << "\ntotal tacts: " << pipe.current_tick - 1 << "\n";
 
     return output;
 }
