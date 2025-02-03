@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using LW1.Common;
 
 namespace LW1.LineDrawing
 {
@@ -10,7 +11,6 @@ namespace LW1.LineDrawing
         public required double Y { get; set; }
         public required int DisplayX { get; set; }
         public required int DisplayY { get; set; }
-
         public IEnumerable<string> Columns => ["i", "e", "x", "y", "(x, y)"];
         public IEnumerable<string> Row => [$"{Iteration}", $"{E:F2}", $"{X:F2}", $"{Y:F2}", $"{DisplayX}, {DisplayY}"];
     }

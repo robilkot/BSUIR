@@ -1,4 +1,5 @@
-﻿using LW1.LineDrawing;
+﻿using LW1.Common;
+using LW1.LineDrawing;
 using System.Collections.ObjectModel;
 
 namespace LW1

@@ -1,4 +1,6 @@
-﻿namespace LW1.LineDrawing
+﻿using LW1.Common;
+
+namespace LW1.LineDrawing
 {
     public class WuDrawInfo : IDebugInfo
     {
@@ -33,7 +35,6 @@
             // Если линия крутая, меняем координаты местами
             if (steep)
             {
-                var temp = start;
                 start = new Point(start.Y, start.X);
                 end = new Point(end.Y, end.X);
             }
@@ -76,7 +77,7 @@
                         Y = steep ? xEnd : yEnd,
                         DisplayX = lowerX,
                         DisplayY = lowerY,
-                        V = FPart(yEnd),
+                        V = fpart,
                     });
                 yield return (
                     upper,
@@ -87,10 +88,10 @@
                         Y = steep ? xEnd : yEnd,
                         DisplayX = upperX, 
                         DisplayY = upperY,
-                        V = 1 - FPart(yEnd),
+                        V = 1 - fpart,
                     });
 
-                if (xEnd > end.X)
+                if (xEnd >= end.X)
                     break;
 
                 xEnd += 1;

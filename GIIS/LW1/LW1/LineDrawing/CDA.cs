@@ -1,4 +1,5 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using LW1.Common;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LW1.LineDrawing
 {
@@ -9,7 +10,6 @@ namespace LW1.LineDrawing
         public double Y { get; set; }
         public int DisplayX { get; set; }
         public int DisplayY { get; set; }
-
         public IEnumerable<string> Columns => ["i", "x", "y", "(x, y)"];
         public IEnumerable<string> Row => [$"{Iteration}", $"{X:F2}", $"{Y:F2}", $"{DisplayX}, {DisplayY}"];
     }
