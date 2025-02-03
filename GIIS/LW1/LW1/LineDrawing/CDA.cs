@@ -2,7 +2,7 @@
 
 namespace LW1.LineDrawing
 {
-    public class CDADrawInfo : IDrawInfo
+    public class CDADrawInfo : IDebugInfo
     {
         public int Iteration { get; set; }
         public double X { get; set; }
@@ -18,7 +18,7 @@ namespace LW1.LineDrawing
     {
         public string DisplayName => "ЦДА";
 
-        public IEnumerable<(ColorPoint, IDrawInfo)> DrawLine(Point start, Point end, Color color)
+        public IEnumerable<(ColorPoint, IDebugInfo)> DrawLine(Point start, Point end, Color color)
         {
             int len = Math.Max(Math.Abs(start.X - end.X), Math.Abs(start.Y - end.Y));
             double dx = (double)(end.X - start.X) / len;

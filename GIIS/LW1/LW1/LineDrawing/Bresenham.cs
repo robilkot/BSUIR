@@ -2,14 +2,14 @@
 
 namespace LW1.LineDrawing
 {
-    public class BresenhamDrawInfo : IDrawInfo
+    public class BresenhamDrawInfo : IDebugInfo
     {
-        public int Iteration { get; set; }
-        public double E { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public int DisplayX { get; set; }
-        public int DisplayY { get; set; }
+        public required int Iteration { get; set; }
+        public required double E { get; set; }
+        public required double X { get; set; }
+        public required double Y { get; set; }
+        public required int DisplayX { get; set; }
+        public required int DisplayY { get; set; }
 
         public IEnumerable<string> Columns => ["i", "e", "x", "y", "(x, y)"];
         public IEnumerable<string> Row => [$"{Iteration}", $"{E:F2}", $"{X:F2}", $"{Y:F2}", $"{DisplayX}, {DisplayY}"];
@@ -19,7 +19,7 @@ namespace LW1.LineDrawing
     {
         public string DisplayName => "Брезенхем";
 
-        public IEnumerable<(ColorPoint, IDrawInfo)> DrawLine(Point start, Point end, Color color)
+        public IEnumerable<(ColorPoint, IDebugInfo)> DrawLine(Point start, Point end, Color color)
         {
             int dx = Math.Abs(end.X - start.X);
             int dy = Math.Abs(end.Y - start.Y);
@@ -39,7 +39,9 @@ namespace LW1.LineDrawing
                     Iteration = i++,
                     X = x,
                     Y = y,
-                    E = err
+                    E = err,
+                    DisplayX = x,
+                    DisplayY = y,
                 };
                 yield return (point, drawInfo);
 

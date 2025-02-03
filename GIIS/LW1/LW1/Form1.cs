@@ -39,7 +39,7 @@ namespace LW1
             DrawLineMethodCombobox.DisplayMember = nameof(ILineDrawingAlgorithm.DisplayName);
             DrawLineMethodCombobox.ValueMember = nameof(ILineDrawingAlgorithm.DisplayName);
 
-            DrawLineMethodCombobox.SelectedIndex = 1;
+            DrawLineMethodCombobox.SelectedIndex = 2;
         }
 
         private void CancelCurrentTask()
@@ -65,7 +65,6 @@ namespace LW1
 
             using var g = Graphics.FromImage(_bitmap);
             var color = Colors.Random();
-            var brush = new SolidBrush(color);
 
             ClearDebugTable();
 
@@ -75,7 +74,7 @@ namespace LW1
                 {
                     foreach (var (point, info) in algorithm.DrawLine(start, end, color))
                     {
-                        DrawPoint(g, point.Coordinates, brush);
+                        DrawPoint(g, point.Coordinates, point.Color);
 
                         if (EnableDebugButton.Checked)
                         {
@@ -86,7 +85,7 @@ namespace LW1
 
                             AddDebugSteps(info);
                             CanvasPictureBox.Image = _bitmap;
-                            await Task.Delay(50, _cts.Token);
+                            await Task.Delay(150, _cts.Token);
                         }
 
                         if(_cts.IsCancellationRequested)
@@ -96,14 +95,15 @@ namespace LW1
                     }
                 }, _cts.Token);
             }
-            catch(TaskCanceledException ex)
+            catch(TaskCanceledException)
             {
             }
 
             CanvasPictureBox.Image = _bitmap;
         }
-        private void DrawPoint(Graphics g, Point point, Brush brush)
+        private void DrawPoint(Graphics g, Point point, Color color)
         {
+            using var brush = new SolidBrush(color);
             g.FillRectangle(brush, point.X * s_pixelSize, point.Y * s_pixelSize, s_pixelSize, s_pixelSize);
         }
         private void InitCanvas()
@@ -120,8 +120,7 @@ namespace LW1
             _bitmap = new Bitmap(width, height);
             CanvasPictureBox.Image = _bitmap;
         }
-
-        private void InitDebugTable(IDrawInfo info)
+        private void InitDebugTable(IDebugInfo info)
         {
             DebugGridView.Invoke(() =>
             {
@@ -134,14 +133,13 @@ namespace LW1
                 }
             });
         }
-        private void AddDebugSteps(IDrawInfo drawInfo)
+        private void AddDebugSteps(IDebugInfo drawInfo)
         {
             DebugGridView.Invoke(() =>
             {
                 DebugGridView.Rows.Add(drawInfo.Row.ToArray());
             });
         }
-
         private void ClearDebugTable()
         {
             DebugGridView.Invoke(() =>
@@ -150,17 +148,11 @@ namespace LW1
                 DebugGridView.Columns.Clear();
             });
         }
-
         private void ClearAll_Click(object sender, EventArgs e)
         {
             CancelCurrentTask();
             ClearDebugTable();
             InitCanvas();
-        }
-
-        private void DebugListView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

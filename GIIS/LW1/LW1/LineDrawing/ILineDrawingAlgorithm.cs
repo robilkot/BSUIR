@@ -3,6 +3,6 @@
     public interface ILineDrawingAlgorithm
     {
         string DisplayName { get; }
-        IEnumerable<(ColorPoint point, IDrawInfo info)> DrawLine(Point start, Point end, Color color);
+        IEnumerable<(ColorPoint point, IDebugInfo info)> DrawLine(Point start, Point end, Color color);
     }
 }
