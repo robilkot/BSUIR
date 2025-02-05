@@ -15,21 +15,11 @@
 
 
 struct MultiplicationTriple {
+    int bit_depth;
     uint32_t multiplicand;
     uint32_t factor;
     uint32_t partial_sum;
     size_t index;
 
-    void print() const
-    {
-        printf("mul: ");
-        print_number(multiplicand, 8);
-        printf("\n");
-        printf("fac: ");
-        print_number(factor, 8);
-        printf("\n");
-        printf("sum: ");
-        print_number(partial_sum, 8);
-        printf("\n");
-    }
+    void print() const;
 };

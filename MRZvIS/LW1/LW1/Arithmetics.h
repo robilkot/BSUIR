@@ -17,8 +17,8 @@ void multiply_with_multiplicand_shift(PipelineData input)
 {
     MultiplicationTriple* triple = (MultiplicationTriple*)input;
 
-    printf("input triple (index %zu):\n", triple->index);
-    triple->print();
+    /*printf("input triple (index %zu):\n", triple->index);
+    triple->print();*/
 
     if (triple->factor & 1) {
         triple->partial_sum += triple->multiplicand;
@@ -27,11 +27,11 @@ void multiply_with_multiplicand_shift(PipelineData input)
     triple->multiplicand <<= 1;
     triple->factor >>= 1;
 
-    printf("output triple:\n");
-    triple->print();
+    //printf("output triple:\n");
+    //triple->print();
 }
 
-std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::vector<uint32_t>& B, size_t bit_size = 4)
+std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::vector<uint32_t>& B, size_t bit_size, bool debug)
 {
     // init triples for multiplication
     std::vector<MultiplicationTriple> input;
@@ -39,7 +39,7 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
 
     for (size_t i = 0; i < A.size(); i++)
     {
-        input.push_back(MultiplicationTriple{ A[i], B[i], 0, i });
+        input.push_back(MultiplicationTriple{ (int)bit_size * 2, A[i], B[i], 0, i });
     }
 
     // init pipe
@@ -68,9 +68,15 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
 
     // run model
     for (size_t i = 0; i < bit_size + A.size(); i++) {
-        system("cls");
-        pipe.tick();
-        getchar();
+        if (debug) {
+            system("cls");
+        }
+        
+        pipe.tick(debug);
+
+        if (debug) {
+            getchar();
+        }
     }
 
     for (size_t i = 0; !pipe.output.empty(); i++) {
@@ -79,7 +85,7 @@ std::vector<uint32_t> multiply_pairs(const std::vector<uint32_t>& A, const std::
         pipe.output.pop();
     }
 
-    std::cout << "\ntotal tacts: " << pipe.current_tick - 1 << "\n";
+    std::cout << " tacts: " << pipe.current_tick - 1 << "\n";
 
     return output;
 }

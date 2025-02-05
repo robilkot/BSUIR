@@ -13,26 +13,30 @@ class Table(ttk.Frame):
         self.editing_entry = None  # Для хранения виджета Entry
 
     def set_data(self, db: NLPDatabase):
-        print(db.source_text)
-        # todo: Обновлять таблицу
+        for item in self.table.get_children():
+            self.table.delete(item)
+
+        for lemma, forms in sorted(db.items(), key=lambda kvp: kvp[0].lemma):
+            for form in sorted(forms, key=lambda f: f.form):
+                frequency = form.frequency
+                morph_info = form.note
+
+                self.table.insert('', tk.END, values=(form.form, lemma, morph_info, frequency))
 
     def create_table_widgets(self):
-        columns = ("Лексема", "Морфологическая информация", "Частота появления")
+        columns = ("Словоформа", "Лемма", "Морфологическая информация", "Частота появления")
         self.table = ttk.Treeview(master=self, columns=columns, show="headings")
         self.table.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        self.table.heading("Лексема", text="Лексема")
+        self.table.heading("Словоформа", text="Словоформа")
+        self.table.heading("Лемма", text="Лемма")
         self.table.heading("Морфологическая информация", text="Морфологическая информация")
         self.table.heading("Частота появления", text="Частота появления")
 
-        self.table.column("Лексема", stretch=False, width=200)
-        self.table.column("Морфологическая информация", stretch=False, width=200)
-        self.table.column("Частота появления", stretch=False, width=200)
-
-        # Добавляем начальные записи
-        self.table.insert("", "end", values=("Example", "Noun", "5"))
-        self.table.insert("", "end", values=("Test", "Verb", "3"))
-        self.table.insert("", "end", values=("Sample", "Adjective", "4"))
+        self.table.column("Словоформа", stretch=True, width=200)
+        self.table.column("Лемма", stretch=True, width=200)
+        self.table.column("Морфологическая информация", stretch=True, width=200)
+        self.table.column("Частота появления", stretch=True, width=200)
 
         # Привязываем событие двойного щелчка
         self.table.bind("<Double-1>", self.on_double_click)

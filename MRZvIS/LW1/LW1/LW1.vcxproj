@@ -130,6 +130,7 @@
     <None Include="input.txt" />
     <ClInclude Include="InputReader.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MultiplicationTriple.cpp" />
     <ClCompile Include="MultiplicationTriple.h" />
   </ItemGroup>
   <ItemGroup>

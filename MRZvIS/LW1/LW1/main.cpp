@@ -14,35 +14,70 @@
 #include "Arithmetics.h"
 #include "InputReader.h"
 
-constexpr int BitDepth = 4;
 
-
-int main(int argc, char** argv)
+void process(int n, int r, bool debug)
 {
     try {
-        const auto& input = read_input("input.txt");
-        const auto& A = input.first;
-        const auto& B = input.second;
+        //const auto& input = read_input("input.txt");
+        //const auto& A = input.first;
+        //const auto& B = input.second;
+        std::vector<uint32_t> A;
+        std::vector<uint32_t> B;
+        for (int i = 0; i < r; i++)
+        {
+            A.push_back(i);
+            B.push_back(i);
+        }
 
         // show input data
-        std::cout << "\nsource pairs:\n";
-        for (int i = 0; i < A.size(); i++) {
-            std::cout << i << ": {" << A[i] << ", " << B[i] << "}\n";
+        if (debug) {
+            std::cout << "\nsource pairs:\n";
+            for (int i = 0; i < A.size(); i++) {
+                std::cout << i << ": {" << A[i] << ", " << B[i] << "}\n";
+            }
+            std::cout << "\n";
         }
-        std::cout << "\n";
 
 
-        const auto& output = multiply_pairs(A, B);
+        const auto& output = multiply_pairs(A, B, n, debug);
 
 
         // show output data
-        std::cout << "\nprocessed data:\n";
-        for (size_t i = 0; i < output.size(); i++) {
-            std::cout << i << ": " << output[i] << "\n";
+        if (debug)
+        {
+            std::cout << "\nprocessed data:\n";
+            for (size_t i = 0; i < output.size(); i++) {
+                std::cout << i << ": " << output[i] << "\n";
+            }
+            std::cout << "\n\n";
         }
-        std::cout << "\n\n";
     }
-    catch(const std::exception& ex) {
+    catch (const std::exception& ex) {
         std::cerr << ex.what();
+    }
+}
+
+int main(int argc, char** argv)
+{
+    int max_n = 1;
+    int max_r = 20;
+
+    for (int r = 1; r <= max_r; r++)
+    {
+        /*for (int n = 1; n <= max_n; n++)
+        {
+        */
+        int n = 1;
+        std::cout << "r=" << r << ", n=" << n << ",";
+        process(n, r, false);
+        //}
+    }
+    std::cout << "\n";
+
+    for (int r = 1; r <= max_r; r++)
+    {
+        int n = 8;
+        std::cout << "r=" << r << ", n=" << n << ",";
+        process(n, r, false);
     }
 }

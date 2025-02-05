@@ -44,28 +44,34 @@ class Pipeline
 
     size_t current_tick;
 
-    void tick()
+    void tick(bool debug)
     {
-        std::cout << "\nTACT " << current_tick << "\n\n";
+        if (debug) {
+            std::cout << "\nTACT " << current_tick << "\n\n";
 
-        std::cout << "Input queue:\n";
-        auto input_copy = input;
-        while(!input_copy.empty())
-        {
-            auto ptr = input_copy.front();
-            input_copy.pop();
-            auto x = *((MultiplicationTriple*)ptr);
+            std::cout << "Input queue:\n";
+            auto input_copy = input;
+            while(!input_copy.empty())
+            {
+                auto ptr = input_copy.front();
+                input_copy.pop();
+                auto x = *((MultiplicationTriple*)ptr);
             
-            std::cout << x.multiplicand << ", " <<  x.factor << "\n";
+                std::cout << x.multiplicand << ", " <<  x.factor << "\n";
+            }
+            std::cout << "\n";
         }
-        std::cout << "\n";
 
         // invoke pipeline steps
         for (auto& stage : stages)
         {
-            std::cout << "Stage " << stage.index << "\n";
+            if (debug) {
+                std::cout << "Stage " << stage.index << "\n";
+            }
             stage.execute();
-            std::cout << "\n";
+            if (debug) {
+                std::cout << "\n";
+            }
         }
         // save output if ready
         if (stages.back().data != NULL)
@@ -90,17 +96,19 @@ class Pipeline
             input.pop();
         }
 
-        std::cout << "Output:\n";
-        auto output_copy = output;
-        while (!output_copy.empty())
-        {
-            auto ptr = output_copy.front();
-            output_copy.pop();
-            auto x = *((MultiplicationTriple*)ptr);
+        if (debug) {
+            std::cout << "Output:\n";
+            auto output_copy = output;
+            while (!output_copy.empty())
+            {
+                auto ptr = output_copy.front();
+                output_copy.pop();
+                auto x = *((MultiplicationTriple*)ptr);
 
-            std::cout << x.partial_sum << "\n";
+                std::cout << x.partial_sum << "\n";
+            }
+            std::cout << "\n";
         }
-        std::cout << "\n";
 
         current_tick++;
     }
