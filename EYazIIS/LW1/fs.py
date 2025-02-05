@@ -6,7 +6,7 @@ def open_file(on_success: Callable):
     file_path = filedialog.askopenfilename(title="Open a file",
                                            filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
     if file_path:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
             on_success(content)
 
