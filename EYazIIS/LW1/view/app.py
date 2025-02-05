@@ -10,8 +10,14 @@ from view.workspace import Workspace
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.workspace = Workspace(self)
-        self.table = Table(self)
+        self.paned_window = tk.PanedWindow(self, orient=tk.HORIZONTAL)
+        self.paned_window.pack(expand=True, fill=tk.BOTH)
+
+        self.workspace = Workspace(self.paned_window)
+        self.table = Table(self.paned_window)
+
+        self.paned_window.add(self.workspace, minsize=200)
+        self.paned_window.add(self.table, minsize=200)
 
         self.title("LW1")
         self.geometry('1024x640')

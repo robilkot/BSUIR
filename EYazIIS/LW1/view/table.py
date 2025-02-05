@@ -33,10 +33,10 @@ class Table(ttk.Frame):
         self.table.heading("Морфологическая информация", text="Морфологическая информация")
         self.table.heading("Частота появления", text="Частота появления")
 
-        self.table.column("Словоформа", stretch=True, width=200)
-        self.table.column("Лемма", stretch=True, width=200)
-        self.table.column("Морфологическая информация", stretch=True, width=200)
-        self.table.column("Частота появления", stretch=True, width=200)
+        self.table.column("Словоформа", stretch=True, width=100)
+        self.table.column("Лемма", stretch=True, width=100)
+        self.table.column("Морфологическая информация", stretch=True, width=100)
+        self.table.column("Частота появления", stretch=True, width=100)
 
         # Привязываем событие двойного щелчка
         self.table.bind("<Double-1>", self.on_double_click)
