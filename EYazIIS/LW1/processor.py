@@ -46,6 +46,5 @@ text = "Привет, мир, я и ты тебя ненавижу."
 clean = remove_punctuation(text)
 doc = lemmatize(clean)
 db = to_lw_format(doc)
-# clean_tokens = [re.sub(r'[^\w\s]', '', token) for token in tokens if re.sub(r'[^\w\s]', '', token)]
 
 print(db)

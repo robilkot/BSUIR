@@ -1,16 +1,17 @@
-from imports import *
+import tkinter as tk
+from tkinter import ttk
 
 
 class Workspace(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, relief="groove")
-        self.pack(fill=tk.BOTH, side=tk.LEFT, expand=False)
+        self.pack(fill=tk.BOTH, side=tk.LEFT, expand=True)
         self.create_workspace_widgets()
 
     def create_workspace_widgets(self):
-        t = tk.Text(self, height=20, width=57)
+        t = tk.Text(self)
 
-        t.pack(expand=False, fill=tk.NONE)
+        t.pack(expand=True, fill=tk.BOTH)
 
         t.insert(tk.END, "Кернес: Всё, я сделал...Кернес: Ну, давайте, ну, ебать-копать...Добкин: Геш, ну я дай... я прочитаю сначала... я ж текст не знаю. А, вот... Эту программу."
                          "Помощник (показывая пальцем на текст): Эту программу — раз. Эту программу — два."
@@ -47,13 +48,16 @@ class Workspace(ttk.Frame):
                          "Добкин: Так что, на каждый ролик говорить «программу мы создавали»?"
                          "Кернес: Конечно! ГДЕ ПРО СКОРЫЕ ПОМОЩИ, БЛЯДЬ?!")
 
-        t.config(state = tk.DISABLED)
+        t.config(state=tk.DISABLED)
 
-        curr_file = Label(self, text = "Текущий файл:")
-        curr_file.pack(side = tk.TOP, anchor = tk.NW)
+        state_footer = ttk.Frame(self, relief="groove", borderwidth=1)
+        state_footer.pack(side=tk.BOTTOM, expand=False, anchor=tk.W)
 
-        words_num = Label(self, text = "Количество слов:")
-        words_num.pack(side = tk.TOP, anchor = tk.NW)
+        curr_file = tk.Label(state_footer, text="Текущий файл:")
+        curr_file.pack(side=tk.LEFT, anchor=tk.W)
 
-        other_label = Label(self, text="Количество ещё чего-нибудь:")
-        other_label.pack(side=tk.TOP, anchor=tk.NW)
+        words_num = tk.Label(state_footer, text="Количество слов:")
+        words_num.pack(side=tk.LEFT, anchor=tk.W)
+
+        other_label = tk.Label(state_footer, text="Количество ещё чего-нибудь:")
+        other_label.pack(side=tk.LEFT, anchor=tk.W)

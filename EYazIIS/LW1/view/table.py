@@ -1,10 +1,11 @@
-from imports import *
+from tkinter import ttk
+import tkinter as tk
 
 
 class Table(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, relief="groove")
-        self.pack(fill=tk.BOTH, side=tk.RIGHT, expand=True)
+        self.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True)
         self.create_table_widgets()
 
         self.editing_entry = None  # Для хранения виджета Entry
@@ -12,7 +13,7 @@ class Table(ttk.Frame):
     def create_table_widgets(self):
         columns = ("Лексема", "Морфологическая информация", "Частота появления")
         self.table = ttk.Treeview(master=self, columns=columns, show="headings")
-        self.table.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.table.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         self.table.heading("Лексема", text="Лексема")
         self.table.heading("Морфологическая информация", text="Морфологическая информация")

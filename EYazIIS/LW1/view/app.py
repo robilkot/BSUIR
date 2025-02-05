@@ -1,18 +1,16 @@
-from imports import *
-from view.edit import Edit
+from view.center_window import center_window
 from view.main_win import Main
 from tkinter import Menu, filedialog, messagebox
+import tkinter as tk
 
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Test123")
+        self.title("LW1")
         self.geometry('1024x640')
-        self.resizable(False, False)
-        center_window(self,1024, 640)
-        #self.menu = Menu(self)
-        #self.edit = Edit(self)
+        self.resizable(True, True)
+        center_window(self, 1024, 640)
         self.main = Main(self)
         self.create_widgets()
         self.mainloop()
@@ -22,7 +20,6 @@ class App(tk.Tk):
 
         file_menu = Menu(main_menu, tearoff=0)
         file_menu.add_command(label="Open", command=self.open_file)
-        file_menu.add_command(label = "Save", command=self.save_file)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
 
@@ -35,7 +32,8 @@ class App(tk.Tk):
         self.config(menu=main_menu)
 
     def open_file(self):
-        file_path = filedialog.askopenfilename(title="Open a file")
+        file_path = filedialog.askopenfilename(title="Open a file",
+                                               filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
         if file_path:
             with open(file_path, 'r') as file:
                 content = file.read()
