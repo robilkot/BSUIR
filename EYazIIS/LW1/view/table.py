@@ -1,6 +1,8 @@
 from tkinter import ttk
 import tkinter as tk
 
+from model import NLPDatabase
+
 
 class Table(ttk.Frame):
     def __init__(self, parent):
@@ -9,6 +11,10 @@ class Table(ttk.Frame):
         self.create_table_widgets()
 
         self.editing_entry = None  # Для хранения виджета Entry
+
+    def set_data(self, db: NLPDatabase):
+        print(db.source_text)
+        # todo: Обновлять таблицу
 
     def create_table_widgets(self):
         columns = ("Лексема", "Морфологическая информация", "Частота появления")

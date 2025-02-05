@@ -31,6 +31,7 @@ class Lemma:
         return self.lemma == other.lemma
 
 
-# Словарь
 class NLPDatabase(dict[Lemma, set[Form]]):
-    pass
+    def __init__(self, text):
+        super().__init__()
+        self.source_text = text

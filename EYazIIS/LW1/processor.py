@@ -27,7 +27,7 @@ def lemmatize(text: str) -> Doc:
 
 
 def to_lw_format(doc: Doc) -> NLPDatabase:
-    db = NLPDatabase()
+    db = NLPDatabase(doc.text)
 
     for token in doc.tokens:
         form = Form(token.text, 0, None)
@@ -42,9 +42,8 @@ def to_lw_format(doc: Doc) -> NLPDatabase:
     return db
 
 
-text = "Привет, мир, я и ты тебя ненавижу."
-clean = remove_punctuation(text)
-doc = lemmatize(clean)
-db = to_lw_format(doc)
-
-print(db)
+def convert_text_to_db(text: str) -> NLPDatabase:
+    clean = remove_punctuation(text)
+    doc = lemmatize(clean)
+    db = to_lw_format(doc)
+    return db
