@@ -1,8 +1,8 @@
+import pickle
 from tkinter import filedialog
 from typing import Callable
-import json
-import jsonpickle
 from model import NLPDatabase
+import json
 
 
 class FileSystem:
@@ -16,33 +16,30 @@ class FileSystem:
     @staticmethod
     def open_file():
         file_path = filedialog.askopenfilename(title="Open a file",
-                                               filetypes=[("Text files", "*.txt"), ("NLP Files", "*.nlp"), ("All files", "*.*")])
+                                               filetypes=[("All files", "*.*"), ("Text files", "*.txt"), ("NLP Files", "*.nlp")])
         if file_path:
             if file_path.endswith(".txt"):
                 with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()
                     FileSystem.__on_file_opened(content)
             if file_path.endswith(".nlp"):
-                with open(file_path, 'r', encoding='utf-8') as json_file:
-                    content = json.load(json_file)
-                    FileSystem.__on_file_opened(content)
-
+                with open(file_path, "rb") as infile:
+                    obj = pickle.load(infile)
+                    FileSystem.__on_file_opened(obj)
 
     @staticmethod
     # todo serialize nlpdatabase
     def save_file(content):
         file_path = filedialog.asksaveasfilename(title="Save a file", defaultextension=".txt",
-                                                 filetypes=[("Text files", "*.txt"), ("NLP Files", "*.nlp"), ("All files", "*.*")])
+                                                 filetypes=[("NLP Files", "*.nlp"), ("All files", "*.*")])
         if file_path:
             if file_path.endswith(".txt"):
                 with open(file_path, 'w', encoding='utf-8') as file:
                     print(content)
                     file.write(content)
             if file_path.endswith(".nlp"):
-                with open(file_path, 'w', encoding='utf-8') as json_file:
-                    content = jsonpickle.encode(content)
-                    print(content)
-                    json.dump(content, json_file)
+                with open(file_path, "wb") as outfile:
+                    pickle.dump(content, outfile)
 
 
 

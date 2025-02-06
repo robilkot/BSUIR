@@ -9,8 +9,7 @@ class Table(ttk.Frame):
         super().__init__(parent, relief="groove")
         self.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True)
         self.create_table_widgets()
-        self.db = NLPDatabase("")
-
+        self.db: None | NLPDatabase = None
         self.editing_entry = None  # Для хранения виджета Entry
 
     def set_db(self, db: NLPDatabase):
@@ -19,11 +18,11 @@ class Table(ttk.Frame):
             self.table.delete(item)
 
         for lemma, forms in sorted(db.items(), key=lambda kvp: kvp[0].lemma):
-            for form in sorted(forms, key=lambda f: f.form):
-                frequency = form.frequency
-                morph_info = form.note
+            for form in sorted(forms.items(), key=lambda f: f[0]):
+                frequency = form[1].frequency
+                morph_info = form[1].note
 
-                self.table.insert('', tk.END, values=(form.form, lemma, morph_info, frequency))
+                self.table.insert('', tk.END, values=(form[0], lemma, morph_info, frequency))
 
     def create_table_widgets(self):
         columns = ("Словоформа", "Лемма", "Морфологическая информация", "Частота появления")

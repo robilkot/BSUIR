@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 
-class Form:
-    form: str  # Словоформа
-    frequency: float  # Частота вхождений
-    note: str | None  # Морфологическая информация от пользователя
-
-    def __init__(self, form: str, frequency: float, note: str | None = None):
-        self.form = form
-        self.frequency = frequency
-        self.note = note
+class FormInfo:
+    def __init__(self, frequency: float, note: str | None = None):
+        self.frequency: float = frequency
+        self.note: str | None = note
 
     def __repr__(self) -> str:
-        return f"{self.form} - {self.frequency} - {self.note}"
+        return f"{self.frequency} - {self.note}"
 
 
 class Lemma:
@@ -31,7 +26,7 @@ class Lemma:
         return self.lemma == other.lemma
 
 
-class NLPDatabase(dict[Lemma, set[Form]]):
+class NLPDatabase(dict[Lemma, dict[str, FormInfo]]):
     def __init__(self, text):
         super().__init__()
         self.source_text = text
