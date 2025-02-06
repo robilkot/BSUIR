@@ -44,6 +44,7 @@ def to_lw_format(doc: Doc) -> NLPDatabase:
 
         db[lemma] = form_dict
 
+    db.word_count = len(doc.tokens)
     return db
 
 

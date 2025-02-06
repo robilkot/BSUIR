@@ -16,7 +16,7 @@ class FileSystem:
     @staticmethod
     def open_file():
         file_path = filedialog.askopenfilename(title="Open a file",
-                                               filetypes=[("All files", "*.*"), ("Text files", "*.txt"), ("NLP Files", "*.nlp")])
+                                               filetypes=[("Text files", "*.txt"), ("All files", "*.*"), ("NLP Files", "*.nlp")])
         if file_path:
             if file_path.endswith(".txt"):
                 with open(file_path, 'r', encoding='utf-8') as file:
@@ -28,7 +28,6 @@ class FileSystem:
                     FileSystem.__on_file_opened(obj)
 
     @staticmethod
-    # todo serialize nlpdatabase
     def save_file(content):
         file_path = filedialog.asksaveasfilename(title="Save a file", defaultextension=".txt",
                                                  filetypes=[("NLP Files", "*.nlp"), ("All files", "*.*")])

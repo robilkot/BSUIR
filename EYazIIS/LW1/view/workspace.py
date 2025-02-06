@@ -49,11 +49,5 @@ class Workspace(ttk.Frame):
         state_footer = ttk.Frame(self, relief="groove", borderwidth=1)
         state_footer.pack(side=tk.BOTTOM, expand=False, anchor=tk.W)
 
-        curr_file = tk.Label(state_footer, text="Текущий файл:")
-        curr_file.pack(side=tk.LEFT, anchor=tk.W)
-
         words_num = tk.Label(state_footer, text="Количество слов:")
         words_num.pack(side=tk.LEFT, anchor=tk.W)
-
-        other_label = tk.Label(state_footer, text="Количество ещё чего-нибудь:")
-        other_label.pack(side=tk.LEFT, anchor=tk.W)

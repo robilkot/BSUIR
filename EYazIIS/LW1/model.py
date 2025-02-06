@@ -30,3 +30,4 @@ class NLPDatabase(dict[Lemma, dict[str, FormInfo]]):
     def __init__(self, text):
         super().__init__()
         self.source_text = text
+        self.word_count = 0

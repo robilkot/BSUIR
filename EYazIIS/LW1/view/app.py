@@ -29,18 +29,25 @@ class App(tk.Tk):
         self.mainloop()
 
     def __init_event_handlers(self):
+        def on_text_changed(text: str):
+            if text == '' or text is None:
+                self.file_menu.entryconfig("Save", state="disabled")
+            else:
+                self.file_menu.entryconfig("Save", state="normal")
+
+        self.workspace.on_text_changed.append(on_text_changed)
         FileSystem.on_file_opened.append(lambda content: self.set_db(content))
 
     def create_widgets(self):
         main_menu = Menu(self)
 
-        file_menu = Menu(main_menu, tearoff=0)
-        file_menu.add_command(label="Open", command=lambda: FileSystem.open_file())
-        file_menu.add_command(label="Save", command=lambda: FileSystem.save_file(content=self.table.db))
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.quit)
+        self.file_menu = Menu(main_menu, tearoff=0)
+        self.file_menu.add_command(label="Open", command=lambda: FileSystem.open_file())
+        self.file_menu.add_command(label="Save", command=lambda: FileSystem.save_file(content=self.table.db), state='disabled')
+        self.file_menu.add_separator()
+        self.file_menu.add_command(label="Exit", command=self.quit)
 
-        main_menu.add_cascade(label="File", menu=file_menu)
+        main_menu.add_cascade(label="File", menu=self.file_menu)
 
         about_menu = Menu(main_menu, tearoff=0)
         about_menu.add_command(label="About", command=self.show_about)
