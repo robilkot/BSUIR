@@ -16,7 +16,11 @@ class FileSystem:
     @staticmethod
     def open_file():
         file_path = filedialog.askopenfilename(title="Open a file",
-                                               filetypes=[("Text files", "*.txt"), ("All files", "*.*"), ("NLP Files", "*.nlp")])
+                                               filetypes=[
+                                                   ("NLP Files", "*.nlp"),
+                                                   ("Text files", "*.txt"),
+                                                   ("All files", "*.*"),
+                                               ])
         if file_path:
             if file_path.endswith(".txt"):
                 with open(file_path, 'r', encoding='utf-8') as file:
