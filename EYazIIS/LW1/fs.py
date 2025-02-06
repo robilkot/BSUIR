@@ -2,7 +2,7 @@ import pickle
 from tkinter import filedialog
 from typing import Callable
 from model import NLPDatabase
-import json
+from striprtf.striprtf import rtf_to_text
 
 
 class FileSystem:
@@ -16,12 +16,14 @@ class FileSystem:
     @staticmethod
     def open_file():
         file_path = filedialog.askopenfilename(title="Open a file",
-                                               filetypes=[
-                                                   ("NLP Files", "*.nlp"),
-                                                   ("Text files", "*.txt"),
-                                                   ("All files", "*.*"),
-                                               ])
+                                               filetypes=[("NLP Files", "*.txt *.rtf *.nlp")])
         if file_path:
+            if file_path.endswith(".rtf"):
+                # todo fix
+                with open(file_path, 'r') as infile:
+                    content = infile.read()
+                    text = rtf_to_text(content)
+                    FileSystem.__on_file_opened(text)
             if file_path.endswith(".txt"):
                 with open(file_path, 'r', encoding='utf-8') as file:
                     content = file.read()

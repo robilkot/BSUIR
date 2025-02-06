@@ -7,7 +7,7 @@ from model import NLPDatabase, FormInfo
 class Table(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, relief=tk.GROOVE)
-        self.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True)
+        self.pack(fill=tk.BOTH, side=tk.BOTTOM)
 
         self.db: None | NLPDatabase = None
         self.search_string: tk.StringVar = tk.StringVar()
