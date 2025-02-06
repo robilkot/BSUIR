@@ -12,7 +12,7 @@ class Table(ttk.Frame):
 
         self.editing_entry = None  # Для хранения виджета Entry
 
-    def set_data(self, db: NLPDatabase):
+    def set_db(self, db: NLPDatabase):
         for item in self.table.get_children():
             self.table.delete(item)
 
@@ -28,15 +28,9 @@ class Table(ttk.Frame):
         self.table = ttk.Treeview(master=self, columns=columns, show="headings")
         self.table.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        self.table.heading("Словоформа", text="Словоформа")
-        self.table.heading("Лемма", text="Лемма")
-        self.table.heading("Морфологическая информация", text="Морфологическая информация")
-        self.table.heading("Частота появления", text="Частота появления")
-
-        self.table.column("Словоформа", stretch=True, width=100)
-        self.table.column("Лемма", stretch=True, width=100)
-        self.table.column("Морфологическая информация", stretch=True, width=100)
-        self.table.column("Частота появления", stretch=True, width=100)
+        for column in columns:
+            self.table.heading(column, text=column)
+            self.table.column(column, stretch=True, width=100)
 
         # Привязываем событие двойного щелчка
         self.table.bind("<Double-1>", self.on_double_click)
