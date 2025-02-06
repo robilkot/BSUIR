@@ -1,7 +1,7 @@
 from tkinter import ttk
 import tkinter as tk
 
-from model import NLPDatabase
+from model import NLPDatabase, FormInfo
 
 
 class Table(ttk.Frame):
@@ -11,18 +11,22 @@ class Table(ttk.Frame):
         self.create_table_widgets()
         self.db: None | NLPDatabase = None
         self.editing_entry = None  # Для хранения виджета Entry
+        self.__table_entry_mapping: dict[str, FormInfo] = {}
 
     def set_db(self, db: NLPDatabase):
+        self.__table_entry_mapping = {}
         self.db = db
         for item in self.table.get_children():
             self.table.delete(item)
 
         for lemma, forms in sorted(db.items(), key=lambda kvp: kvp[0].lemma):
             for form in sorted(forms.items(), key=lambda f: f[0]):
-                frequency = form[1].frequency
-                morph_info = form[1].note
+                form_info = form[1]
+                frequency = form_info.frequency
+                morph_info = form_info.note
 
-                self.table.insert('', tk.END, values=(form[0], lemma, morph_info, frequency))
+                item = self.table.insert('', tk.END, values=(form[0], lemma, morph_info, frequency))
+                self.__table_entry_mapping[item] = form_info
 
     def create_table_widgets(self):
         columns = ("Словоформа", "Лемма", "Морфологическая информация", "Частота появления")
@@ -44,23 +48,27 @@ class Table(ttk.Frame):
             column = self.table.identify_column(event.x)
             col_index = int(column.replace('#', '')) - 1  # Индекс колонки
 
-            # Получаем координаты ячейки
-            x, y, width, height = self.table.bbox(selected_item, column)
+            if col_index == 2:  # Только морфологическая информация
+                # Получаем координаты ячейки
+                x, y, width, height = self.table.bbox(selected_item, column)
 
-            # Создаем Entry для редактирования
-            self.editing_entry = tk.Entry(self)
-            self.editing_entry.insert(0, item['values'][col_index])
-            self.editing_entry.place(x=x, y=y, width=width, height=height)
-            self.editing_entry.focus()
+                # Создаем Entry для редактирования
+                self.editing_entry = tk.Entry(self)
+                self.editing_entry.insert(0, item['values'][col_index])
+                self.editing_entry.place(x=x, y=y, width=width, height=height)
+                self.editing_entry.focus()
 
-            # Устанавливаем обработчик для сохранения изменений
-            self.editing_entry.bind("<Return>", lambda e: self.save_changes(selected_item, col_index))
-            self.editing_entry.bind("<FocusOut>", lambda e: self.cancel_edit(selected_item))
+                # Устанавливаем обработчик для сохранения изменений
+                self.editing_entry.bind("<Return>", lambda e: self.save_changes(selected_item, col_index))
+                self.editing_entry.bind("<FocusOut>", lambda e: self.cancel_edit(selected_item))
 
     def save_changes(self, selected_item, col_index):
         new_value = self.editing_entry.get()
         current_values = list(self.table.item(selected_item)['values'])
         current_values[col_index] = new_value
+
+        self.__table_entry_mapping[selected_item[0]].note = new_value
+
         self.table.item(selected_item, values=current_values)
         self.editing_entry.destroy()
 

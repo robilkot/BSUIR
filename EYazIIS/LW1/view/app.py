@@ -29,13 +29,13 @@ class App(tk.Tk):
         self.mainloop()
 
     def __init_event_handlers(self):
-        def on_text_changed(text: str):
-            if text == '' or text is None:
+        def on_text_changed(db: NLPDatabase):
+            if db.source_text == '' or db.source_text is None:
                 self.file_menu.entryconfig("Save", state="disabled")
             else:
                 self.file_menu.entryconfig("Save", state="normal")
 
-        self.workspace.on_text_changed.append(on_text_changed)
+        self.workspace.on_db_changed.append(on_text_changed)
         FileSystem.on_file_opened.append(lambda content: self.set_db(content))
 
     def create_widgets(self):
