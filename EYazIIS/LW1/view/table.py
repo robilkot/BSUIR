@@ -9,10 +9,12 @@ class Table(ttk.Frame):
         super().__init__(parent, relief="groove")
         self.pack(fill=tk.BOTH, side=tk.BOTTOM, expand=True)
         self.create_table_widgets()
+        self.db = NLPDatabase("")
 
         self.editing_entry = None  # Для хранения виджета Entry
 
     def set_db(self, db: NLPDatabase):
+        self.db = db
         for item in self.table.get_children():
             self.table.delete(item)
 

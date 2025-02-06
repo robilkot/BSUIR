@@ -36,6 +36,7 @@ class App(tk.Tk):
 
         file_menu = Menu(main_menu, tearoff=0)
         file_menu.add_command(label="Open", command=lambda: FileSystem.open_file())
+        file_menu.add_command(label="Save", command=lambda: FileSystem.save_file(content=self.table.db))
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
 
