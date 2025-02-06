@@ -26,9 +26,7 @@ def lemmatize(text: str) -> Doc:
     return doc
 
 
-def to_lw_format(doc: Doc) -> NLPDatabase:
-    db = NLPDatabase(doc.text)
-
+def to_lw_format(db: NLPDatabase, doc: Doc) -> NLPDatabase:
     for token in doc.tokens:
         new_form_info = FormInfo(1, None)
 
@@ -45,12 +43,12 @@ def to_lw_format(doc: Doc) -> NLPDatabase:
         db[lemma] = form_dict
 
     db.word_count = len(doc.tokens)
-    return db
 
 
 def convert_text_to_db(text: str) -> NLPDatabase:
+    db = NLPDatabase(text)
     text = text.lower()
     clean = remove_punctuation(text)
     doc = lemmatize(clean)
-    db = to_lw_format(doc)
+    to_lw_format(db, doc)
     return db

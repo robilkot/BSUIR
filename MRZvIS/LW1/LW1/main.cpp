@@ -64,13 +64,9 @@ int main(int argc, char** argv)
 
     for (int r = 1; r <= max_r; r++)
     {
-        /*for (int n = 1; n <= max_n; n++)
-        {
-        */
         int n = 1;
         std::cout << "r=" << r << ", n=" << n << ",";
         process(n, r, false);
-        //}
     }
     std::cout << "\n";
 

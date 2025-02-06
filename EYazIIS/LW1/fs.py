@@ -22,7 +22,7 @@ class FileSystem:
                 # todo fix
                 with open(file_path, 'r') as infile:
                     content = infile.read()
-                    text = rtf_to_text(content)
+                    text = rtf_to_text(content, encoding='utf-8')
                     FileSystem.__on_file_opened(text)
             if file_path.endswith(".txt"):
                 with open(file_path, 'r', encoding='utf-8') as file:
