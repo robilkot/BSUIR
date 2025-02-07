@@ -5,7 +5,7 @@ from typing import Callable
 import fs
 from model import NLPDatabase
 
-
+# Класс, представляющий рабочую область в левой части интерфейса
 class Workspace(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, relief=tk.GROOVE)

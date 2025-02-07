@@ -5,6 +5,7 @@ from model import NLPDatabase
 from striprtf.striprtf import rtf_to_text
 
 
+# Класс, отвечающий за работу с файловой системой
 class FileSystem:
     on_file_opened: list[Callable[[str | NLPDatabase], None]] = []
 
@@ -19,7 +20,6 @@ class FileSystem:
                                                filetypes=[("NLP Files", "*.txt *.rtf *.nlp")])
         if file_path:
             if file_path.endswith(".rtf"):
-                # todo fix
                 with open(file_path, 'r') as infile:
                     content = infile.read()
                     text = rtf_to_text(content, encoding='utf-8')

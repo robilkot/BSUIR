@@ -8,6 +8,7 @@ from view.table import Table
 from view.workspace import Workspace
 
 
+# Класс, отвечающий за композицию всех компонентов в единое целое
 class App(tk.Tk):
     def __init__(self):
         super().__init__()

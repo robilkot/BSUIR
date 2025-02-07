@@ -4,6 +4,8 @@ import tkinter as tk
 from model import NLPDatabase, FormInfo
 
 
+# Класс, представляющий таблицу в правой части интерфейса
+# и обеспечивающий отображение словаря с информацией о словоформах
 class Table(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent, relief=tk.GROOVE)
@@ -17,16 +19,19 @@ class Table(ttk.Frame):
 
         self.create_table_widgets()
 
+    # Обработчик события изменения критерия поиска
     def __on_search_string_changed(self):
         if self.db:
             new_search_string = self.search_string.get()
             self.show_filtered_table(new_search_string)
 
+    # Функция установки базы данных
     def set_db(self, db: NLPDatabase):
         self.db = db
         self.search_string.set('')
         self.show_filtered_table(self.search_string.get())
 
+    # Функция показа таблицы по заданному критерию поиска
     def show_filtered_table(self, search_string: str):
         self.__table_entry_mapping = {}
 
@@ -43,6 +48,7 @@ class Table(ttk.Frame):
                 item = self.table.insert('', tk.END, values=(form, lemma, morph_info, frequency))
                 self.__table_entry_mapping[item] = form_info
 
+    # Функция созданиия элементов UI
     def create_table_widgets(self):
         search_entry_label = tk.Label(master=self, text="Поиск по словоформам:")
         search_entry_label.pack(side=tk.TOP, anchor=tk.W)
@@ -51,7 +57,7 @@ class Table(ttk.Frame):
         self.search_entry.pack(side=tk.TOP, fill=tk.X)
         self.search_entry.bind('')
 
-        columns = ("Словоформа", "Лемма", "Морфологическая информация", "Частота появления")
+        columns = ("Словоформа", "Лемма", "Морфологическая информация", "Количество вхождений")
         self.table = ttk.Treeview(master=self, columns=columns, show="headings")
         self.table.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
@@ -62,6 +68,7 @@ class Table(ttk.Frame):
         # Привязываем событие двойного щелчка
         self.table.bind("<Double-1>", self.on_double_click)
 
+    # Обработчик двойного нажатия на ячейки таблицы
     def on_double_click(self, event):
         # Получаем выбранный элемент
         selected_item = self.table.selection()

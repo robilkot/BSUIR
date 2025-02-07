@@ -3,12 +3,14 @@ from natasha import Doc, MorphVocab, Segmenter, NewsEmbedding, NewsMorphTagger
 from model import NLPDatabase, Lemma, FormInfo
 
 
+# Функция удаления пунктуации из текста
 def remove_punctuation(text: str):
     translator = str.maketrans('', '', string.punctuation)
     clean_text = text.translate(translator)
     return clean_text
 
 
+# Функция лемматизации слов в тексте
 def lemmatize(text: str) -> Doc:
     segmenter = Segmenter()
     morph_vocab = MorphVocab()
@@ -26,7 +28,8 @@ def lemmatize(text: str) -> Doc:
     return doc
 
 
-def to_lw_format(db: NLPDatabase, doc: Doc) -> NLPDatabase:
+# Функция перевода документа Natasha в формат лабороторной работы
+def to_lw_format(db: NLPDatabase, doc: Doc):
     for token in doc.tokens:
         new_form_info = FormInfo(1, None)
 
@@ -45,6 +48,7 @@ def to_lw_format(db: NLPDatabase, doc: Doc) -> NLPDatabase:
     db.word_count = len(doc.tokens)
 
 
+# Функция перевода строки текста в формат лабороторной работы
 def convert_text_to_db(text: str) -> NLPDatabase:
     db = NLPDatabase(text)
     text = text.lower()
