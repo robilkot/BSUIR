@@ -22,14 +22,17 @@ if __name__ == '__main__':
 
     print("running tests")
 
-    for text in texts:
-        _, _ = run_test(text)
-    print("warmup done")
-
     for filename in texts:
-        count, processing_time = run_test(filename)
-        plot_values.append((count, processing_time))
-        print(plot_values)
+        iterations = 10
+        count: int = 0
+        total_processing_time: float = 0
+
+        for i in range(iterations):
+            count, processing_time = run_test(filename)
+            total_processing_time += processing_time
+
+        plot_values.append((count, total_processing_time / iterations))
+        print(total_processing_time / iterations)
 
     plot_values.sort(key=lambda x: x[0])
     word_counts, processing_times = zip(*plot_values)
