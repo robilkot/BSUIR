@@ -4,7 +4,6 @@ from processor import convert_text_to_db
 import os
 
 def run_test(file_name: str):
-    processing_times = []
     with open(file_name, 'r', encoding='utf-8') as f:
         text = f.read()
 
@@ -13,7 +12,6 @@ def run_test(file_name: str):
     end = time.time()
 
     processing_time = end - start
-    print(f"Time: {processing_time}")
     count = db.word_count
     return count, processing_time
 
@@ -21,6 +19,12 @@ if __name__ == '__main__':
     dataset = 'dataset'
     texts = [os.path.join(dataset, file) for file in os.listdir(dataset) if file.endswith('.txt')]
     plot_values = []
+
+    print("running tests")
+
+    for text in texts:
+        _, _ = run_test(text)
+    print("warmup done")
 
     for filename in texts:
         count, processing_time = run_test(filename)

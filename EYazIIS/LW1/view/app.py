@@ -52,13 +52,13 @@ class App(tk.Tk):
     def set_db(self, content: NLPDatabase | str):
         if isinstance(content, NLPDatabase):
             db = content
-
-            if db.source_text == '' or db.source_text is None:
-                self.file_menu.entryconfig("Сохранить как", state="disabled")
-            else:
-                self.file_menu.entryconfig("Сохранить как", state="normal")
         else:
             db = convert_text_to_db(content)
+
+        if db.source_text == '' or db.source_text is None:
+            self.file_menu.entryconfig("Сохранить как", state="disabled")
+        else:
+            self.file_menu.entryconfig("Сохранить как", state="normal")
 
         self.workspace.set_db(db)
         self.table.set_db(db)
