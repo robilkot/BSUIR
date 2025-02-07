@@ -1,6 +1,11 @@
 ﻿using LW1.Common;
+using LW1.CurvesDrawing;
+using LW1.CurvesDrawing.Circle;
+using LW1.CurvesDrawing.Ellipse;
+using LW1.CurvesDrawing.Hyperbola;
+using LW1.CurvesDrawing.Parabola;
 using LW1.LineDrawing;
-using System.Collections.ObjectModel;
+using System.Collections.Immutable;
 
 namespace LW1
 {
@@ -12,7 +17,7 @@ namespace LW1
         private static int s_canvasWidth = 32;
         private static int s_canvasHeight = 32;
 
-        public static List<Color> Colors = [
+        public static ImmutableArray<Color> Colors { get; private set; } = [
             Color.Orange,
             Color.DarkGreen,
             Color.Brown,
@@ -20,27 +25,41 @@ namespace LW1
             Color.Black,
             ];
 
-        public static ObservableCollection<ILineDrawingAlgorithm> LineDrawAlgorithms { get; private set; } = [
+        public static ImmutableArray<IDrawingAlgorithm> LineDrawingAlgorithms { get; private set; } = [
             new CDA(),
             new Bresenham(),
             new Wu(),
             ];
 
+        public static ImmutableArray<IDrawingAlgorithm> CurveDrawingAlgorithms { get; private set; } = [
+            new CircleDrawingAlgorithm(),
+            new EllipseDrawingAlgorithm(),
+            new ParabolaDrawingAlgorithm(),
+            new HyperbolaDrawingAlgorithm(),
+            ];
+
+
         public MainForm()
         {
             InitializeComponent();
 
-            var bindingSource = new BindingSource
-            {
-                DataSource = LineDrawAlgorithms
-            };
             InitCanvas();
 
-            DrawLineMethodCombobox.DataSource = bindingSource.DataSource;
-            DrawLineMethodCombobox.DisplayMember = nameof(ILineDrawingAlgorithm.DisplayName);
-            DrawLineMethodCombobox.ValueMember = nameof(ILineDrawingAlgorithm.DisplayName);
+            var lineBindingSource = new BindingSource()
+            {
+                DataSource = LineDrawingAlgorithms
+            };
+            LineDrawingMethodCombobox.DataSource = lineBindingSource.DataSource;
+            LineDrawingMethodCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            LineDrawingMethodCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
 
-            DrawLineMethodCombobox.SelectedIndex = 2;
+            var curveBindingSource = new BindingSource()
+            {
+                DataSource = CurveDrawingAlgorithms
+            };
+            CurveTypeCombobox.DataSource = curveBindingSource.DataSource;
+            CurveTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            CurveTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
 
         private void CancelCurrentTask()
@@ -49,6 +68,7 @@ namespace LW1
             _cts.Dispose();
             _cts = new();
         }
+
         private async void DrawLineButton_Click(object sender, EventArgs e)
         {
             CancelCurrentTask();
@@ -62,47 +82,44 @@ namespace LW1
                 return;
             }
 
-            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)DrawLineMethodCombobox.SelectedItem!;
+            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingMethodCombobox.SelectedItem!;
 
             using var g = Graphics.FromImage(_bitmap);
             var color = Colors.Random();
 
             ClearDebugTable();
 
+            LineDrawingParameters param = new(start, end, color);
+
             try
             {
                 await Task.Run(async () =>
                 {
-                    foreach (var (point, info) in algorithm.DrawLine(start, end, color))
+                    foreach (var (point, info) in algorithm.Draw(param))
                     {
                         DrawPoint(g, point.Coordinates, point.Color);
 
                         if (EnableDebugButton.Checked)
                         {
-                            if (DebugGridView.Columns.Count == 0)
-                            {
-                                InitDebugTable(info);
-                            }
-
                             AddDebugSteps(info);
                             CanvasPictureBox.Image = _bitmap;
                             await Task.Delay(150, _cts.Token);
                         }
 
-                        if(_cts.IsCancellationRequested)
+                        if (_cts.IsCancellationRequested)
                         {
                             return;
                         }
                     }
                 }, _cts.Token);
             }
-            catch(TaskCanceledException)
+            catch (TaskCanceledException)
             {
             }
 
             CanvasPictureBox.Image = _bitmap;
         }
-        private void DrawPoint(Graphics g, Point point, Color color)
+        private static void DrawPoint(Graphics g, Point point, Color color)
         {
             using var brush = new SolidBrush(color);
             g.FillRectangle(brush, point.X * s_pixelSize, point.Y * s_pixelSize, s_pixelSize, s_pixelSize);
@@ -126,16 +143,24 @@ namespace LW1
             DebugGridView.Invoke(() =>
             {
                 DebugGridView.Columns.Clear();
-                foreach(var column in info.Columns)
+                foreach (var column in info.Columns)
                 {
-                    DebugGridView.Columns.Add(new() { HeaderText = column,
-                    CellTemplate = new DataGridViewTextBoxCell(),
-                    Width = 60});
+                    DebugGridView.Columns.Add(new()
+                    {
+                        HeaderText = column,
+                        CellTemplate = new DataGridViewTextBoxCell(),
+                        Width = 60
+                    });
                 }
             });
         }
         private void AddDebugSteps(IDebugInfo drawInfo)
         {
+            if (DebugGridView.Columns.Count == 0)
+            {
+                InitDebugTable(drawInfo);
+            }
+
             DebugGridView.Invoke(() =>
             {
                 DebugGridView.Rows.Add(drawInfo.Row.ToArray());

@@ -1,5 +1,4 @@
 ﻿using LW1.Common;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LW1.LineDrawing
 {
@@ -18,8 +17,12 @@ namespace LW1.LineDrawing
     {
         public string DisplayName => "ЦДА";
 
-        public IEnumerable<(ColorPoint, IDebugInfo)> DrawLine(Point start, Point end, Color color)
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(LineDrawingParameters parameters)
         {
+            var start = parameters.Start;
+            var end = parameters.End;
+            var color = parameters.Color;
+
             int len = Math.Max(Math.Abs(start.X - end.X), Math.Abs(start.Y - end.Y));
             double dx = (double)(end.X - start.X) / len;
             double dy = (double)(end.Y - start.Y) / len;
@@ -27,13 +30,14 @@ namespace LW1.LineDrawing
             double x = start.X;
             double y = start.Y;
 
-            for(int i = 0; i <= len; i++)
+            for (int i = 0; i <= len; i++)
             {
                 var displayX = (int)Math.Round(x);
                 var displayY = (int)Math.Round(y);
 
                 var point = new ColorPoint(new(displayX, displayY), color);
-                var drawInfo = new CDADrawInfo {
+                var drawInfo = new CDADrawInfo
+                {
                     Iteration = i,
                     X = x,
                     Y = y,

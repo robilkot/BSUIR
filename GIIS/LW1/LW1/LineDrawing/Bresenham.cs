@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using LW1.Common;
+﻿using LW1.Common;
 
 namespace LW1.LineDrawing
 {
@@ -19,8 +18,12 @@ namespace LW1.LineDrawing
     {
         public string DisplayName => "Брезенхем";
 
-        public IEnumerable<(ColorPoint, IDebugInfo)> DrawLine(Point start, Point end, Color color)
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(LineDrawingParameters parameters)
         {
+            var start = parameters.Start;
+            var end = parameters.End;
+            var color = parameters.Color;
+
             int dx = Math.Abs(end.X - start.X);
             int dy = Math.Abs(end.Y - start.Y);
             int sx = start.X < end.X ? 1 : -1;

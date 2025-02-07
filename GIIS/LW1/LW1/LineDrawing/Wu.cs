@@ -17,13 +17,20 @@ namespace LW1.LineDrawing
     public class Wu : ILineDrawingAlgorithm
     {
         public string DisplayName => "Ву";
-        public IEnumerable<(ColorPoint, IDebugInfo)> DrawLine(Point start, Point end, Color color)
+
+        private static float FPart(float x) => x - (float)Math.Floor(x);
+
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(LineDrawingParameters parameters)
         {
+            var start = parameters.Start;
+            var end = parameters.End;
+            var color = parameters.Color;
+
             // Fallback to CDA
             if (start.X == end.X || start.Y == end.Y)
             {
                 var cda = new CDA();
-                foreach (var pair in cda.DrawLine(start, end, color))
+                foreach (var pair in cda.Draw(parameters))
                 {
                     yield return pair;
                 }
@@ -86,7 +93,7 @@ namespace LW1.LineDrawing
                         Iteration = i++,
                         X = steep ? yEnd : xEnd,
                         Y = steep ? xEnd : yEnd,
-                        DisplayX = upperX, 
+                        DisplayX = upperX,
                         DisplayY = upperY,
                         V = 1 - fpart,
                     });
@@ -99,6 +106,5 @@ namespace LW1.LineDrawing
                 xGap = 1 - xGap;
             }
         }
-        private static float FPart(float x) => x - (float)Math.Floor(x);
     }
 }
