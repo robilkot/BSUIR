@@ -2,5 +2,8 @@
 
 namespace LW1.CurvesDrawing.Ellipse
 {
-    public record EllipseDrawingParameters : CurveDrawingParameters;
+    public class EllipseDrawingParameters : CurveDrawingParameters
+    {
+        public override Color Color {  get; set; }
+    }
 }

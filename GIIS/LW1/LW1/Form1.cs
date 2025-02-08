@@ -1,5 +1,4 @@
 ﻿using LW1.Common;
-using LW1.CurvesDrawing;
 using LW1.CurvesDrawing.Circle;
 using LW1.CurvesDrawing.Ellipse;
 using LW1.CurvesDrawing.Hyperbola;
@@ -12,6 +11,8 @@ namespace LW1
     public partial class MainForm : Form
     {
         private CancellationTokenSource _cts = new();
+        private IDrawingParameters _parameters;
+        private Dictionary<string, NumericUpDown> _numericParametersMapping = [];
         private static Bitmap _bitmap;
         private static int s_pixelSize = 16;
         private static int s_canvasWidth = 32;
@@ -62,40 +63,17 @@ namespace LW1
             CurveTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
 
-        private void CancelCurrentTask()
+        private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
         {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = new();
-        }
-
-        private async void DrawLineButton_Click(object sender, EventArgs e)
-        {
-            CancelCurrentTask();
-
-            Point start = new((int)EntryX1.Value, (int)EntryY1.Value);
-            Point end = new((int)EntryX2.Value, (int)EntryY2.Value);
-
-            if (start == end)
-            {
-                MessageBox.Show("Координаты начала и конца совпадают. Измените их.");
-                return;
-            }
-
-            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingMethodCombobox.SelectedItem!;
-
             using var g = Graphics.FromImage(_bitmap);
-            var color = Colors.Random();
 
             ClearDebugTable();
-
-            LineDrawingParameters param = new(start, end, color);
 
             try
             {
                 await Task.Run(async () =>
                 {
-                    foreach (var (point, info) in algorithm.Draw(param))
+                    foreach (var (point, info) in algorithm.Draw(parameters))
                     {
                         DrawPoint(g, point.Coordinates, point.Color);
 
@@ -179,6 +157,72 @@ namespace LW1
             CancelCurrentTask();
             ClearDebugTable();
             InitCanvas();
+        }
+        private void CancelCurrentTask()
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = new();
+        }
+
+        private void CurveTypeCombobox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
+
+            _parameters = algorithm.EmptyParameters;
+            var properties = _parameters.GetType().IntParameters();
+
+            _numericParametersMapping.Clear();
+            CurveParametersPanel.Controls.Clear();
+
+            foreach (var parameter in properties)
+            {
+                CurveParametersPanel.Controls.Add(new Label() { Text = parameter });
+
+                var textbox = new NumericUpDown() { };
+
+                CurveParametersPanel.Controls.Add(textbox);
+
+                _numericParametersMapping.Add(parameter, textbox);
+            }
+        }
+        private async void DrawLineButton_Click(object sender, EventArgs e)
+        {
+            CancelCurrentTask();
+
+            Point start = new((int)EntryX1.Value, (int)EntryY1.Value);
+            Point end = new((int)EntryX2.Value, (int)EntryY2.Value);
+
+            if (start == end)
+            {
+                MessageBox.Show("Координаты начала и конца совпадают. Измените их.");
+                return;
+            }
+
+            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingMethodCombobox.SelectedItem!;
+            IDrawingParameters parameters = new LineDrawingParameters()
+            {
+                Start = start,
+                End = end,
+                Color = Colors.Random(),
+            };
+
+            await Draw(algorithm, parameters);
+        }
+
+        private async void DrawCurveButton_ClickAsync(object sender, EventArgs e)
+        {
+            // Update params from UI
+            foreach (var kvp in _numericParametersMapping)
+            {
+                int value = (int)kvp.Value.Value;
+                _parameters.GetType()!.GetProperty(kvp.Key)!.SetValue(_parameters, value);
+            }
+
+            ICurveDrawingAlgorithm algorithm = (ICurveDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
+            IDrawingParameters parameters = _parameters;
+
+            await Draw(algorithm, parameters);
         }
     }
 }

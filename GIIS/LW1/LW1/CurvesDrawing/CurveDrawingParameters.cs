@@ -2,5 +2,8 @@
 
 namespace LW1.LineDrawing
 {
-    public abstract record CurveDrawingParameters : IDrawingParameters;
+    public abstract class CurveDrawingParameters : IDrawingParameters
+    {
+        public abstract Color Color { get; set; }
+    }
 }

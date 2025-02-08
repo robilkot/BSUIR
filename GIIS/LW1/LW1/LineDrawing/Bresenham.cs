@@ -16,10 +16,12 @@ namespace LW1.LineDrawing
 
     public class Bresenham : ILineDrawingAlgorithm
     {
+        public IDrawingParameters EmptyParameters => new LineDrawingParameters();
         public string DisplayName => "Брезенхем";
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(LineDrawingParameters parameters)
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
         {
+            var parameters = param as LineDrawingParameters;
             var start = parameters.Start;
             var end = parameters.End;
             var color = parameters.Color;

@@ -2,5 +2,10 @@
 
 namespace LW1.LineDrawing
 {
-    public record LineDrawingParameters(Point Start, Point End, Color Color) : IDrawingParameters;
+    public class LineDrawingParameters : IDrawingParameters
+    {
+        public Point Start { get; set; }
+        public Point End { get; set; }
+        public Color Color { get; set; }
+    }
 }

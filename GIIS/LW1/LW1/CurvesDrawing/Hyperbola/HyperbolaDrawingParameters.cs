@@ -2,5 +2,8 @@
 
 namespace LW1.CurvesDrawing.Hyperbola
 {
-    public record HyperbolaDrawingParameters : CurveDrawingParameters;
+    public class HyperbolaDrawingParameters : CurveDrawingParameters
+    {
+        public override Color Color { get; set; }
+    }
 }

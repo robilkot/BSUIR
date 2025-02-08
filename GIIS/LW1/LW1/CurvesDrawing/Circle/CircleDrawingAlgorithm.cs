@@ -3,11 +3,13 @@ using LW1.LineDrawing;
 
 namespace LW1.CurvesDrawing.Circle
 {
-    public class CircleDrawingAlgorithm : ICurveDrawingAlgorithm<CircleDrawingParameters>
+    public class CircleDrawingAlgorithm : ICurveDrawingAlgorithm
     {
         public string DisplayName => "Окружность";
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(CircleDrawingParameters parameters)
+        public IDrawingParameters EmptyParameters => new CircleDrawingParameters();
+
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T parameters) where T : IDrawingParameters
         {
             throw new NotImplementedException();
         }

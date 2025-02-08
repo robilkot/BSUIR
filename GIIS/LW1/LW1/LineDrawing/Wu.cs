@@ -18,10 +18,14 @@ namespace LW1.LineDrawing
     {
         public string DisplayName => "Ву";
 
+        public IDrawingParameters EmptyParameters => new LineDrawingParameters();
+
         private static float FPart(float x) => x - (float)Math.Floor(x);
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(LineDrawingParameters parameters)
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
         {
+            var parameters = param as LineDrawingParameters;
+
             var start = parameters.Start;
             var end = parameters.End;
             var color = parameters.Color;

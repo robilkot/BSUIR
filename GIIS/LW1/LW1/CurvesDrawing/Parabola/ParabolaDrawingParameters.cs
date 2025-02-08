@@ -2,5 +2,8 @@
 
 namespace LW1.CurvesDrawing.Parabola
 {
-    public record ParabolaDrawingParameters : CurveDrawingParameters;
+    public class ParabolaDrawingParameters : CurveDrawingParameters
+    {
+        public override Color Color { get; set; }
+    }
 }
