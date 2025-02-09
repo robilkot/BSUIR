@@ -1,8 +1,12 @@
 ﻿using LW1.Common;
-using LW1.LineDrawing;
+using LW1.CurvesDrawing.Common;
 
-namespace LW1.CurvesDrawing.Hyperbola
+namespace LW1.CurvesDrawing
 {
+    public class HyperbolaDrawingParameters : CurveDrawingParameters
+    {
+        public override Color Color { get; set; }
+    }
     public class HyperbolaDrawingAlgorithm : ICurveDrawingAlgorithm
     {
         public string DisplayName => "Гипербола";

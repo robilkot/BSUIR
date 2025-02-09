@@ -1,6 +1,6 @@
 ﻿using LW1.Common;
 
-namespace LW1.LineDrawing
+namespace LW1.CurvesDrawing.Common
 {
     public abstract class CurveDrawingParameters : IDrawingParameters
     {

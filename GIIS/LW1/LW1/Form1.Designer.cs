@@ -153,7 +153,7 @@
             DrawLineButton.TabIndex = 2;
             DrawLineButton.Text = "Построить";
             DrawLineButton.UseVisualStyleBackColor = true;
-            DrawLineButton.Click += DrawLineButton_Click;
+            DrawLineButton.Click += DrawLineButton_ClickAsync;
             // 
             // groupBox2
             // 

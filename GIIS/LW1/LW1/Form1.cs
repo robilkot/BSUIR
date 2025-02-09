@@ -1,9 +1,8 @@
 ﻿using LW1.Common;
-using LW1.CurvesDrawing.Circle;
-using LW1.CurvesDrawing.Ellipse;
-using LW1.CurvesDrawing.Hyperbola;
-using LW1.CurvesDrawing.Parabola;
+using LW1.CurvesDrawing;
+using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
+using LW1.LineDrawing.Common;
 using System.Collections.Immutable;
 
 namespace LW1
@@ -39,7 +38,6 @@ namespace LW1
             new HyperbolaDrawingAlgorithm(),
             ];
 
-
         public MainForm()
         {
             InitializeComponent();
@@ -65,9 +63,10 @@ namespace LW1
 
         private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
         {
-            using var g = Graphics.FromImage(_bitmap);
-
+            CancelCurrentTask();
             ClearDebugTable();
+
+            using var g = Graphics.FromImage(_bitmap);
 
             try
             {
@@ -186,24 +185,13 @@ namespace LW1
                 _numericParametersMapping.Add(parameter, textbox);
             }
         }
-        private async void DrawLineButton_Click(object sender, EventArgs e)
+        private async void DrawLineButton_ClickAsync(object sender, EventArgs e)
         {
-            CancelCurrentTask();
-
-            Point start = new((int)EntryX1.Value, (int)EntryY1.Value);
-            Point end = new((int)EntryX2.Value, (int)EntryY2.Value);
-
-            if (start == end)
-            {
-                MessageBox.Show("Координаты начала и конца совпадают. Измените их.");
-                return;
-            }
-
             ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingMethodCombobox.SelectedItem!;
             IDrawingParameters parameters = new LineDrawingParameters()
             {
-                Start = start,
-                End = end,
+                Start = new((int)EntryX1.Value, (int)EntryY1.Value),
+                End = new((int)EntryX2.Value, (int)EntryY2.Value),
                 Color = Colors.Random(),
             };
 
@@ -221,6 +209,7 @@ namespace LW1
 
             ICurveDrawingAlgorithm algorithm = (ICurveDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
             IDrawingParameters parameters = _parameters;
+            parameters.Color = Colors.Random();
 
             await Draw(algorithm, parameters);
         }

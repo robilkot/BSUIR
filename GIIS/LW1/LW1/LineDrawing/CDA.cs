@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
 {

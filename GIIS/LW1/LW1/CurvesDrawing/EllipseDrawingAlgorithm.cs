@@ -1,8 +1,12 @@
 ﻿using LW1.Common;
-using LW1.LineDrawing;
+using LW1.CurvesDrawing.Common;
 
-namespace LW1.CurvesDrawing.Ellipse
+namespace LW1.CurvesDrawing
 {
+    public class EllipseDrawingParameters : CurveDrawingParameters
+    {
+        public override Color Color { get; set; }
+    }
     public class EllipseDrawingAlgorithm : ICurveDrawingAlgorithm
     {
         public string DisplayName => "Эллипс";
