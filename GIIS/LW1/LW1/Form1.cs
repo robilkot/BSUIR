@@ -32,10 +32,10 @@ namespace LW1
             ];
 
         public static ImmutableArray<IDrawingAlgorithm> CurveDrawingAlgorithms { get; private set; } = [
+            new HyperbolaDrawingAlgorithm(),
+            new ParabolaDrawingAlgorithm(),
             new CircleDrawingAlgorithm(),
             new EllipseDrawingAlgorithm(),
-            new ParabolaDrawingAlgorithm(),
-            new HyperbolaDrawingAlgorithm(),
             ];
 
         public MainForm()
@@ -82,7 +82,7 @@ namespace LW1
                         {
                             AddDebugSteps(info);
                             CanvasPictureBox.Image = _bitmap;
-                            await Task.Delay(150, _cts.Token);
+                            await Task.Delay(75, _cts.Token);
                         }
 
                         if (_cts.IsCancellationRequested)
@@ -171,7 +171,7 @@ namespace LW1
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
 
             _parameters = algorithm.EmptyParameters;
-            var properties = _parameters.GetType().IntParameters();
+            var properties = _parameters.Properties<int>();
 
             _numericParametersMapping.Clear();
             CurveParametersLayoutPanel.Controls.Clear();
@@ -184,14 +184,19 @@ namespace LW1
                     AutoSize = true,
                 };
 
-                panel.Controls.Add(new Label() {
-                    Text = parameter,
+                panel.Controls.Add(new Label()
+                {
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    AutoSize = true,
+                    Text = parameter.name,
                 });
                 var textbox = new NumericUpDown() {
+                    Value = parameter.value,
                 };
                 panel.Controls.Add(textbox);
 
-                _numericParametersMapping.Add(parameter, textbox);
+                _numericParametersMapping.Add(parameter.name, textbox);
 
                 CurveParametersLayoutPanel.Controls.Add(panel);
             }

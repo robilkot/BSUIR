@@ -18,10 +18,10 @@ namespace LW1.CurvesDrawing
     public class EllipseDrawingParameters : CurveDrawingParameters
     {
         public override Color Color { get; set; }
-        public int CenterX { get; set; }
-        public int CenterY { get; set; }
-        public int A { get; set; }
-        public int B { get; set; }
+        public int CenterX { get; set; } = 15;
+        public int CenterY { get; set; } = 15;
+        public int A { get; set; } = 7;
+        public int B { get; set; } = 4;
     }
     public class EllipseDrawingAlgorithm : ICurveDrawingAlgorithm
     {
