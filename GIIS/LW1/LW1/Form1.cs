@@ -44,6 +44,8 @@ namespace LW1
 
             InitCanvas();
 
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
             var lineBindingSource = new BindingSource()
             {
                 DataSource = LineDrawingAlgorithms
