@@ -45,9 +45,10 @@
             label1 = new Label();
             EntryX1 = new NumericUpDown();
             tabPage2 = new TabPage();
-            DrawCurveButton = new Button();
-            CurveParametersPanel = new FlowLayoutPanel();
+            CurveParametersGroupBox = new GroupBox();
+            CurveParametersLayoutPanel = new FlowLayoutPanel();
             groupBox4 = new GroupBox();
+            DrawCurveButton = new Button();
             CurveTypeCombobox = new ComboBox();
             splitContainer2 = new SplitContainer();
             CanvasPictureBox = new PictureBox();
@@ -68,6 +69,7 @@
             ((System.ComponentModel.ISupportInitialize)EntryY1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)EntryX1).BeginInit();
             tabPage2.SuspendLayout();
+            CurveParametersGroupBox.SuspendLayout();
             groupBox4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
@@ -112,10 +114,9 @@
             // LinesInstrumentCluster
             // 
             LinesInstrumentCluster.AutoScroll = true;
-            LinesInstrumentCluster.Controls.Add(groupBox3);
-            LinesInstrumentCluster.Controls.Add(DrawLineButton);
             LinesInstrumentCluster.Controls.Add(groupBox2);
             LinesInstrumentCluster.Controls.Add(groupBox1);
+            LinesInstrumentCluster.Controls.Add(groupBox3);
             LinesInstrumentCluster.Location = new Point(4, 24);
             LinesInstrumentCluster.Name = "LinesInstrumentCluster";
             LinesInstrumentCluster.Padding = new Padding(3);
@@ -128,11 +129,12 @@
             // 
             groupBox3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox3.Controls.Add(LineDrawingMethodCombobox);
+            groupBox3.Controls.Add(DrawLineButton);
             groupBox3.Dock = DockStyle.Left;
-            groupBox3.Location = new Point(418, 3);
+            groupBox3.Location = new Point(3, 3);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(197, 107);
-            groupBox3.TabIndex = 2;
+            groupBox3.TabIndex = 0;
             groupBox3.TabStop = false;
             groupBox3.Text = "Метод построения";
             // 
@@ -147,9 +149,9 @@
             // DrawLineButton
             // 
             DrawLineButton.Anchor = AnchorStyles.Left;
-            DrawLineButton.Location = new Point(764, 44);
+            DrawLineButton.Location = new Point(21, 62);
             DrawLineButton.Name = "DrawLineButton";
-            DrawLineButton.Size = new Size(128, 29);
+            DrawLineButton.Size = new Size(155, 29);
             DrawLineButton.TabIndex = 2;
             DrawLineButton.Text = "Построить";
             DrawLineButton.UseVisualStyleBackColor = true;
@@ -163,10 +165,10 @@
             groupBox2.Controls.Add(EntryY2);
             groupBox2.Controls.Add(label4);
             groupBox2.Dock = DockStyle.Left;
-            groupBox2.Location = new Point(209, 3);
+            groupBox2.Location = new Point(406, 3);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(209, 107);
-            groupBox2.TabIndex = 1;
+            groupBox2.TabIndex = 2;
             groupBox2.TabStop = false;
             groupBox2.Text = "Координаты конца";
             // 
@@ -212,10 +214,10 @@
             groupBox1.Controls.Add(label1);
             groupBox1.Controls.Add(EntryX1);
             groupBox1.Dock = DockStyle.Left;
-            groupBox1.Location = new Point(3, 3);
+            groupBox1.Location = new Point(200, 3);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(206, 107);
-            groupBox1.TabIndex = 0;
+            groupBox1.TabIndex = 1;
             groupBox1.TabStop = false;
             groupBox1.Text = "Координаты начала";
             // 
@@ -253,8 +255,7 @@
             // 
             // tabPage2
             // 
-            tabPage2.Controls.Add(DrawCurveButton);
-            tabPage2.Controls.Add(CurveParametersPanel);
+            tabPage2.Controls.Add(CurveParametersGroupBox);
             tabPage2.Controls.Add(groupBox4);
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
@@ -264,28 +265,33 @@
             tabPage2.Text = "Кривые";
             tabPage2.UseVisualStyleBackColor = true;
             // 
-            // DrawCurveButton
+            // CurveParametersGroupBox
             // 
-            DrawCurveButton.Anchor = AnchorStyles.Left;
-            DrawCurveButton.Location = new Point(523, 42);
-            DrawCurveButton.Name = "DrawCurveButton";
-            DrawCurveButton.Size = new Size(128, 29);
-            DrawCurveButton.TabIndex = 6;
-            DrawCurveButton.Text = "Построить";
-            DrawCurveButton.UseVisualStyleBackColor = true;
-            DrawCurveButton.Click += DrawCurveButton_ClickAsync;
+            CurveParametersGroupBox.AutoSize = true;
+            CurveParametersGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            CurveParametersGroupBox.Controls.Add(CurveParametersLayoutPanel);
+            CurveParametersGroupBox.Dock = DockStyle.Fill;
+            CurveParametersGroupBox.Location = new Point(200, 3);
+            CurveParametersGroupBox.Name = "CurveParametersGroupBox";
+            CurveParametersGroupBox.Size = new Size(971, 107);
+            CurveParametersGroupBox.TabIndex = 7;
+            CurveParametersGroupBox.TabStop = false;
+            CurveParametersGroupBox.Text = "Параметры кривой";
             // 
-            // CurveParametersPanel
+            // CurveParametersLayoutPanel
             // 
-            CurveParametersPanel.Dock = DockStyle.Left;
-            CurveParametersPanel.Location = new Point(200, 3);
-            CurveParametersPanel.Name = "CurveParametersPanel";
-            CurveParametersPanel.Size = new Size(241, 107);
-            CurveParametersPanel.TabIndex = 5;
+            CurveParametersLayoutPanel.AutoSize = true;
+            CurveParametersLayoutPanel.Dock = DockStyle.Fill;
+            CurveParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
+            CurveParametersLayoutPanel.Location = new Point(3, 23);
+            CurveParametersLayoutPanel.Name = "CurveParametersLayoutPanel";
+            CurveParametersLayoutPanel.Size = new Size(965, 81);
+            CurveParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox4
             // 
             groupBox4.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox4.Controls.Add(DrawCurveButton);
             groupBox4.Controls.Add(CurveTypeCombobox);
             groupBox4.Dock = DockStyle.Left;
             groupBox4.Location = new Point(3, 3);
@@ -294,6 +300,17 @@
             groupBox4.TabIndex = 3;
             groupBox4.TabStop = false;
             groupBox4.Text = "Тип кривой";
+            // 
+            // DrawCurveButton
+            // 
+            DrawCurveButton.Anchor = AnchorStyles.Left;
+            DrawCurveButton.Location = new Point(21, 65);
+            DrawCurveButton.Name = "DrawCurveButton";
+            DrawCurveButton.Size = new Size(155, 29);
+            DrawCurveButton.TabIndex = 6;
+            DrawCurveButton.Text = "Построить";
+            DrawCurveButton.UseVisualStyleBackColor = true;
+            DrawCurveButton.Click += DrawCurveButton_ClickAsync;
             // 
             // CurveTypeCombobox
             // 
@@ -399,6 +416,9 @@
             ((System.ComponentModel.ISupportInitialize)EntryY1).EndInit();
             ((System.ComponentModel.ISupportInitialize)EntryX1).EndInit();
             tabPage2.ResumeLayout(false);
+            tabPage2.PerformLayout();
+            CurveParametersGroupBox.ResumeLayout(false);
+            CurveParametersGroupBox.PerformLayout();
             groupBox4.ResumeLayout(false);
             splitContainer2.Panel1.ResumeLayout(false);
             splitContainer2.Panel2.ResumeLayout(false);
@@ -437,6 +457,7 @@
         private GroupBox groupBox4;
         private ComboBox CurveTypeCombobox;
         private Button DrawCurveButton;
-        private FlowLayoutPanel CurveParametersPanel;
+        private GroupBox CurveParametersGroupBox;
+        private FlowLayoutPanel CurveParametersLayoutPanel;
     }
 }

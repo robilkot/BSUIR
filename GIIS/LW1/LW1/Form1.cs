@@ -44,6 +44,8 @@ namespace LW1
 
             InitCanvas();
 
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
             var lineBindingSource = new BindingSource()
             {
                 DataSource = LineDrawingAlgorithms
@@ -172,17 +174,26 @@ namespace LW1
             var properties = _parameters.GetType().IntParameters();
 
             _numericParametersMapping.Clear();
-            CurveParametersPanel.Controls.Clear();
+            CurveParametersLayoutPanel.Controls.Clear();
 
             foreach (var parameter in properties)
             {
-                CurveParametersPanel.Controls.Add(new Label() { Text = parameter });
+                var panel = new FlowLayoutPanel()
+                {
+                    FlowDirection = FlowDirection.LeftToRight,
+                    AutoSize = true,
+                };
 
-                var textbox = new NumericUpDown() { };
-
-                CurveParametersPanel.Controls.Add(textbox);
+                panel.Controls.Add(new Label() {
+                    Text = parameter,
+                });
+                var textbox = new NumericUpDown() {
+                };
+                panel.Controls.Add(textbox);
 
                 _numericParametersMapping.Add(parameter, textbox);
+
+                CurveParametersLayoutPanel.Controls.Add(panel);
             }
         }
         private async void DrawLineButton_ClickAsync(object sender, EventArgs e)

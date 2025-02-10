@@ -1,14 +1,19 @@
 ﻿using LW1.Common;
 using LW1.CurvesDrawing.Common;
-using System.Drawing;
 
 namespace LW1.CurvesDrawing
 {
     public class CircleDrawingInfo : IDebugInfo
     {
-        public IEnumerable<string> Columns => throw new NotImplementedException();
-
-        public IEnumerable<string> Row => throw new NotImplementedException();
+        public required int Iteration { get; set; }
+        public required double Delta { get; set; }
+        public required double? Sigma { get; set; }
+        public required double? SigmaStar { get; set; }
+        public required char? Pixel { get; set; }
+        public required int DisplayX { get; set; }
+        public required int DisplayY { get; set; }
+        public IEnumerable<string> Columns => ["i", "delta", "sigma", "sigma*", "pixel", "(x, y)"];
+        public IEnumerable<string> Row => [$"{Iteration}", $"{Delta:F2}", $"{Sigma:F2}", $"{SigmaStar:F2}", $"{Pixel}", $"{DisplayX}, {DisplayY}"];
     }
 
     public class CircleDrawingParameters : CurveDrawingParameters
@@ -26,83 +31,102 @@ namespace LW1.CurvesDrawing
 
         public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
         {
-            IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int x, int y, CircleDrawingParameters parameters)
-            {
-                var point1 = new ColorPoint(new(parameters.CenterX + x, parameters.CenterY + y), parameters.Color);
-                var point2 = new ColorPoint(new(parameters.CenterX - x, parameters.CenterY + y), parameters.Color);
-                var point3 = new ColorPoint(new(parameters.CenterX + x, parameters.CenterY - y), parameters.Color);
-                var point4 = new ColorPoint(new(parameters.CenterX - x, parameters.CenterY - y), parameters.Color);
-                var info = new CircleDrawingInfo();
+            if(param is not CircleDrawingParameters parameters) yield break;
 
-                foreach (var point in new ColorPoint[] { point1, point2, point3, point4 })
+            IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
+            {
+                Point[] points = [
+                    new(parameters.CenterX + x, parameters.CenterY + y),
+                    new(parameters.CenterX - x, parameters.CenterY + y),
+                    new(parameters.CenterX + x, parameters.CenterY - y),
+                    new(parameters.CenterX - x, parameters.CenterY - y)
+                    ];
+
+                foreach (var point in points)
                 {
-                    yield return (point, info);
+                    var info = new CircleDrawingInfo()
+                    {
+                        Iteration = i,
+                        Delta = delta,
+                        Sigma = sigma,
+                        SigmaStar = sigma_star,
+                        DisplayX = point.X,
+                        DisplayY = point.Y,
+                        Pixel = pixel,
+                    };
+
+                    yield return (new(point, parameters.Color), info);
                 }
             }
 
-            var parameters = param as CircleDrawingParameters;
-
             var x = 0;
             var y = parameters.Radius;
-            double limit = 0;
-            double delta = 2 - 2 * parameters.Radius;
+            int limit = 0;
+            int delta = 2 - 2 * parameters.Radius;
 
-            foreach (var point in yieldPoint(x, y, parameters))
+            foreach (var point in yieldPoint(0, delta, null, null, null, x, y, parameters))
             {
                 yield return point;
             }
 
-            void chooseDiagonal()
+            char chooseDiagonal()
             {
                 x++;
                 y--;
                 delta = delta + 2 * x - 2 * y + 2;
+                return 'D';
             }
-            void chooseHorizontal()
+            char chooseHorizontal()
             {
                 x++;
                 delta = delta + 2 * x + 1;
+                return 'H';
             }
-            void chooseVertical()
+            char chooseVertical()
             {
                 y--;
                 delta = delta - 2 * y + 1;
+                return 'V';
             }
 
-            while (y > limit)
+            for(int i = 1; y > limit; i++)
             {
+                int? sigma = null;
+                int? sigma_star = null;
+                char? pixel = null;
+
                 if (delta > 0)
                 {
-                    var sigma_star = 2 * delta - 2 * x - 1;
+                    sigma_star = 2 * delta - 2 * x - 1;
 
                     if (sigma_star <= 0)
                     {
-                        chooseDiagonal();
+                        pixel = chooseDiagonal();
                     }
                     else
                     {
-                        chooseVertical();
+                        pixel = chooseVertical();
                     }
                 }
                 else if (delta < 0)
                 {
-                    var sigma = 2 * delta + 2 * y - 1;
+                    sigma = 2 * delta + 2 * y - 1;
 
                     if (sigma > 0)
                     {
-                        chooseDiagonal();
+                        pixel = chooseDiagonal();
                     }
                     else
                     {
-                        chooseHorizontal();
+                        pixel = chooseHorizontal();
                     }
                 }
                 else
                 {
-                    chooseDiagonal();
+                    pixel = chooseDiagonal();
                 }
 
-                foreach (var point in yieldPoint(x, y, parameters))
+                foreach (var point in yieldPoint(i, delta, sigma, sigma_star, pixel, x, y, parameters))
                 {
                     yield return point;
                 }
