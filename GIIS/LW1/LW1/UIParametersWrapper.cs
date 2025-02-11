@@ -15,6 +15,11 @@ namespace LW1
 
                 var properties = _parameters?.Properties<int>() ?? [];
 
+                // Unsubscribe to avoid memory leak
+                foreach(var control in _numericParametersMapping.Keys)
+                {
+                    control.ValueChanged -= NumericUpDown_ValueChanged;
+                }
                 _numericParametersMapping.Clear();
                 _panel.Controls.Clear();
 

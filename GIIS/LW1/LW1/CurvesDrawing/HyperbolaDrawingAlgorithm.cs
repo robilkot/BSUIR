@@ -12,8 +12,9 @@ namespace LW1.CurvesDrawing
         public IEnumerable<string> Columns => ["i", "delta", "(x, y)"];
         public IEnumerable<string> Row => [$"{Iteration}", $"{Delta:F2}", $"{DisplayX}, {DisplayY}"];
     }
-    public class HyperbolaDrawingParameters : CurveDrawingParameters
+    public class HyperbolaDrawingParameters : IDrawingParameters
     {
+        public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
         public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
         public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
         public Parameter<int> A { get; init; } = new() { DisplayName = "A", Value = 6 };

@@ -1,10 +1,9 @@
 ﻿using LW1.Common;
-using LW1.CurvesDrawing;
 using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
+using LW1.SplineDrawing.Common;
 using System.Collections.Immutable;
-using System.Security.Cryptography;
 
 namespace LW1
 {
@@ -12,32 +11,20 @@ namespace LW1
     {
         private readonly UIParametersWrapper _lineParametersWrapper;
         private readonly UIParametersWrapper _curveParametersWrapper;
+        private readonly UIParametersWrapper _splineParametersWrapper;
 
         private CancellationTokenSource _cts = new();
-        private static Bitmap _bitmap;
+        private static Bitmap s_bitmap;
         private static int s_pixelSize = 16;
         private static int s_canvasWidth = 32;
         private static int s_canvasHeight = 32;
 
-        public static ImmutableArray<Color> Colors { get; private set; } = [
+        public ImmutableArray<Color> Colors { get; init; } = [
             Color.Orange,
             Color.DarkGreen,
             Color.Brown,
             Color.Gray,
             Color.Black,
-            ];
-
-        public static ImmutableArray<IDrawingAlgorithm> LineDrawingAlgorithms { get; private set; } = [
-            new CDA(),
-            new Bresenham(),
-            new Wu(),
-            ];
-
-        public static ImmutableArray<IDrawingAlgorithm> CurveDrawingAlgorithms { get; private set; } = [
-            new HyperbolaDrawingAlgorithm(),
-            new ParabolaDrawingAlgorithm(),
-            new CircleDrawingAlgorithm(),
-            new EllipseDrawingAlgorithm(),
             ];
 
         public MainForm()
@@ -46,18 +33,23 @@ namespace LW1
 
             _lineParametersWrapper = new(LineParametersLayoutPanel);
             _curveParametersWrapper = new(CurveParametersLayoutPanel);
+            _splineParametersWrapper = new(SplineParametersLayoutPanel);
 
             _lineParametersWrapper.Parameters = new LineDrawingParameters();
 
             InitCanvas();
 
-            LineDrawingAlgorithmCombobox.DataSource = LineDrawingAlgorithms;
+            LineDrawingAlgorithmCombobox.DataSource = new List<ILineDrawingAlgorithm>().FilledWithSubtypes();
             LineDrawingAlgorithmCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             LineDrawingAlgorithmCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
 
-            CurveTypeCombobox.DataSource = CurveDrawingAlgorithms;
+            CurveTypeCombobox.DataSource = new List<ICurveDrawingAlgorithm>().FilledWithSubtypes();
             CurveTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             CurveTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
+
+            SplineTypeCombobox.DataSource = new List<ISplineDrawingAlgorithm>().FilledWithSubtypes();
+            SplineTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            SplineTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
 
         private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
@@ -65,7 +57,7 @@ namespace LW1
             CancelCurrentTask();
             ClearDebugTable();
 
-            using var g = Graphics.FromImage(_bitmap);
+            using var g = Graphics.FromImage(s_bitmap);
 
             try
             {
@@ -78,7 +70,7 @@ namespace LW1
                         if (EnableDebugButton.Checked)
                         {
                             AddDebugSteps(info);
-                            CanvasPictureBox.Image = _bitmap;
+                            CanvasPictureBox.Image = s_bitmap;
                             await Task.Delay(75, _cts.Token);
                         }
 
@@ -93,7 +85,7 @@ namespace LW1
             {
             }
 
-            CanvasPictureBox.Image = _bitmap;
+            CanvasPictureBox.Image = s_bitmap;
         }
         private static void DrawPoint(Graphics g, Point point, Color color)
         {
@@ -111,8 +103,8 @@ namespace LW1
             CanvasPictureBox.Left = (CanvasPictureBox.Parent?.Size.Width ?? 0) / 2 - width / 2;
             CanvasPictureBox.Top = (CanvasPictureBox.Parent?.Size.Height ?? 0) / 2 - height / 2;
 
-            _bitmap = new Bitmap(width, height);
-            CanvasPictureBox.Image = _bitmap;
+            s_bitmap = new Bitmap(width, height);
+            CanvasPictureBox.Image = s_bitmap;
         }
         private void InitDebugTable(IDebugInfo info)
         {
@@ -183,6 +175,23 @@ namespace LW1
         private async void DrawLineButton_Click(object sender, EventArgs e)
         {
             ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingAlgorithmCombobox.SelectedItem!;
+            IDrawingParameters parameters = _lineParametersWrapper.Parameters;
+
+            parameters.Color.Value = Colors.Random();
+
+            await Draw(algorithm, parameters);
+        }
+
+        private void SplineTypeCombobox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            IDrawingAlgorithm algorithm = (IDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
+
+            _splineParametersWrapper.Parameters = algorithm.EmptyParameters;
+        }
+
+        private async void DrawSplineButton_Click(object sender, EventArgs e)
+        {
+            ISplineDrawingAlgorithm algorithm = (ISplineDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
             IDrawingParameters parameters = _lineParametersWrapper.Parameters;
 
             parameters.Color.Value = Colors.Random();

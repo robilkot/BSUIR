@@ -3,8 +3,9 @@ using LW1.CurvesDrawing.Common;
 
 namespace LW1.CurvesDrawing
 {
-    public class ParabolaDrawingParameters : CurveDrawingParameters
+    public class ParabolaDrawingParameters : IDrawingParameters
     {
+        public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
         public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
         public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
         public Parameter<int> P { get; init; } = new() { DisplayName = "P", Value = 5 };

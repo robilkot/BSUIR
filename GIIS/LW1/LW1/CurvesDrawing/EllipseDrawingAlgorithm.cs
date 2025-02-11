@@ -15,8 +15,9 @@ namespace LW1.CurvesDrawing
         public IEnumerable<string> Columns => ["i", "delta", "sigma", "sigma*", "pixel", "(x, y)"];
         public IEnumerable<string> Row => [$"{Iteration}", $"{Delta:F2}", $"{Sigma:F2}", $"{SigmaStar:F2}", $"{Pixel}", $"{DisplayX}, {DisplayY}"];
     }
-    public class EllipseDrawingParameters : CurveDrawingParameters
+    public class EllipseDrawingParameters : IDrawingParameters
     {
+        public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
         public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
         public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
         public Parameter<int> A { get; init; } = new() { DisplayName = "A", Value = 7 };

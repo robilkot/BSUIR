@@ -16,8 +16,9 @@ namespace LW1.CurvesDrawing
         public IEnumerable<string> Row => [$"{Iteration}", $"{Delta:F2}", $"{Sigma:F2}", $"{SigmaStar:F2}", $"{Pixel}", $"{DisplayX}, {DisplayY}"];
     }
 
-    public class CircleDrawingParameters : CurveDrawingParameters
+    public class CircleDrawingParameters : IDrawingParameters
     {
+        public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
         public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
         public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
         public Parameter<int> Radius { get; init; } = new() { DisplayName = "Радиус", Value = 7 };
