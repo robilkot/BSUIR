@@ -17,11 +17,10 @@ namespace LW1.CurvesDrawing
     }
     public class EllipseDrawingParameters : CurveDrawingParameters
     {
-        public override Color Color { get; set; }
-        public int CenterX { get; set; } = 15;
-        public int CenterY { get; set; } = 15;
-        public int A { get; set; } = 7;
-        public int B { get; set; } = 4;
+        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
+        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<int> A { get; init; } = new() { DisplayName = "A", Value = 7 };
+        public Parameter<int> B { get; init; } = new() { DisplayName = "B", Value = 4 };
     }
     public class EllipseDrawingAlgorithm : ICurveDrawingAlgorithm
     {
@@ -36,10 +35,10 @@ namespace LW1.CurvesDrawing
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, EllipseDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX + x, parameters.CenterY + y),
-                    new(parameters.CenterX - x, parameters.CenterY + y),
-                    new(parameters.CenterX + x, parameters.CenterY - y),
-                    new(parameters.CenterX - x, parameters.CenterY - y)
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value - y)
                     ];
 
                 foreach (var point in points)
@@ -55,14 +54,14 @@ namespace LW1.CurvesDrawing
                         Pixel = pixel,
                     };
 
-                    yield return (new(point, parameters.Color), info);
+                    yield return (new(point, parameters.Color.Value), info);
                 }
             }
 
             var x = 0;
-            var y = parameters.B;
+            var y = parameters.B.Value;
             int limit = 0;
-            int delta = parameters.A * parameters.A + parameters.B * parameters.B - 2 * parameters.A * parameters.A * parameters.B;
+            int delta = parameters.A.Value * parameters.A.Value + parameters.B.Value * parameters.B.Value - 2 * parameters.A.Value * parameters.A.Value * parameters.B.Value;
 
             foreach (var point in yieldPoint(0, delta, null, null, null, x, y, parameters))
             {
@@ -73,19 +72,19 @@ namespace LW1.CurvesDrawing
             {
                 x++;
                 y--;
-                delta = delta + parameters.B * parameters.B * (2 * x + 1) + parameters.A * parameters.A * (1 - 2 * y);
+                delta = delta + parameters.B.Value * parameters.B.Value * (2 * x + 1) + parameters.A.Value * parameters.A.Value * (1 - 2 * y);
                 return 'D';
             }
             char chooseHorizontal()
             {
                 x++;
-                delta = delta + parameters.B * parameters.B * (2 * x + 1);
+                delta = delta + parameters.B.Value * parameters.B.Value * (2 * x + 1);
                 return 'H';
             }
             char chooseVertical()
             {
                 y--;
-                delta = delta + parameters.A * parameters.A * (1 - 2 * y);
+                delta = delta + parameters.A.Value * parameters.A.Value * (1 - 2 * y);
                 return 'V';
             }
 
@@ -97,7 +96,7 @@ namespace LW1.CurvesDrawing
 
                 if (delta > 0)
                 {
-                    sigma_star = 2 * (delta  - parameters.B * parameters.B * x) - 1;
+                    sigma_star = 2 * (delta  - parameters.B.Value * parameters.B.Value * x) - 1;
 
                     if (sigma_star <= 0)
                     {
@@ -110,7 +109,7 @@ namespace LW1.CurvesDrawing
                 }
                 else if (delta < 0)
                 {
-                    sigma = 2 * (delta + parameters.A * parameters.A * y) - 1;
+                    sigma = 2 * (delta + parameters.A.Value * parameters.A.Value * y) - 1;
 
                     if (sigma > 0)
                     {

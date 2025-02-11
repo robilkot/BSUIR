@@ -31,19 +31,11 @@
             splitContainer1 = new SplitContainer();
             InstrumentCluster = new TabControl();
             LinesInstrumentCluster = new TabPage();
-            groupBox3 = new GroupBox();
-            LineDrawingMethodCombobox = new ComboBox();
-            DrawLineButton = new Button();
-            groupBox2 = new GroupBox();
-            label3 = new Label();
-            EntryX2 = new NumericUpDown();
-            EntryY2 = new NumericUpDown();
-            label4 = new Label();
             groupBox1 = new GroupBox();
-            label2 = new Label();
-            EntryY1 = new NumericUpDown();
-            label1 = new Label();
-            EntryX1 = new NumericUpDown();
+            LineParametersLayoutPanel = new FlowLayoutPanel();
+            groupBox2 = new GroupBox();
+            DrawLineButton = new Button();
+            LineDrawingAlgorithmCombobox = new ComboBox();
             tabPage2 = new TabPage();
             CurveParametersGroupBox = new GroupBox();
             CurveParametersLayoutPanel = new FlowLayoutPanel();
@@ -61,13 +53,8 @@
             splitContainer1.SuspendLayout();
             InstrumentCluster.SuspendLayout();
             LinesInstrumentCluster.SuspendLayout();
-            groupBox3.SuspendLayout();
-            groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)EntryX2).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)EntryY2).BeginInit();
             groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)EntryY1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)EntryX1).BeginInit();
+            groupBox2.SuspendLayout();
             tabPage2.SuspendLayout();
             CurveParametersGroupBox.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -114,9 +101,8 @@
             // LinesInstrumentCluster
             // 
             LinesInstrumentCluster.AutoScroll = true;
-            LinesInstrumentCluster.Controls.Add(groupBox2);
             LinesInstrumentCluster.Controls.Add(groupBox1);
-            LinesInstrumentCluster.Controls.Add(groupBox3);
+            LinesInstrumentCluster.Controls.Add(groupBox2);
             LinesInstrumentCluster.Location = new Point(4, 24);
             LinesInstrumentCluster.Name = "LinesInstrumentCluster";
             LinesInstrumentCluster.Padding = new Padding(3);
@@ -125,133 +111,60 @@
             LinesInstrumentCluster.Text = "Отрезки";
             LinesInstrumentCluster.UseVisualStyleBackColor = true;
             // 
-            // groupBox3
+            // groupBox1
             // 
-            groupBox3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox3.Controls.Add(LineDrawingMethodCombobox);
-            groupBox3.Controls.Add(DrawLineButton);
-            groupBox3.Dock = DockStyle.Left;
-            groupBox3.Location = new Point(3, 3);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(197, 107);
-            groupBox3.TabIndex = 0;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "Метод построения";
+            groupBox1.AutoSize = true;
+            groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox1.Controls.Add(LineParametersLayoutPanel);
+            groupBox1.Dock = DockStyle.Fill;
+            groupBox1.Location = new Point(200, 3);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(971, 107);
+            groupBox1.TabIndex = 9;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Параметры отрезка";
             // 
-            // LineDrawingMethodCombobox
+            // LineParametersLayoutPanel
             // 
-            LineDrawingMethodCombobox.FormattingEnabled = true;
-            LineDrawingMethodCombobox.Location = new Point(21, 31);
-            LineDrawingMethodCombobox.Name = "LineDrawingMethodCombobox";
-            LineDrawingMethodCombobox.Size = new Size(155, 28);
-            LineDrawingMethodCombobox.TabIndex = 0;
-            // 
-            // DrawLineButton
-            // 
-            DrawLineButton.Anchor = AnchorStyles.Left;
-            DrawLineButton.Location = new Point(21, 62);
-            DrawLineButton.Name = "DrawLineButton";
-            DrawLineButton.Size = new Size(155, 29);
-            DrawLineButton.TabIndex = 2;
-            DrawLineButton.Text = "Построить";
-            DrawLineButton.UseVisualStyleBackColor = true;
-            DrawLineButton.Click += DrawLineButton_ClickAsync;
+            LineParametersLayoutPanel.AutoSize = true;
+            LineParametersLayoutPanel.Dock = DockStyle.Fill;
+            LineParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
+            LineParametersLayoutPanel.Location = new Point(3, 23);
+            LineParametersLayoutPanel.Name = "LineParametersLayoutPanel";
+            LineParametersLayoutPanel.Size = new Size(965, 81);
+            LineParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox2
             // 
             groupBox2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox2.Controls.Add(label3);
-            groupBox2.Controls.Add(EntryX2);
-            groupBox2.Controls.Add(EntryY2);
-            groupBox2.Controls.Add(label4);
+            groupBox2.Controls.Add(DrawLineButton);
+            groupBox2.Controls.Add(LineDrawingAlgorithmCombobox);
             groupBox2.Dock = DockStyle.Left;
-            groupBox2.Location = new Point(406, 3);
+            groupBox2.Location = new Point(3, 3);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(209, 107);
-            groupBox2.TabIndex = 2;
+            groupBox2.Size = new Size(197, 107);
+            groupBox2.TabIndex = 8;
             groupBox2.TabStop = false;
-            groupBox2.Text = "Координаты конца";
+            groupBox2.Text = "Алгоритм построения";
             // 
-            // label3
+            // DrawLineButton
             // 
-            label3.AutoSize = true;
-            label3.Location = new Point(11, 66);
-            label3.Name = "label3";
-            label3.Size = new Size(25, 20);
-            label3.TabIndex = 7;
-            label3.Text = "Y2";
+            DrawLineButton.Anchor = AnchorStyles.Left;
+            DrawLineButton.Location = new Point(21, 68);
+            DrawLineButton.Name = "DrawLineButton";
+            DrawLineButton.Size = new Size(155, 29);
+            DrawLineButton.TabIndex = 6;
+            DrawLineButton.Text = "Построить";
+            DrawLineButton.UseVisualStyleBackColor = true;
+            DrawLineButton.Click += DrawLineButton_Click;
             // 
-            // EntryX2
+            // LineDrawingAlgorithmCombobox
             // 
-            EntryX2.Location = new Point(40, 31);
-            EntryX2.Name = "EntryX2";
-            EntryX2.Size = new Size(149, 27);
-            EntryX2.TabIndex = 4;
-            EntryX2.Value = new decimal(new int[] { 9, 0, 0, 0 });
-            // 
-            // EntryY2
-            // 
-            EntryY2.Location = new Point(40, 64);
-            EntryY2.Name = "EntryY2";
-            EntryY2.Size = new Size(149, 27);
-            EntryY2.TabIndex = 6;
-            EntryY2.Value = new decimal(new int[] { 4, 0, 0, 0 });
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Location = new Point(11, 33);
-            label4.Name = "label4";
-            label4.Size = new Size(26, 20);
-            label4.TabIndex = 5;
-            label4.Text = "X2";
-            // 
-            // groupBox1
-            // 
-            groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            groupBox1.Controls.Add(label2);
-            groupBox1.Controls.Add(EntryY1);
-            groupBox1.Controls.Add(label1);
-            groupBox1.Controls.Add(EntryX1);
-            groupBox1.Dock = DockStyle.Left;
-            groupBox1.Location = new Point(200, 3);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(206, 107);
-            groupBox1.TabIndex = 1;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Координаты начала";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(7, 66);
-            label2.Name = "label2";
-            label2.Size = new Size(25, 20);
-            label2.TabIndex = 3;
-            label2.Text = "Y1";
-            // 
-            // EntryY1
-            // 
-            EntryY1.Location = new Point(36, 64);
-            EntryY1.Name = "EntryY1";
-            EntryY1.Size = new Size(149, 27);
-            EntryY1.TabIndex = 2;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(7, 33);
-            label1.Name = "label1";
-            label1.Size = new Size(26, 20);
-            label1.TabIndex = 1;
-            label1.Text = "X1";
-            // 
-            // EntryX1
-            // 
-            EntryX1.Location = new Point(36, 31);
-            EntryX1.Name = "EntryX1";
-            EntryX1.Size = new Size(149, 27);
-            EntryX1.TabIndex = 0;
+            LineDrawingAlgorithmCombobox.FormattingEnabled = true;
+            LineDrawingAlgorithmCombobox.Location = new Point(21, 31);
+            LineDrawingAlgorithmCombobox.Name = "LineDrawingAlgorithmCombobox";
+            LineDrawingAlgorithmCombobox.Size = new Size(155, 28);
+            LineDrawingAlgorithmCombobox.TabIndex = 0;
             // 
             // tabPage2
             // 
@@ -406,15 +319,10 @@
             splitContainer1.ResumeLayout(false);
             InstrumentCluster.ResumeLayout(false);
             LinesInstrumentCluster.ResumeLayout(false);
-            groupBox3.ResumeLayout(false);
-            groupBox2.ResumeLayout(false);
-            groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)EntryX2).EndInit();
-            ((System.ComponentModel.ISupportInitialize)EntryY2).EndInit();
+            LinesInstrumentCluster.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)EntryY1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)EntryX1).EndInit();
+            groupBox2.ResumeLayout(false);
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
             CurveParametersGroupBox.ResumeLayout(false);
@@ -439,25 +347,17 @@
         private SplitContainer splitContainer2;
         private PictureBox CanvasPictureBox;
         private CheckBox EnableDebugButton;
-        private GroupBox groupBox1;
-        private Button DrawLineButton;
-        private GroupBox groupBox2;
-        private GroupBox groupBox3;
         private Button button2;
-        private ComboBox LineDrawingMethodCombobox;
-        private Label label3;
-        private NumericUpDown EntryX2;
-        private NumericUpDown EntryY2;
-        private Label label4;
-        private Label label2;
-        private NumericUpDown EntryY1;
-        private Label label1;
-        private NumericUpDown EntryX1;
         private DataGridView DebugGridView;
         private GroupBox groupBox4;
         private ComboBox CurveTypeCombobox;
         private Button DrawCurveButton;
         private GroupBox CurveParametersGroupBox;
         private FlowLayoutPanel CurveParametersLayoutPanel;
+        private GroupBox groupBox1;
+        private FlowLayoutPanel LineParametersLayoutPanel;
+        private GroupBox groupBox2;
+        private Button DrawLineButton;
+        private ComboBox LineDrawingAlgorithmCombobox;
     }
 }

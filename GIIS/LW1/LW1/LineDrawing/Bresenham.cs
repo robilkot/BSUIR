@@ -22,10 +22,11 @@ namespace LW1.LineDrawing
 
         public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
         {
-            var parameters = param as LineDrawingParameters;
-            var start = parameters.Start;
-            var end = parameters.End;
-            var color = parameters.Color;
+            if (param is not LineDrawingParameters parameters) yield break;
+
+            var start = new Point(parameters.StartX.Value, parameters.StartY.Value);
+            var end = new Point(parameters.EndX.Value, parameters.EndY.Value);
+            var color = parameters.Color.Value;
 
             int dx = Math.Abs(end.X - start.X);
             int dy = Math.Abs(end.Y - start.Y);

@@ -18,10 +18,9 @@ namespace LW1.CurvesDrawing
 
     public class CircleDrawingParameters : CurveDrawingParameters
     {
-        public override Color Color { get; set; }
-        public int CenterX { get; set; } = 15;
-        public int CenterY { get; set; } = 15;
-        public int Radius { get; set; } = 7;
+        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
+        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<int> Radius { get; init; } = new() { DisplayName = "Радиус", Value = 7 };
     }
     public class CircleDrawingAlgorithm : ICurveDrawingAlgorithm
     {
@@ -36,10 +35,10 @@ namespace LW1.CurvesDrawing
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX + x, parameters.CenterY + y),
-                    new(parameters.CenterX - x, parameters.CenterY + y),
-                    new(parameters.CenterX + x, parameters.CenterY - y),
-                    new(parameters.CenterX - x, parameters.CenterY - y)
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value - y)
                     ];
 
                 foreach (var point in points)
@@ -55,14 +54,14 @@ namespace LW1.CurvesDrawing
                         Pixel = pixel,
                     };
 
-                    yield return (new(point, parameters.Color), info);
+                    yield return (new(point, parameters.Color.Value), info);
                 }
             }
 
             var x = 0;
-            var y = parameters.Radius;
+            var y = parameters.Radius.Value;
             int limit = 0;
-            int delta = 2 - 2 * parameters.Radius;
+            int delta = 2 - 2 * parameters.Radius.Value;
 
             foreach (var point in yieldPoint(0, delta, null, null, null, x, y, parameters))
             {

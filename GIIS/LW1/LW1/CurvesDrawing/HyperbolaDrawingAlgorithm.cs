@@ -14,13 +14,11 @@ namespace LW1.CurvesDrawing
     }
     public class HyperbolaDrawingParameters : CurveDrawingParameters
     {
-        public override Color Color { get; set; }
-        public int CenterX { get; set; } = 15;
-        public int CenterY { get; set; } = 15;
-        public int A { get; set; } = 6;
-        public int B { get; set; } = 6;
-        public int MaximumX { get; set; } = 31;
-        public int MaximumY { get; set; } = 31;
+        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
+        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<int> A { get; init; } = new() { DisplayName = "A", Value = 6 };
+        public Parameter<int> B { get; init; } = new() { DisplayName = "B", Value = 6 };
+        public Parameter<int> MaximumX { get; init; } = new() { DisplayName = "Ограничение (X)", Value = 31 };
     }
     public class HyperbolaDrawingAlgorithm : ICurveDrawingAlgorithm
     {
@@ -35,10 +33,10 @@ namespace LW1.CurvesDrawing
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int x, int y, HyperbolaDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX + x, parameters.CenterY + y),
-                    new(parameters.CenterX - x, parameters.CenterY + y),
-                    new(parameters.CenterX + x, parameters.CenterY - y),
-                    new(parameters.CenterX - x, parameters.CenterY - y)
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
+                    new(parameters.CenterX.Value - x, parameters.CenterY.Value - y)
                 ];
 
                 foreach (var point in points)
@@ -50,19 +48,19 @@ namespace LW1.CurvesDrawing
                         DisplayX = point.X,
                         DisplayY = point.Y,
                     };
-                    yield return (new(point, parameters.Color), info);
+                    yield return (new(point, parameters.Color.Value), info);
                 }
             }
 
-            int a = parameters.A;
-            int b = parameters.B;
+            int a = parameters.A.Value;
+            int b = parameters.B.Value;
             int x = a;
             int y = 0;
 
             double delta = a * a - 2 * a * b * b + b * b;
 
             int iteration = 0;
-            while ((parameters.MaximumX == 0 || x < parameters.MaximumX) && (parameters.MaximumY == 0 || y < parameters.MaximumY))
+            while (parameters.MaximumX.Value == 0 || x < parameters.MaximumX.Value)
             {
                 foreach (var point in yieldPoint(iteration, (int)delta, x, y, parameters))
                 {

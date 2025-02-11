@@ -2,6 +2,6 @@
 {
     public interface IDrawingParameters
     {
-        public Color Color { get; set; }
+        public Parameter<Color> Color { get; init; }
     }
 }

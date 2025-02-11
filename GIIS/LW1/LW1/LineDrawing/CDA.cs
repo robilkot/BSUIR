@@ -21,11 +21,11 @@ namespace LW1.LineDrawing
 
         public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
         {
-            var parameters = param as LineDrawingParameters;
+            if (param is not LineDrawingParameters parameters) yield break;
 
-            var start = parameters.Start;
-            var end = parameters.End;
-            var color = parameters.Color;
+            var start = new Point(parameters.StartX.Value, parameters.StartY.Value);
+            var end = new Point(parameters.EndX.Value, parameters.EndY.Value);
+            var color = parameters.Color.Value;
 
             int len = Math.Max(Math.Abs(start.X - end.X), Math.Abs(start.Y - end.Y));
             double dx = (double)(end.X - start.X) / len;

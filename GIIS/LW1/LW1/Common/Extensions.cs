@@ -9,11 +9,12 @@
             return enumerable.ElementAt(random);
         }
 
-        public static IEnumerable<(string name, T? value)> Properties<T>(this object t)
-            => t
+        public static List<Parameter<T>> Properties<T>(this object obj)
+            => obj
             .GetType()
             .GetProperties()
-            .Where(info => info.PropertyType.Equals(typeof(T)))
-            .Select(info => (info.Name, (T)info.GetValue(t)));
+            .Where(info => info.PropertyType.Equals(typeof(Parameter<T>)))
+            .Select(info => (Parameter<T>)info.GetValue(obj)!)
+            .ToList();
     }
 }

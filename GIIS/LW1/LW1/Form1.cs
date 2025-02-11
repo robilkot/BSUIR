@@ -4,14 +4,16 @@ using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using System.Collections.Immutable;
+using System.Security.Cryptography;
 
 namespace LW1
 {
     public partial class MainForm : Form
     {
+        private readonly UIParametersWrapper _lineParametersWrapper;
+        private readonly UIParametersWrapper _curveParametersWrapper;
+
         private CancellationTokenSource _cts = new();
-        private IDrawingParameters _parameters;
-        private Dictionary<string, NumericUpDown> _numericParametersMapping = [];
         private static Bitmap _bitmap;
         private static int s_pixelSize = 16;
         private static int s_canvasWidth = 32;
@@ -42,23 +44,18 @@ namespace LW1
         {
             InitializeComponent();
 
+            _lineParametersWrapper = new(LineParametersLayoutPanel);
+            _curveParametersWrapper = new(CurveParametersLayoutPanel);
+
+            _lineParametersWrapper.Parameters = new LineDrawingParameters();
+
             InitCanvas();
 
-            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+            LineDrawingAlgorithmCombobox.DataSource = LineDrawingAlgorithms;
+            LineDrawingAlgorithmCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            LineDrawingAlgorithmCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
 
-            var lineBindingSource = new BindingSource()
-            {
-                DataSource = LineDrawingAlgorithms
-            };
-            LineDrawingMethodCombobox.DataSource = lineBindingSource.DataSource;
-            LineDrawingMethodCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
-            LineDrawingMethodCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
-
-            var curveBindingSource = new BindingSource()
-            {
-                DataSource = CurveDrawingAlgorithms
-            };
-            CurveTypeCombobox.DataSource = curveBindingSource.DataSource;
+            CurveTypeCombobox.DataSource = CurveDrawingAlgorithms;
             CurveTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             CurveTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
@@ -170,62 +167,25 @@ namespace LW1
         {
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
 
-            _parameters = algorithm.EmptyParameters;
-            var properties = _parameters.Properties<int>();
-
-            _numericParametersMapping.Clear();
-            CurveParametersLayoutPanel.Controls.Clear();
-
-            foreach (var parameter in properties)
-            {
-                var panel = new FlowLayoutPanel()
-                {
-                    FlowDirection = FlowDirection.LeftToRight,
-                    AutoSize = true,
-                };
-
-                panel.Controls.Add(new Label()
-                {
-                    Dock = DockStyle.Fill,
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    AutoSize = true,
-                    Text = parameter.name,
-                });
-                var textbox = new NumericUpDown() {
-                    Value = parameter.value,
-                };
-                panel.Controls.Add(textbox);
-
-                _numericParametersMapping.Add(parameter.name, textbox);
-
-                CurveParametersLayoutPanel.Controls.Add(panel);
-            }
-        }
-        private async void DrawLineButton_ClickAsync(object sender, EventArgs e)
-        {
-            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingMethodCombobox.SelectedItem!;
-            IDrawingParameters parameters = new LineDrawingParameters()
-            {
-                Start = new((int)EntryX1.Value, (int)EntryY1.Value),
-                End = new((int)EntryX2.Value, (int)EntryY2.Value),
-                Color = Colors.Random(),
-            };
-
-            await Draw(algorithm, parameters);
+            _curveParametersWrapper.Parameters = algorithm.EmptyParameters;
         }
 
         private async void DrawCurveButton_ClickAsync(object sender, EventArgs e)
         {
-            // Update params from UI
-            foreach (var kvp in _numericParametersMapping)
-            {
-                int value = (int)kvp.Value.Value;
-                _parameters.GetType()!.GetProperty(kvp.Key)!.SetValue(_parameters, value);
-            }
+            IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
+            IDrawingParameters parameters = _curveParametersWrapper.Parameters;
 
-            ICurveDrawingAlgorithm algorithm = (ICurveDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
-            IDrawingParameters parameters = _parameters;
-            parameters.Color = Colors.Random();
+            parameters.Color.Value = Colors.Random();
+
+            await Draw(algorithm, parameters);
+        }
+
+        private async void DrawLineButton_Click(object sender, EventArgs e)
+        {
+            ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingAlgorithmCombobox.SelectedItem!;
+            IDrawingParameters parameters = _lineParametersWrapper.Parameters;
+
+            parameters.Color.Value = Colors.Random();
 
             await Draw(algorithm, parameters);
         }

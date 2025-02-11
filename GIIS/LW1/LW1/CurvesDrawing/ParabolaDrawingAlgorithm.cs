@@ -5,12 +5,10 @@ namespace LW1.CurvesDrawing
 {
     public class ParabolaDrawingParameters : CurveDrawingParameters
     {
-        public override Color Color { get; set; }
-        public int CenterX { get; set; } = 15;
-        public int CenterY { get; set; } = 15;
-        public int MaximumX { get; set; } = 31;
-        public int MaximumY { get; set; } = 31;
-        public int P { get; set; } = 5;
+        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
+        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<int> P { get; init; } = new() { DisplayName = "P", Value = 5 };
+        public Parameter<int> MaximumX { get; init; } = new() { DisplayName = "Ограничение (X)", Value = 31 };
     }
     public class ParabolaDrawingAlgorithm : ICurveDrawingAlgorithm
     {
@@ -25,8 +23,8 @@ namespace LW1.CurvesDrawing
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int x, int y, ParabolaDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX + x, parameters.CenterY + y),
-                    new(parameters.CenterX + x, parameters.CenterY - y),
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
+                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
                 ];
 
                 foreach (var point in points)
@@ -38,7 +36,7 @@ namespace LW1.CurvesDrawing
                         DisplayX = point.X,
                         DisplayY = point.Y,
                     };
-                    yield return (new(point, parameters.Color), info);
+                    yield return (new(point, parameters.Color.Value), info);
                 }
             }
 
@@ -46,9 +44,9 @@ namespace LW1.CurvesDrawing
             int y = 0;
 
             int iteration = 0;
-            while((x < parameters.MaximumX || parameters.MaximumX == 0) && (parameters.MaximumY == 0 || y < parameters.MaximumY))
+            while(x < parameters.MaximumX.Value || parameters.MaximumX.Value == 0)
             {
-                double delta = y * y - 2 * parameters.P * x;
+                double delta = y * y - 2 * parameters.P.Value * x;
 
                 foreach (var point in yieldPoint(iteration, (int)delta, x, y, parameters))
                 {
