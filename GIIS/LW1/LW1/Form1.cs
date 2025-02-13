@@ -57,6 +57,8 @@ namespace LW1
             CancelCurrentTask();
             ClearDebugTable();
 
+            parameters.Color.Value = Colors.Random();
+
             using var g = Graphics.FromImage(s_bitmap);
 
             try
@@ -167,8 +169,6 @@ namespace LW1
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
             IDrawingParameters parameters = _curveParametersWrapper.Parameters;
 
-            parameters.Color.Value = Colors.Random();
-
             await Draw(algorithm, parameters);
         }
 
@@ -176,8 +176,6 @@ namespace LW1
         {
             ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingAlgorithmCombobox.SelectedItem!;
             IDrawingParameters parameters = _lineParametersWrapper.Parameters;
-
-            parameters.Color.Value = Colors.Random();
 
             await Draw(algorithm, parameters);
         }
@@ -192,9 +190,7 @@ namespace LW1
         private async void DrawSplineButton_Click(object sender, EventArgs e)
         {
             ISplineDrawingAlgorithm algorithm = (ISplineDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
-            IDrawingParameters parameters = _lineParametersWrapper.Parameters;
-
-            parameters.Color.Value = Colors.Random();
+            IDrawingParameters parameters = _splineParametersWrapper.Parameters;
 
             await Draw(algorithm, parameters);
         }
