@@ -19,8 +19,7 @@ namespace LW1.CurvesDrawing
     public class CircleDrawingParameters : IDrawingParameters
     {
         public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
-        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
-        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<Point> Center { get; init; } = new() { DisplayName = "Центр", Value = new(15, 15) };
         public Parameter<int> Radius { get; init; } = new() { DisplayName = "Радиус", Value = 7 };
     }
     public class CircleDrawingAlgorithm : ICurveDrawingAlgorithm
@@ -29,17 +28,17 @@ namespace LW1.CurvesDrawing
 
         public IDrawingParameters EmptyParameters => new CircleDrawingParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
         {
             if(param is not CircleDrawingParameters parameters) yield break;
 
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
-                    new(parameters.CenterX.Value - x, parameters.CenterY.Value + y),
-                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
-                    new(parameters.CenterX.Value - x, parameters.CenterY.Value - y)
+                    new(parameters.Center.Value.X + x, parameters.Center.Value.Y + y),
+                    new(parameters.Center.Value.X - x, parameters.Center.Value.Y + y),
+                    new(parameters.Center.Value.X + x, parameters.Center.Value.Y - y),
+                    new(parameters.Center.Value.X - x, parameters.Center.Value.Y - y)
                     ];
 
                 foreach (var point in points)

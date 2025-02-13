@@ -15,8 +15,7 @@ namespace LW1.CurvesDrawing
     public class HyperbolaDrawingParameters : IDrawingParameters
     {
         public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
-        public Parameter<int> CenterX { get; init; } = new() { DisplayName = "Центр (X)", Value = 15 };
-        public Parameter<int> CenterY { get; init; } = new() { DisplayName = "Центр (Y)", Value = 15 };
+        public Parameter<Point> Center { get; init; } = new() { DisplayName = "Центр", Value = new(15, 15) };
         public Parameter<int> A { get; init; } = new() { DisplayName = "A", Value = 6 };
         public Parameter<int> B { get; init; } = new() { DisplayName = "B", Value = 6 };
         public Parameter<int> MaximumX { get; init; } = new() { DisplayName = "Ограничение (X)", Value = 31 };
@@ -27,18 +26,18 @@ namespace LW1.CurvesDrawing
 
         public IDrawingParameters EmptyParameters => new HyperbolaDrawingParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not HyperbolaDrawingParameters parameters) yield break;
 
             IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int x, int y, HyperbolaDrawingParameters parameters)
             {
                 Point[] points = [
-                    new(parameters.CenterX.Value + x, parameters.CenterY.Value + y),
-                    new(parameters.CenterX.Value - x, parameters.CenterY.Value + y),
-                    new(parameters.CenterX.Value + x, parameters.CenterY.Value - y),
-                    new(parameters.CenterX.Value - x, parameters.CenterY.Value - y)
-                ];
+                    new(parameters.Center.Value.X + x, parameters.Center.Value.Y + y),
+                    new(parameters.Center.Value.X - x, parameters.Center.Value.Y + y),
+                    new(parameters.Center.Value.X + x, parameters.Center.Value.Y - y),
+                    new(parameters.Center.Value.X - x, parameters.Center.Value.Y - y)
+                    ];
 
                 foreach (var point in points)
                 {

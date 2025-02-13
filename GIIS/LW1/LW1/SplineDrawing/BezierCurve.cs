@@ -14,7 +14,7 @@ namespace LW1.SplineDrawing
 
         public IDrawingParameters EmptyParameters => new BezierCurveParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T parameters) where T : IDrawingParameters
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters parameters)
         {
             throw new NotImplementedException();
         }

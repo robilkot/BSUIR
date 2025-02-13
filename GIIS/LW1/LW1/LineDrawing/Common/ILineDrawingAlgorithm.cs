@@ -1,4 +1,6 @@
-﻿namespace LW1.LineDrawing.Common
+﻿using LW1.Common;
+
+namespace LW1.LineDrawing.Common
 {
     public interface ILineDrawingAlgorithm : IDrawingAlgorithm
     {

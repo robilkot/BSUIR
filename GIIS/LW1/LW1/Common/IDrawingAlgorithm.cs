@@ -6,6 +6,6 @@ namespace LW1.LineDrawing
     {
         IDrawingParameters EmptyParameters { get; }
         new string DisplayName { get; }
-        IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T parameters) where T : IDrawingParameters;
+        IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters parameters);
     }
 }

@@ -23,13 +23,13 @@ namespace LW1.LineDrawing
 
         private static float FPart(float x) => x - (float)Math.Floor(x);
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 
-            var start = new Point(parameters.StartX.Value, parameters.StartY.Value);
-            var end = new Point(parameters.EndX.Value, parameters.EndY.Value);
-            var color = parameters.Color.Value;
+            var start = parameters.Start.Value;
+            var end = parameters.End.Value;
+            var color = parameters.Color;
 
             // Fallback to CDA
             if (start.X == end.X || start.Y == end.Y)

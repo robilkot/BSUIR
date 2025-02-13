@@ -9,9 +9,9 @@ namespace LW1
 {
     public partial class MainForm : Form
     {
-        private readonly UIParametersWrapper _lineParametersWrapper;
-        private readonly UIParametersWrapper _curveParametersWrapper;
-        private readonly UIParametersWrapper _splineParametersWrapper;
+        private readonly ParametersWrapper _lineParametersWrapper;
+        private readonly ParametersWrapper _curveParametersWrapper;
+        private readonly ParametersWrapper _splineParametersWrapper;
 
         private CancellationTokenSource _cts = new();
         private static Bitmap s_bitmap;
@@ -30,6 +30,8 @@ namespace LW1
         public MainForm()
         {
             InitializeComponent();
+
+            InstrumentCluster.SelectedIndex = 2;
 
             _lineParametersWrapper = new(LineParametersLayoutPanel);
             _curveParametersWrapper = new(CurveParametersLayoutPanel);
@@ -50,14 +52,14 @@ namespace LW1
             SplineTypeCombobox.DataSource = new List<ISplineDrawingAlgorithm>().FilledWithSubtypes();
             SplineTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             SplineTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
+
+            SplineTypeCombobox.SelectedIndex = 2;
         }
 
         private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
         {
             CancelCurrentTask();
             ClearDebugTable();
-
-            parameters.Color.Value = Colors.Random();
 
             using var g = Graphics.FromImage(s_bitmap);
 

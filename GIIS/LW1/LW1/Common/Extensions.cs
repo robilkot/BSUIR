@@ -9,28 +9,12 @@
             return enumerable.ElementAt(random);
         }
 
-        public static Dictionary<Type, List<IParameter>> Properties(this object obj)
-        {
-            Dictionary<Type, List<IParameter>> result = [];
-
-            var propertiesTypes = obj
+        public static IEnumerable<IParameter> Properties(this object obj)
+            => obj
             .GetType()
             .GetProperties()
-            .Where(t => typeof(IParameter).IsAssignableFrom(t.PropertyType));
-            //.Where(info => info.PropertyType.Equals(typeof(IParameter)))
-
-            foreach (var property in propertiesTypes)
-            {
-                var genericType = property.PropertyType.GenericTypeArguments[0];
-
-                if (!result.ContainsKey(genericType))
-                    result[genericType] = [];
-
-                result[genericType].Add((IParameter)property.GetValue(obj)!);
-            }
-
-            return result;
-        }
+            .Where(prop => (typeof(IParameter)).IsAssignableFrom(prop.PropertyType))
+            .Select(prop => (IParameter)prop.GetValue(obj)!);
 
         public static List<Parameter<T>> Properties<T>(this object obj)
             => obj

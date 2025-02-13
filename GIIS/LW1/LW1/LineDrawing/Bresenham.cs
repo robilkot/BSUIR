@@ -20,13 +20,13 @@ namespace LW1.LineDrawing
         public IDrawingParameters EmptyParameters => new LineDrawingParameters();
         public string DisplayName => "Брезенхем";
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw<T>(T param) where T : IDrawingParameters
+        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 
-            var start = new Point(parameters.StartX.Value, parameters.StartY.Value);
-            var end = new Point(parameters.EndX.Value, parameters.EndY.Value);
-            var color = parameters.Color.Value;
+            var start = parameters.Start.Value;
+            var end = parameters.End.Value;
+            var color = parameters.Color;
 
             int dx = Math.Abs(end.X - start.X);
             int dy = Math.Abs(end.Y - start.Y);
