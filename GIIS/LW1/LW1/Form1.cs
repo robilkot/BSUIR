@@ -3,7 +3,7 @@ using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.SplineDrawing.Common;
-using System.Collections.Immutable;
+using LW1.View;
 
 namespace LW1
 {
@@ -14,18 +14,9 @@ namespace LW1
         private readonly ParametersWrapper _splineParametersWrapper;
 
         private CancellationTokenSource _cts = new();
-        private static Bitmap s_bitmap;
-        private static int s_pixelSize = 16;
-        private static int s_canvasWidth = 32;
-        private static int s_canvasHeight = 32;
-
-        public ImmutableArray<Color> Colors { get; init; } = [
-            Color.Orange,
-            Color.DarkGreen,
-            Color.Brown,
-            Color.Gray,
-            Color.Black,
-            ];
+        private static int s_pixelSize = 8;
+        private static int s_canvasWidth = 64;
+        private static int s_canvasHeight = 64;
 
         public MainForm()
         {
@@ -61,7 +52,7 @@ namespace LW1
             CancelCurrentTask();
             ClearDebugTable();
 
-            using var g = Graphics.FromImage(s_bitmap);
+            using var g = Graphics.FromImage(CanvasPictureBox.Image);
 
             try
             {
@@ -74,7 +65,7 @@ namespace LW1
                         if (EnableDebugButton.Checked)
                         {
                             AddDebugSteps(info);
-                            CanvasPictureBox.Image = s_bitmap;
+                            CanvasPictureBox.Invalidate();
                             await Task.Delay(75, _cts.Token);
                         }
 
@@ -89,7 +80,7 @@ namespace LW1
             {
             }
 
-            CanvasPictureBox.Image = s_bitmap;
+            CanvasPictureBox.Invalidate();
         }
         private static void DrawPoint(Graphics g, Point point, Color color)
         {
@@ -101,21 +92,21 @@ namespace LW1
             var width = s_canvasWidth * s_pixelSize;
             var height = s_canvasHeight * s_pixelSize;
 
+            CanvasPictureBox.Image = new Bitmap(width, height);
+
             CanvasPictureBox.Width = width;
             CanvasPictureBox.Height = height;
 
             CanvasPictureBox.Left = (CanvasPictureBox.Parent?.Size.Width ?? 0) / 2 - width / 2;
             CanvasPictureBox.Top = (CanvasPictureBox.Parent?.Size.Height ?? 0) / 2 - height / 2;
 
-            s_bitmap = new Bitmap(width, height);
-            CanvasPictureBox.Image = s_bitmap;
         }
-        private void InitDebugTable(IDebugInfo info)
+        private void InitDebugTable(DebugInfo info)
         {
             DebugGridView.Invoke(() =>
             {
                 DebugGridView.Columns.Clear();
-                foreach (var column in info.Columns)
+                foreach (var column in info.Keys)
                 {
                     DebugGridView.Columns.Add(new()
                     {
@@ -126,7 +117,7 @@ namespace LW1
                 }
             });
         }
-        private void AddDebugSteps(IDebugInfo drawInfo)
+        private void AddDebugSteps(DebugInfo drawInfo)
         {
             if (DebugGridView.Columns.Count == 0)
             {
@@ -135,7 +126,7 @@ namespace LW1
 
             DebugGridView.Invoke(() =>
             {
-                DebugGridView.Rows.Add(drawInfo.Row.ToArray());
+                DebugGridView.Rows.Add(drawInfo.Values.ToArray());
             });
         }
         private void ClearDebugTable()

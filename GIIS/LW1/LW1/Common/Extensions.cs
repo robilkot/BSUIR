@@ -16,20 +16,11 @@
             .Where(prop => (typeof(IParameter)).IsAssignableFrom(prop.PropertyType))
             .Select(prop => (IParameter)prop.GetValue(obj)!);
 
-        public static List<Parameter<T>> Properties<T>(this object obj)
-            => obj
-            .GetType()
-            .GetProperties()
-            .Where(info => info.PropertyType.Equals(typeof(Parameter<T>)))
-            .Select(info => (Parameter<T>)info.GetValue(obj)!)
-            .ToList();
-
         public static List<T> FilledWithSubtypes<T>(this List<T> list)
         {
             var type = typeof(T);
             var algorithms = type.Assembly
                 .GetTypes()
-                //.Where(t => t.IsSubclassOf(type))
                 .Where(t => type.IsAssignableFrom(t) && t.IsClass)
                 .ToArray();
 

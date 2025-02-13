@@ -3,7 +3,7 @@ using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
 {
-    public class WuDrawInfo : IDebugInfo
+    public class WuDrawInfo : DebugInfo
     {
         public required int Iteration { get; set; }
         public required double X { get; set; }
@@ -11,8 +11,6 @@ namespace LW1.LineDrawing
         public required double V { get; set; }
         public required int DisplayX { get; set; }
         public required int DisplayY { get; set; }
-        public IEnumerable<string> Columns => ["i", "x", "y", "Value", "(x, y)"];
-        public IEnumerable<string> Row => [$"{Iteration}", $"{X:F2}", $"{Y:F2}", $"{V:F2}", $"{DisplayX}, {DisplayY}"];
     }
 
     public class Wu : ILineDrawingAlgorithm
@@ -23,7 +21,7 @@ namespace LW1.LineDrawing
 
         private static float FPart(float x) => x - (float)Math.Floor(x);
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 

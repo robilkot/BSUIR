@@ -3,7 +3,7 @@ using LW1.CurvesDrawing.Common;
 
 namespace LW1.CurvesDrawing
 {
-    public class CircleDrawingInfo : IDebugInfo
+    public class CircleDrawingInfo : DebugInfo
     {
         public required int Iteration { get; set; }
         public required double Delta { get; set; }
@@ -12,8 +12,6 @@ namespace LW1.CurvesDrawing
         public required char? Pixel { get; set; }
         public required int DisplayX { get; set; }
         public required int DisplayY { get; set; }
-        public IEnumerable<string> Columns => ["i", "delta", "sigma", "sigma*", "pixel", "(x, y)"];
-        public IEnumerable<string> Row => [$"{Iteration}", $"{Delta:F2}", $"{Sigma:F2}", $"{SigmaStar:F2}", $"{Pixel}", $"{DisplayX}, {DisplayY}"];
     }
 
     public class CircleDrawingParameters : IDrawingParameters
@@ -28,11 +26,11 @@ namespace LW1.CurvesDrawing
 
         public IDrawingParameters EmptyParameters => new CircleDrawingParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if(param is not CircleDrawingParameters parameters) yield break;
 
-            IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
+            IEnumerable<(ColorPoint point, DebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
             {
                 Point[] points = [
                     new(parameters.Center.Value.X + x, parameters.Center.Value.Y + y),

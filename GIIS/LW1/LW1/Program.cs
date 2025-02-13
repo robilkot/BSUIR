@@ -1,3 +1,5 @@
+using LW1.Common;
+
 namespace LW1
 {
     internal static class Program

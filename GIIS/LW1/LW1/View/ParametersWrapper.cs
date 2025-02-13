@@ -1,10 +1,7 @@
 ﻿using LW1.Common;
-using LW1.View;
 
-namespace LW1
+namespace LW1.View
 {
-
-
     public class ParametersWrapper
     {
         private readonly FlowLayoutPanel _panel;
@@ -16,15 +13,11 @@ namespace LW1
             set
             {
                 _parameters = value;
-
-                var properties = _parameters.Properties().ToList();
-
                 _panel.Controls.Clear();
 
-                foreach (var parameter in properties)
+                foreach (var parameter in _parameters.Properties())
                 {
-                    var control = ParameterViewWrapper.CreateView(parameter);
-                    _panel.Controls.Add(control);
+                    _panel.Controls.Add(ParameterViewWrapper.CreateView(parameter));
                 }
             }
         }

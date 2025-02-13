@@ -3,15 +3,13 @@ using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
 {
-    public class CDADrawInfo : IDebugInfo
+    public class CDADrawInfo : DebugInfo
     {
         public int Iteration { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
         public int DisplayX { get; set; }
         public int DisplayY { get; set; }
-        public IEnumerable<string> Columns => ["i", "x", "y", "(x, y)"];
-        public IEnumerable<string> Row => [$"{Iteration}", $"{X:F2}", $"{Y:F2}", $"{DisplayX}, {DisplayY}"];
     }
 
     public class CDA : ILineDrawingAlgorithm
@@ -19,7 +17,7 @@ namespace LW1.LineDrawing
         public IDrawingParameters EmptyParameters => new LineDrawingParameters();
         public string DisplayName => "ЦДА";
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 

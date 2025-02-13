@@ -16,11 +16,11 @@ namespace LW1.CurvesDrawing
 
         public IDrawingParameters EmptyParameters => new ParabolaDrawingParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not ParabolaDrawingParameters parameters) yield break;
 
-            IEnumerable<(ColorPoint point, IDebugInfo info)> yieldPoint(int i, int delta, int x, int y, ParabolaDrawingParameters parameters)
+            IEnumerable<(ColorPoint point, DebugInfo info)> yieldPoint(int i, int delta, int x, int y, ParabolaDrawingParameters parameters)
             {
                 Point[] points = [
                     new(parameters.Center.Value.X + x, parameters.Center.Value.Y + y),

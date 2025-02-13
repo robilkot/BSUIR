@@ -3,7 +3,7 @@ using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
 {
-    public class BresenhamDrawInfo : IDebugInfo
+    public class BresenhamDrawInfo : DebugInfo
     {
         public required int Iteration { get; set; }
         public required double E { get; set; }
@@ -11,8 +11,6 @@ namespace LW1.LineDrawing
         public required double Y { get; set; }
         public required int DisplayX { get; set; }
         public required int DisplayY { get; set; }
-        public IEnumerable<string> Columns => ["i", "e", "x", "y", "(x, y)"];
-        public IEnumerable<string> Row => [$"{Iteration}", $"{E:F2}", $"{X:F2}", $"{Y:F2}", $"{DisplayX}, {DisplayY}"];
     }
 
     public class Bresenham : ILineDrawingAlgorithm
@@ -20,7 +18,7 @@ namespace LW1.LineDrawing
         public IDrawingParameters EmptyParameters => new LineDrawingParameters();
         public string DisplayName => "Брезенхем";
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 

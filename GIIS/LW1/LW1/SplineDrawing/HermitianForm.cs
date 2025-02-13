@@ -8,17 +8,11 @@ namespace LW1.SplineDrawing
     public class HermitianFormParameters : IDrawingParameters
     {
         public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
-        public Parameter<Point> P1 { get; init; } = new() { DisplayName = "P1", Value = new(2, 3) };
-        public Parameter<Point> P4 { get; init; } = new() { DisplayName = "P4", Value = new(16, 18) };
-        public Parameter<Point> R1 { get; init; } = new() { DisplayName = "R1", Value = new(8, 9) };
-        public Parameter<Point> R4 { get; init; } = new() { DisplayName = "R4", Value = new(22, 24) };
-    }
-
-    public class HermitianDebugInfo : IDebugInfo
-    {
-        public IEnumerable<string> Columns => throw new NotImplementedException();
-
-        public IEnumerable<string> Row => throw new NotImplementedException();
+        public Parameter<Point> P1 { get; init; } = new() { DisplayName = "P1", Value = new(0, 0) };
+        public Parameter<Point> P4 { get; init; } = new() { DisplayName = "P4", Value = new(31, 31) };
+        public Parameter<Point> R1 { get; init; } = new() { DisplayName = "R1", Value = new(31, 0) };
+        public Parameter<Point> R4 { get; init; } = new() { DisplayName = "R4", Value = new(0, 15) };
+        public Parameter<int> Iterations { get; init; } = new() { DisplayName = "Разрешение", Value = 20 };
     }
 
     public class HermitianForm : ISplineDrawingAlgorithm
@@ -27,13 +21,13 @@ namespace LW1.SplineDrawing
 
         public IDrawingParameters EmptyParameters => new HermitianFormParameters();
 
-        public IEnumerable<(ColorPoint point, IDebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not HermitianFormParameters parameters) yield break;
 
-            for (var i = 0; i < 11; i++)
+            for (var i = 0; i < parameters.Iterations + 1; i++)
             {
-                var t = i / 10d;
+                var t = i / (double)parameters.Iterations.Value;
 
                 var mtx = DenseMatrix.OfArray(new Complex[,] {
                     { parameters.P1.Value.X, parameters.P1.Value.Y },
@@ -54,8 +48,17 @@ namespace LW1.SplineDrawing
                     { Math.Pow(t, 3), Math.Pow(t, 2), t, 1 }
                 }).Multiply(temp_mtx);
 
-                Point point = new((int)t_mtx[0, 0].Real, (int)t_mtx[0, 1].Real);
-                yield return new(new(point, param.Color), new HermitianDebugInfo());
+                var X = (int)Math.Round(t_mtx[0, 0].Real);
+                var Y = (int)Math.Round(t_mtx[0, 1].Real);
+
+                Point point = new(X, Y);
+                SplineDebugInfo info = new()
+                {
+                    T = t,
+                    X_T = X,
+                    Y_T = Y,
+                };
+                yield return new(new(point, param.Color), info);
             }
         }
     }
