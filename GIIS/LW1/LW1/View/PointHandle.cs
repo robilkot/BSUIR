@@ -4,8 +4,8 @@ namespace LW1.View
 {
     public partial class PointHandle : UserControl
     {
-        private static readonly Size s_size = new(20, 20);
-        private static readonly RectangleF s_shapeRectangle = new(new(0, 0), new(s_size.Width - 1, s_size.Height - 1));
+        private static readonly Size s_size = new(30, 30);
+        private static readonly int s_shapeWidth = 5;
 
         private Canvas? _canvas;
         private readonly Label _nameLabel;
@@ -72,10 +72,11 @@ namespace LW1.View
 
             _dot.Paint += (sender, e) =>
             {
-                using var brush = new Pen(Color.FromArgb(0, 0, 0), 2);
+                using var brush = new Pen(Color.FromArgb(0, 0, 0), s_shapeWidth);
 
-                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                e.Graphics.DrawEllipse(brush, s_shapeRectangle);
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                e.Graphics.DrawLine(brush, new(0, s_size.Height / 2), new(s_size.Width, s_size.Height / 2));
+                e.Graphics.DrawLine(brush, new(s_size.Width / 2, 0), new(s_size.Width / 2, s_size.Height));
             };
 
             var panel = new FlowLayoutPanel()

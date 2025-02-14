@@ -179,10 +179,5 @@ namespace LW1
 
             await Draw(algorithm, parameters);
         }
-
-        private void CanvasPictureBox_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
