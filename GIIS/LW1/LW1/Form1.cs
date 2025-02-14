@@ -14,19 +14,14 @@ namespace LW1
         private readonly ParametersWrapper _splineParametersWrapper;
 
         private CancellationTokenSource _cts = new();
-        private static int s_pixelSize = 8;
-        private static int s_canvasWidth = 64;
-        private static int s_canvasHeight = 64;
 
         public MainForm()
         {
             InitializeComponent();
 
-            InstrumentCluster.SelectedIndex = 2;
-
-            _lineParametersWrapper = new(LineParametersLayoutPanel);
-            _curveParametersWrapper = new(CurveParametersLayoutPanel);
-            _splineParametersWrapper = new(SplineParametersLayoutPanel);
+            _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 0);
+            _curveParametersWrapper = new(CurveParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 1);
+            _splineParametersWrapper = new(SplineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 2);
 
             _lineParametersWrapper.Parameters = new LineDrawingParameters();
 
@@ -44,7 +39,12 @@ namespace LW1
             SplineTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             SplineTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
 
-            SplineTypeCombobox.SelectedIndex = 2;
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            InstrumentCluster.SelectedIndex = -1;
+            InstrumentCluster.SelectedIndex = 0;
         }
 
         private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
@@ -60,12 +60,11 @@ namespace LW1
                 {
                     foreach (var (point, info) in algorithm.Draw(parameters))
                     {
-                        DrawPoint(g, point.Coordinates, point.Color);
+                        CanvasPictureBox.DrawPoint(g, point.Coordinates, point.Color);
 
                         if (EnableDebugButton.Checked)
                         {
                             AddDebugSteps(info);
-                            CanvasPictureBox.Invalidate();
                             await Task.Delay(75, _cts.Token);
                         }
 
@@ -79,18 +78,12 @@ namespace LW1
             catch (TaskCanceledException)
             {
             }
-
-            CanvasPictureBox.Invalidate();
         }
-        private static void DrawPoint(Graphics g, Point point, Color color)
-        {
-            using var brush = new SolidBrush(color);
-            g.FillRectangle(brush, point.X * s_pixelSize, point.Y * s_pixelSize, s_pixelSize, s_pixelSize);
-        }
+        
         private void InitCanvas()
         {
-            var width = s_canvasWidth * s_pixelSize;
-            var height = s_canvasHeight * s_pixelSize;
+            var width = CanvasPictureBox.CanvasWidth * CanvasPictureBox.PixelSize;
+            var height = CanvasPictureBox.CanvasHeight * CanvasPictureBox.PixelSize;
 
             CanvasPictureBox.Image = new Bitmap(width, height);
 
@@ -99,7 +92,6 @@ namespace LW1
 
             CanvasPictureBox.Left = (CanvasPictureBox.Parent?.Size.Width ?? 0) / 2 - width / 2;
             CanvasPictureBox.Top = (CanvasPictureBox.Parent?.Size.Height ?? 0) / 2 - height / 2;
-
         }
         private void InitDebugTable(DebugInfo info)
         {
@@ -186,6 +178,11 @@ namespace LW1
             IDrawingParameters parameters = _splineParametersWrapper.Parameters;
 
             await Draw(algorithm, parameters);
+        }
+
+        private void CanvasPictureBox_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

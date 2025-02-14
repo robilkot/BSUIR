@@ -49,10 +49,10 @@
             DrawSplineButton = new Button();
             SplineTypeCombobox = new ComboBox();
             WorkSpaceSplitContainer = new SplitContainer();
-            CanvasPictureBox = new PictureBox();
             DebugGridView = new DataGridView();
             button2 = new Button();
             EnableDebugButton = new CheckBox();
+            CanvasPictureBox = new View.Canvas();
             ((System.ComponentModel.ISupportInitialize)FormSplitContainer).BeginInit();
             FormSplitContainer.Panel1.SuspendLayout();
             FormSplitContainer.Panel2.SuspendLayout();
@@ -71,8 +71,8 @@
             WorkSpaceSplitContainer.Panel1.SuspendLayout();
             WorkSpaceSplitContainer.Panel2.SuspendLayout();
             WorkSpaceSplitContainer.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)DebugGridView).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).BeginInit();
             SuspendLayout();
             // 
             // FormSplitContainer
@@ -195,7 +195,7 @@
             SecondDegreeCurvesTab.Margin = new Padding(4);
             SecondDegreeCurvesTab.Name = "SecondDegreeCurvesTab";
             SecondDegreeCurvesTab.Padding = new Padding(4);
-            SecondDegreeCurvesTab.Size = new Size(1468, 163);
+            SecondDegreeCurvesTab.Size = new Size(1470, 165);
             SecondDegreeCurvesTab.TabIndex = 1;
             SecondDegreeCurvesTab.Text = "Кривые 2-го порядка";
             SecondDegreeCurvesTab.UseVisualStyleBackColor = true;
@@ -210,7 +210,7 @@
             CurveParametersGroupBox.Margin = new Padding(4);
             CurveParametersGroupBox.Name = "CurveParametersGroupBox";
             CurveParametersGroupBox.Padding = new Padding(4);
-            CurveParametersGroupBox.Size = new Size(1214, 155);
+            CurveParametersGroupBox.Size = new Size(1216, 157);
             CurveParametersGroupBox.TabIndex = 7;
             CurveParametersGroupBox.TabStop = false;
             CurveParametersGroupBox.Text = "Параметры";
@@ -223,7 +223,7 @@
             CurveParametersLayoutPanel.Location = new Point(4, 28);
             CurveParametersLayoutPanel.Margin = new Padding(4);
             CurveParametersLayoutPanel.Name = "CurveParametersLayoutPanel";
-            CurveParametersLayoutPanel.Size = new Size(1206, 123);
+            CurveParametersLayoutPanel.Size = new Size(1208, 125);
             CurveParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox4
@@ -236,7 +236,7 @@
             groupBox4.Margin = new Padding(4);
             groupBox4.Name = "groupBox4";
             groupBox4.Padding = new Padding(4);
-            groupBox4.Size = new Size(246, 155);
+            groupBox4.Size = new Size(246, 157);
             groupBox4.TabIndex = 3;
             groupBox4.TabStop = false;
             groupBox4.Text = "Тип";
@@ -244,7 +244,7 @@
             // DrawCurveButton
             // 
             DrawCurveButton.Anchor = AnchorStyles.Left;
-            DrawCurveButton.Location = new Point(26, 97);
+            DrawCurveButton.Location = new Point(26, 98);
             DrawCurveButton.Margin = new Padding(4);
             DrawCurveButton.Name = "DrawCurveButton";
             DrawCurveButton.Size = new Size(194, 36);
@@ -271,7 +271,7 @@
             SplinesTab.Margin = new Padding(4);
             SplinesTab.Name = "SplinesTab";
             SplinesTab.Padding = new Padding(4);
-            SplinesTab.Size = new Size(1468, 163);
+            SplinesTab.Size = new Size(1470, 165);
             SplinesTab.TabIndex = 2;
             SplinesTab.Text = "Параметрические кривые";
             SplinesTab.UseVisualStyleBackColor = true;
@@ -286,7 +286,7 @@
             groupBox3.Margin = new Padding(4);
             groupBox3.Name = "groupBox3";
             groupBox3.Padding = new Padding(4);
-            groupBox3.Size = new Size(1214, 155);
+            groupBox3.Size = new Size(1216, 157);
             groupBox3.TabIndex = 9;
             groupBox3.TabStop = false;
             groupBox3.Text = "Параметры";
@@ -299,7 +299,7 @@
             SplineParametersLayoutPanel.Location = new Point(4, 28);
             SplineParametersLayoutPanel.Margin = new Padding(4);
             SplineParametersLayoutPanel.Name = "SplineParametersLayoutPanel";
-            SplineParametersLayoutPanel.Size = new Size(1206, 123);
+            SplineParametersLayoutPanel.Size = new Size(1208, 125);
             SplineParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox5
@@ -312,7 +312,7 @@
             groupBox5.Margin = new Padding(4);
             groupBox5.Name = "groupBox5";
             groupBox5.Padding = new Padding(4);
-            groupBox5.Size = new Size(246, 155);
+            groupBox5.Size = new Size(246, 157);
             groupBox5.TabIndex = 8;
             groupBox5.TabStop = false;
             groupBox5.Text = "Тип";
@@ -320,7 +320,7 @@
             // DrawSplineButton
             // 
             DrawSplineButton.Anchor = AnchorStyles.Left;
-            DrawSplineButton.Location = new Point(26, 95);
+            DrawSplineButton.Location = new Point(26, 96);
             DrawSplineButton.Margin = new Padding(4);
             DrawSplineButton.Name = "DrawSplineButton";
             DrawSplineButton.Size = new Size(194, 36);
@@ -360,21 +360,9 @@
             WorkSpaceSplitContainer.Panel2.Controls.Add(button2);
             WorkSpaceSplitContainer.Panel2.Controls.Add(EnableDebugButton);
             WorkSpaceSplitContainer.Size = new Size(1478, 738);
-            WorkSpaceSplitContainer.SplitterDistance = 922;
+            WorkSpaceSplitContainer.SplitterDistance = 921;
             WorkSpaceSplitContainer.SplitterWidth = 5;
             WorkSpaceSplitContainer.TabIndex = 0;
-            // 
-            // CanvasPictureBox
-            // 
-            CanvasPictureBox.Anchor = AnchorStyles.None;
-            CanvasPictureBox.BackColor = Color.White;
-            CanvasPictureBox.BorderStyle = BorderStyle.FixedSingle;
-            CanvasPictureBox.Location = new Point(134, 50);
-            CanvasPictureBox.Margin = new Padding(4);
-            CanvasPictureBox.Name = "CanvasPictureBox";
-            CanvasPictureBox.Size = new Size(640, 640);
-            CanvasPictureBox.TabIndex = 0;
-            CanvasPictureBox.TabStop = false;
             // 
             // DebugGridView
             // 
@@ -415,6 +403,18 @@
             EnableDebugButton.Text = "Режим отладки";
             EnableDebugButton.UseVisualStyleBackColor = true;
             // 
+            // CanvasPictureBox
+            // 
+            CanvasPictureBox.Anchor = AnchorStyles.None;
+            CanvasPictureBox.BackColor = Color.White;
+            CanvasPictureBox.BorderStyle = BorderStyle.FixedSingle;
+            CanvasPictureBox.Location = new Point(144, 43);
+            CanvasPictureBox.Name = "CanvasPictureBox";
+            CanvasPictureBox.Size = new Size(640, 640);
+            CanvasPictureBox.TabIndex = 1;
+            CanvasPictureBox.TabStop = false;
+            CanvasPictureBox.Click += CanvasPictureBox_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -451,8 +451,8 @@
             WorkSpaceSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)WorkSpaceSplitContainer).EndInit();
             WorkSpaceSplitContainer.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)DebugGridView).EndInit();
+            ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).EndInit();
             ResumeLayout(false);
         }
 
@@ -463,7 +463,6 @@
         private TabPage LinesTab;
         private TabPage SecondDegreeCurvesTab;
         private SplitContainer WorkSpaceSplitContainer;
-        private PictureBox CanvasPictureBox;
         private CheckBox EnableDebugButton;
         private Button button2;
         private DataGridView DebugGridView;
@@ -483,5 +482,6 @@
         private GroupBox groupBox5;
         private Button DrawSplineButton;
         private ComboBox SplineTypeCombobox;
+        private View.Canvas CanvasPictureBox;
     }
 }

@@ -15,12 +15,13 @@ namespace LW1.View
         private static Control CreateView(Parameter<int> parameter)
         {
             var numericUpDown = new NumericUpDown() { Value = parameter.Value };
-
             numericUpDown.ValueChanged += (sender, args) =>
             {
                 var updown = sender as NumericUpDown;
                 parameter.Value = (int)updown!.Value;
             };
+
+            parameter.ParameterChanged += (value) => { numericUpDown.Value = value; };
 
             var panel = new FlowLayoutPanel()
             {
@@ -39,10 +40,17 @@ namespace LW1.View
             {
                 parameter.Value = parameter.Value with { X = (int)(sender as NumericUpDown)!.Value };
             };
+
             var yControl = new NumericUpDown() { Value = parameter.Value.Y };
             yControl.ValueChanged += (sender, args) =>
             {
                 parameter.Value = parameter.Value with { Y = (int)(sender as NumericUpDown)!.Value };
+            };
+
+            parameter.ParameterChanged += (value) =>
+            {
+                xControl.Value = value.X;
+                yControl.Value = value.Y;
             };
 
             var panel = new FlowLayoutPanel()
