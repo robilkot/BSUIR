@@ -9,10 +9,65 @@ namespace LW1.View
             Parameter<int> param => CreateView(param),
             Parameter<Point> param => CreateView(param),
             Parameter<Color> param => CreateView(param),
+            ParametersList<Point> param => CreateView(param),
             _ => throw new NotSupportedException()
         };
 
-        private static Control CreateView(Parameter<int> parameter)
+        private static GroupBox CreateView(ParametersList<Point> parameter)
+        {
+            GroupBox createParamControls(Parameter<Point> param, FlowLayoutPanel panel)
+            {
+                var gbox = CreateView(param);
+                var deleteButton = new Button()
+                {
+                    Dock = DockStyle.Bottom,
+                    AutoSize = true,
+                    Text = "Удалить",
+                };
+                deleteButton.Click += (object? sender, EventArgs e) =>
+                {
+                    panel.Controls.Remove(gbox);
+                    parameter.Remove(param);
+                };
+
+                gbox.Controls[0].Controls.Add(deleteButton);
+
+                return gbox;
+            }
+
+            var panel = new FlowLayoutPanel()
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                AutoSize = true,
+                Dock = DockStyle.Fill
+            };
+
+            parameter.ParameterAdded += param =>
+            {
+                panel.Controls.Add(createParamControls(param, panel));
+            };
+
+            var addButton = new Button()
+            {
+                AutoSize = true,
+                Text = "Добавить",
+            };
+            addButton.Click += (object? sender, EventArgs e) =>
+            {
+                var pointParam = new Parameter<Point>() { DisplayName = $"P{parameter.Count + 1}", Value = new(0, 0) };
+                parameter.Add(pointParam);
+            };
+            panel.Controls.Add(addButton);
+
+            foreach (var param in parameter)
+            {
+                panel.Controls.Add(createParamControls(param, panel));
+            }
+
+            return panel.Grouped(parameter.DisplayName);
+        }
+
+        private static FlowLayoutPanel CreateView(Parameter<int> parameter)
         {
             var numericUpDown = new NumericUpDown() { Value = parameter.Value };
             numericUpDown.ValueChanged += (sender, args) =>
@@ -33,7 +88,7 @@ namespace LW1.View
 
             return panel;
         }
-        private static Control CreateView(Parameter<Point> parameter)
+        private static GroupBox CreateView(Parameter<Point> parameter)
         {
             var xControl = new NumericUpDown() { Value = parameter.Value.X };
             xControl.ValueChanged += (sender, args) =>
@@ -83,7 +138,7 @@ namespace LW1.View
 
             return panel.Grouped(parameter.DisplayName);
         }
-        private static Control CreateView(Parameter<Color> parameter)
+        private static GroupBox CreateView(Parameter<Color> parameter)
         {
             var pictureBox = new PictureBox() { BackColor = parameter.Value, BorderStyle = BorderStyle.FixedSingle };
 

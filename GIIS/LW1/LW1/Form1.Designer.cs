@@ -51,6 +51,13 @@
             tableLayoutPanel3 = new TableLayoutPanel();
             DrawSplineButton = new Button();
             SplineTypeCombobox = new ComboBox();
+            PolygonsPage = new TabPage();
+            PolygonParamsGroupbox = new GroupBox();
+            PolygonParametersLayoutPanel = new FlowLayoutPanel();
+            groupBox2 = new GroupBox();
+            tableLayoutPanel4 = new TableLayoutPanel();
+            DrawPolygonButton = new Button();
+            PolygonAlgorithmCombobox = new ComboBox();
             WorkSpaceSplitContainer = new SplitContainer();
             CanvasPictureBox = new View.Canvas();
             DebugGridView = new DataGridView();
@@ -73,6 +80,10 @@
             groupBox3.SuspendLayout();
             groupBox5.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
+            PolygonsPage.SuspendLayout();
+            PolygonParamsGroupbox.SuspendLayout();
+            groupBox2.SuspendLayout();
+            tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)WorkSpaceSplitContainer).BeginInit();
             WorkSpaceSplitContainer.Panel1.SuspendLayout();
             WorkSpaceSplitContainer.Panel2.SuspendLayout();
@@ -105,6 +116,7 @@
             InstrumentCluster.Controls.Add(LinesTab);
             InstrumentCluster.Controls.Add(SecondDegreeCurvesTab);
             InstrumentCluster.Controls.Add(SplinesTab);
+            InstrumentCluster.Controls.Add(PolygonsPage);
             InstrumentCluster.Dock = DockStyle.Fill;
             InstrumentCluster.ItemSize = new Size(150, 25);
             InstrumentCluster.Location = new Point(0, 0);
@@ -229,6 +241,7 @@
             // 
             // CurveParametersLayoutPanel
             // 
+            CurveParametersLayoutPanel.AutoScroll = true;
             CurveParametersLayoutPanel.AutoSize = true;
             CurveParametersLayoutPanel.Dock = DockStyle.Fill;
             CurveParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
@@ -316,6 +329,7 @@
             // 
             // SplineParametersLayoutPanel
             // 
+            SplineParametersLayoutPanel.AutoScroll = true;
             SplineParametersLayoutPanel.AutoSize = true;
             SplineParametersLayoutPanel.Dock = DockStyle.Fill;
             SplineParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
@@ -375,6 +389,93 @@
             SplineTypeCombobox.Size = new Size(188, 28);
             SplineTypeCombobox.TabIndex = 0;
             SplineTypeCombobox.SelectedIndexChanged += SplineTypeCombobox_SelectedIndexChanged;
+            // 
+            // PolygonsPage
+            // 
+            PolygonsPage.Controls.Add(PolygonParamsGroupbox);
+            PolygonsPage.Controls.Add(groupBox2);
+            PolygonsPage.Location = new Point(4, 29);
+            PolygonsPage.Name = "PolygonsPage";
+            PolygonsPage.Padding = new Padding(3);
+            PolygonsPage.Size = new Size(1174, 152);
+            PolygonsPage.TabIndex = 3;
+            PolygonsPage.Text = "Полигоны";
+            PolygonsPage.UseVisualStyleBackColor = true;
+            // 
+            // PolygonParamsGroupbox
+            // 
+            PolygonParamsGroupbox.AutoSize = true;
+            PolygonParamsGroupbox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            PolygonParamsGroupbox.Controls.Add(PolygonParametersLayoutPanel);
+            PolygonParamsGroupbox.Dock = DockStyle.Fill;
+            PolygonParamsGroupbox.Location = new Point(203, 3);
+            PolygonParamsGroupbox.Name = "PolygonParamsGroupbox";
+            PolygonParamsGroupbox.Size = new Size(968, 146);
+            PolygonParamsGroupbox.TabIndex = 10;
+            PolygonParamsGroupbox.TabStop = false;
+            PolygonParamsGroupbox.Text = "Параметры полигона";
+            // 
+            // PolygonParametersLayoutPanel
+            // 
+            PolygonParametersLayoutPanel.AutoScroll = true;
+            PolygonParametersLayoutPanel.AutoSize = true;
+            PolygonParametersLayoutPanel.Dock = DockStyle.Fill;
+            PolygonParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
+            PolygonParametersLayoutPanel.Location = new Point(3, 23);
+            PolygonParametersLayoutPanel.Name = "PolygonParametersLayoutPanel";
+            PolygonParametersLayoutPanel.Size = new Size(962, 120);
+            PolygonParametersLayoutPanel.TabIndex = 0;
+            // 
+            // groupBox2
+            // 
+            groupBox2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox2.Controls.Add(tableLayoutPanel4);
+            groupBox2.Dock = DockStyle.Left;
+            groupBox2.Location = new Point(3, 3);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(200, 146);
+            groupBox2.TabIndex = 9;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Тип";
+            // 
+            // tableLayoutPanel4
+            // 
+            tableLayoutPanel4.AutoSize = true;
+            tableLayoutPanel4.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanel4.ColumnCount = 1;
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel4.Controls.Add(DrawPolygonButton, 0, 1);
+            tableLayoutPanel4.Controls.Add(PolygonAlgorithmCombobox, 0, 0);
+            tableLayoutPanel4.Dock = DockStyle.Fill;
+            tableLayoutPanel4.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            tableLayoutPanel4.Location = new Point(3, 23);
+            tableLayoutPanel4.Name = "tableLayoutPanel4";
+            tableLayoutPanel4.RowCount = 2;
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.Size = new Size(194, 120);
+            tableLayoutPanel4.TabIndex = 9;
+            // 
+            // DrawPolygonButton
+            // 
+            DrawPolygonButton.AutoSize = true;
+            DrawPolygonButton.Dock = DockStyle.Fill;
+            DrawPolygonButton.Location = new Point(3, 63);
+            DrawPolygonButton.Name = "DrawPolygonButton";
+            DrawPolygonButton.Size = new Size(188, 54);
+            DrawPolygonButton.TabIndex = 6;
+            DrawPolygonButton.Text = "Построить";
+            DrawPolygonButton.UseVisualStyleBackColor = true;
+            DrawPolygonButton.Click += DrawPolygonButton_Click;
+            // 
+            // PolygonAlgorithmCombobox
+            // 
+            PolygonAlgorithmCombobox.Dock = DockStyle.Fill;
+            PolygonAlgorithmCombobox.FormattingEnabled = true;
+            PolygonAlgorithmCombobox.Location = new Point(3, 3);
+            PolygonAlgorithmCombobox.Name = "PolygonAlgorithmCombobox";
+            PolygonAlgorithmCombobox.Size = new Size(188, 28);
+            PolygonAlgorithmCombobox.TabIndex = 0;
             // 
             // WorkSpaceSplitContainer
             // 
@@ -487,6 +588,14 @@
             groupBox5.PerformLayout();
             tableLayoutPanel3.ResumeLayout(false);
             tableLayoutPanel3.PerformLayout();
+            PolygonsPage.ResumeLayout(false);
+            PolygonsPage.PerformLayout();
+            PolygonParamsGroupbox.ResumeLayout(false);
+            PolygonParamsGroupbox.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
+            tableLayoutPanel4.ResumeLayout(false);
+            tableLayoutPanel4.PerformLayout();
             WorkSpaceSplitContainer.Panel1.ResumeLayout(false);
             WorkSpaceSplitContainer.Panel2.ResumeLayout(false);
             WorkSpaceSplitContainer.Panel2.PerformLayout();
@@ -527,5 +636,12 @@
         private TableLayoutPanel tableLayoutPanel2;
         private TableLayoutPanel tableLayoutPanel3;
         private GroupBox groupBox6;
+        private TabPage PolygonsPage;
+        private GroupBox PolygonParamsGroupbox;
+        private FlowLayoutPanel PolygonParametersLayoutPanel;
+        private GroupBox groupBox2;
+        private TableLayoutPanel tableLayoutPanel4;
+        private Button DrawPolygonButton;
+        private ComboBox PolygonAlgorithmCombobox;
     }
 }

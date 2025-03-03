@@ -2,6 +2,8 @@
 using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
+using LW1.Polygons;
+using LW1.Polygons.Common;
 using LW1.SplineDrawing.Common;
 using LW1.View;
 
@@ -12,6 +14,7 @@ namespace LW1
         private readonly ParametersWrapper _lineParametersWrapper;
         private readonly ParametersWrapper _curveParametersWrapper;
         private readonly ParametersWrapper _splineParametersWrapper;
+        private readonly ParametersWrapper _polygonParametersWrapper;
 
         private CancellationTokenSource _cts = new();
 
@@ -22,7 +25,9 @@ namespace LW1
             _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 0);
             _curveParametersWrapper = new(CurveParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 1);
             _splineParametersWrapper = new(SplineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 2);
+            _polygonParametersWrapper = new(PolygonParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
 
+            _polygonParametersWrapper.Parameters = new PolygonParameters();
             _lineParametersWrapper.Parameters = new LineDrawingParameters();
 
             InitCanvas();
@@ -39,6 +44,9 @@ namespace LW1
             SplineTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
             SplineTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
 
+            PolygonAlgorithmCombobox.DataSource = new List<IPolygonDrawingAlgorithm>().FilledWithSubtypes();
+            PolygonAlgorithmCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            PolygonAlgorithmCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -79,7 +87,7 @@ namespace LW1
             {
             }
         }
-        
+
         private void InitCanvas()
         {
             var width = CanvasPictureBox.CanvasWidth * CanvasPictureBox.PixelSize;
@@ -176,6 +184,14 @@ namespace LW1
         {
             ISplineDrawingAlgorithm algorithm = (ISplineDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
             IDrawingParameters parameters = _splineParametersWrapper.Parameters;
+
+            await Draw(algorithm, parameters);
+        }
+
+        private async void DrawPolygonButton_Click(object sender, EventArgs e)
+        {
+            IPolygonDrawingAlgorithm algorithm = (IPolygonDrawingAlgorithm)PolygonAlgorithmCombobox.SelectedItem!;
+            IDrawingParameters parameters = _polygonParametersWrapper.Parameters;
 
             await Draw(algorithm, parameters);
         }

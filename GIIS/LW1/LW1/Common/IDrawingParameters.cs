@@ -22,6 +22,28 @@
         public static implicit operator Parameter<T>(T param) => new() { DisplayName = "New parameter", Value = param };
     }
 
+    public class ParametersList<T> : List<Parameter<T>>, IParameter
+    {
+        public delegate void ParameterChangedHandler(Parameter<T> value);
+        public event ParameterChangedHandler? ParameterAdded;
+        public event ParameterChangedHandler? ParameterRemoved;
+        public string DisplayName { get; init; }
+        public ParametersList(string name)
+        {
+            DisplayName = name;
+        }
+        new public void Add(Parameter<T> param)
+        {
+            base.Add(param);
+            ParameterAdded?.Invoke(param);
+        }
+        new public void Remove(Parameter<T> param)
+        {
+            base.Remove(param);
+            ParameterRemoved?.Invoke(param);
+        }
+    }
+
     public interface IDrawingParameters
     {
         public Parameter<Color> Color { get; init; }

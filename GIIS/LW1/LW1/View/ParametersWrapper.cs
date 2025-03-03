@@ -48,21 +48,57 @@ namespace LW1.View
                 }
             }
         }
+        private void createHandle(Parameter<Point> param)
+        {
+            var handle = new PointHandle()
+            {
+                Point = param
+            };
+
+            _handles.Add(handle);
+            _workspace.Controls.Add(handle);
+        }
+        private void removeHandle(Parameter<Point> param)
+        {
+            var handle = _handles.First(h => h.Point == param);
+
+            _handles.Remove(handle);
+            _workspace.Controls.Remove(handle);
+        }
+
         private void CreateHandles()
         {
-            foreach (var parameter in _parameters.Properties().OfType<Parameter<Point>>())
-            {
-                var handle = new PointHandle()
-                {
-                    Point = parameter
-                };
 
-                _handles.Add(handle);
-                _workspace.Controls.Add(handle);
+            var parameters = _parameters.Properties().ToList();
+            var pointParameters = parameters.OfType<Parameter<Point>>().ToList();
+            var listPointParameters = parameters.OfType<ParametersList<Point>>().ToList();
+
+            foreach (var parameter in pointParameters)
+            {
+                createHandle(parameter);
+            }
+            foreach (var parametersList in listPointParameters)
+            {
+                parametersList.ParameterAdded += createHandle;
+                parametersList.ParameterRemoved += removeHandle;
+
+                foreach(var pointParam in parametersList)
+                {
+                    createHandle(pointParam);
+                }
             }
         }
         private void ClearHandles()
         {
+            var parameters = _parameters.Properties().ToList();
+            var listPointParameters = parameters.OfType<ParametersList<Point>>().ToList();
+
+            foreach (var parametersList in listPointParameters)
+            {
+                parametersList.ParameterAdded -= createHandle;
+                parametersList.ParameterRemoved -= removeHandle;
+            }
+
             foreach (var control in _handles)
             {
                 _workspace.Controls.Remove(control);
