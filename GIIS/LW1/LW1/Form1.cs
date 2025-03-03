@@ -14,7 +14,10 @@ namespace LW1
         private readonly ParametersWrapper _lineParametersWrapper;
         private readonly ParametersWrapper _curveParametersWrapper;
         private readonly ParametersWrapper _splineParametersWrapper;
+
         private readonly ParametersWrapper _polygonParametersWrapper;
+        private readonly ParametersWrapper _pointBelongingParametersWrapper;
+        private readonly ParametersWrapper _lineIntersectionParametersWrapper;
 
         private CancellationTokenSource _cts = new();
 
@@ -25,10 +28,15 @@ namespace LW1
             _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 0);
             _curveParametersWrapper = new(CurveParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 1);
             _splineParametersWrapper = new(SplineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 2);
+
             _polygonParametersWrapper = new(PolygonParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
+            _pointBelongingParametersWrapper = new(PointBelongingLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
+            _lineIntersectionParametersWrapper = new(LineIntersectionLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
 
             _polygonParametersWrapper.Parameters = new PolygonParameters();
             _lineParametersWrapper.Parameters = new LineDrawingParameters();
+            _pointBelongingParametersWrapper.Parameters = new PointDrawingParameters();
+            _lineIntersectionParametersWrapper.Parameters = new LineDrawingParameters();
 
             InitCanvas();
 

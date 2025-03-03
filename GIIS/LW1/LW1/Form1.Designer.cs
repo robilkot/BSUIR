@@ -52,6 +52,10 @@
             DrawSplineButton = new Button();
             SplineTypeCombobox = new ComboBox();
             PolygonsPage = new TabPage();
+            groupBox8 = new GroupBox();
+            LineIntersectionLayoutPanel = new FlowLayoutPanel();
+            groupBox7 = new GroupBox();
+            PointBelongingLayoutPanel = new FlowLayoutPanel();
             PolygonParamsGroupbox = new GroupBox();
             PolygonParametersLayoutPanel = new FlowLayoutPanel();
             groupBox2 = new GroupBox();
@@ -81,6 +85,8 @@
             groupBox5.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             PolygonsPage.SuspendLayout();
+            groupBox8.SuspendLayout();
+            groupBox7.SuspendLayout();
             PolygonParamsGroupbox.SuspendLayout();
             groupBox2.SuspendLayout();
             tableLayoutPanel4.SuspendLayout();
@@ -97,6 +103,7 @@
             FormSplitContainer.Dock = DockStyle.Fill;
             FormSplitContainer.FixedPanel = FixedPanel.Panel1;
             FormSplitContainer.Location = new Point(0, 0);
+            FormSplitContainer.Margin = new Padding(4);
             FormSplitContainer.Name = "FormSplitContainer";
             FormSplitContainer.Orientation = Orientation.Horizontal;
             // 
@@ -107,8 +114,9 @@
             // FormSplitContainer.Panel2
             // 
             FormSplitContainer.Panel2.Controls.Add(WorkSpaceSplitContainer);
-            FormSplitContainer.Size = new Size(1182, 753);
-            FormSplitContainer.SplitterDistance = 185;
+            FormSplitContainer.Size = new Size(1478, 941);
+            FormSplitContainer.SplitterDistance = 231;
+            FormSplitContainer.SplitterWidth = 5;
             FormSplitContainer.TabIndex = 0;
             // 
             // InstrumentCluster
@@ -120,9 +128,10 @@
             InstrumentCluster.Dock = DockStyle.Fill;
             InstrumentCluster.ItemSize = new Size(150, 25);
             InstrumentCluster.Location = new Point(0, 0);
+            InstrumentCluster.Margin = new Padding(4);
             InstrumentCluster.Name = "InstrumentCluster";
             InstrumentCluster.SelectedIndex = 0;
-            InstrumentCluster.Size = new Size(1182, 185);
+            InstrumentCluster.Size = new Size(1478, 231);
             InstrumentCluster.TabIndex = 0;
             // 
             // LinesTab
@@ -131,9 +140,10 @@
             LinesTab.Controls.Add(groupBox1);
             LinesTab.Controls.Add(groupBox6);
             LinesTab.Location = new Point(4, 29);
+            LinesTab.Margin = new Padding(4);
             LinesTab.Name = "LinesTab";
-            LinesTab.Padding = new Padding(3);
-            LinesTab.Size = new Size(1174, 152);
+            LinesTab.Padding = new Padding(4);
+            LinesTab.Size = new Size(1470, 198);
             LinesTab.TabIndex = 0;
             LinesTab.Text = "Отрезки";
             LinesTab.UseVisualStyleBackColor = true;
@@ -144,9 +154,11 @@
             groupBox1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox1.Controls.Add(LineParametersLayoutPanel);
             groupBox1.Dock = DockStyle.Fill;
-            groupBox1.Location = new Point(203, 3);
+            groupBox1.Location = new Point(254, 4);
+            groupBox1.Margin = new Padding(4);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(968, 146);
+            groupBox1.Padding = new Padding(4);
+            groupBox1.Size = new Size(1212, 190);
             groupBox1.TabIndex = 9;
             groupBox1.TabStop = false;
             groupBox1.Text = "Параметры отрезка";
@@ -156,10 +168,10 @@
             LineParametersLayoutPanel.AutoScroll = true;
             LineParametersLayoutPanel.AutoSize = true;
             LineParametersLayoutPanel.Dock = DockStyle.Fill;
-            LineParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
-            LineParametersLayoutPanel.Location = new Point(3, 23);
+            LineParametersLayoutPanel.Location = new Point(4, 28);
+            LineParametersLayoutPanel.Margin = new Padding(4);
             LineParametersLayoutPanel.Name = "LineParametersLayoutPanel";
-            LineParametersLayoutPanel.Size = new Size(962, 120);
+            LineParametersLayoutPanel.Size = new Size(1204, 158);
             LineParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox6
@@ -167,9 +179,11 @@
             groupBox6.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox6.Controls.Add(tableLayoutPanel1);
             groupBox6.Dock = DockStyle.Left;
-            groupBox6.Location = new Point(3, 3);
+            groupBox6.Location = new Point(4, 4);
+            groupBox6.Margin = new Padding(4);
             groupBox6.Name = "groupBox6";
-            groupBox6.Size = new Size(200, 146);
+            groupBox6.Padding = new Padding(4);
+            groupBox6.Size = new Size(250, 190);
             groupBox6.TabIndex = 10;
             groupBox6.TabStop = false;
             groupBox6.Text = "Алгоритм";
@@ -184,21 +198,23 @@
             tableLayoutPanel1.Controls.Add(DrawLineButton, 0, 1);
             tableLayoutPanel1.Dock = DockStyle.Fill;
             tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.AddColumns;
-            tableLayoutPanel1.Location = new Point(3, 23);
+            tableLayoutPanel1.Location = new Point(4, 28);
+            tableLayoutPanel1.Margin = new Padding(4);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new Size(194, 120);
+            tableLayoutPanel1.Size = new Size(242, 158);
             tableLayoutPanel1.TabIndex = 7;
             // 
             // LineDrawingAlgorithmCombobox
             // 
             LineDrawingAlgorithmCombobox.Dock = DockStyle.Fill;
             LineDrawingAlgorithmCombobox.FormattingEnabled = true;
-            LineDrawingAlgorithmCombobox.Location = new Point(3, 3);
+            LineDrawingAlgorithmCombobox.Location = new Point(4, 4);
+            LineDrawingAlgorithmCombobox.Margin = new Padding(4);
             LineDrawingAlgorithmCombobox.Name = "LineDrawingAlgorithmCombobox";
-            LineDrawingAlgorithmCombobox.Size = new Size(188, 28);
+            LineDrawingAlgorithmCombobox.Size = new Size(234, 33);
             LineDrawingAlgorithmCombobox.TabIndex = 0;
             // 
             // DrawLineButton
@@ -206,9 +222,10 @@
             DrawLineButton.AutoSize = true;
             DrawLineButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             DrawLineButton.Dock = DockStyle.Fill;
-            DrawLineButton.Location = new Point(3, 63);
+            DrawLineButton.Location = new Point(4, 83);
+            DrawLineButton.Margin = new Padding(4);
             DrawLineButton.Name = "DrawLineButton";
-            DrawLineButton.Size = new Size(188, 54);
+            DrawLineButton.Size = new Size(234, 71);
             DrawLineButton.TabIndex = 6;
             DrawLineButton.Text = "Построить";
             DrawLineButton.UseVisualStyleBackColor = true;
@@ -219,9 +236,10 @@
             SecondDegreeCurvesTab.Controls.Add(CurveParametersGroupBox);
             SecondDegreeCurvesTab.Controls.Add(groupBox4);
             SecondDegreeCurvesTab.Location = new Point(4, 29);
+            SecondDegreeCurvesTab.Margin = new Padding(4);
             SecondDegreeCurvesTab.Name = "SecondDegreeCurvesTab";
-            SecondDegreeCurvesTab.Padding = new Padding(3);
-            SecondDegreeCurvesTab.Size = new Size(1174, 152);
+            SecondDegreeCurvesTab.Padding = new Padding(4);
+            SecondDegreeCurvesTab.Size = new Size(1470, 198);
             SecondDegreeCurvesTab.TabIndex = 1;
             SecondDegreeCurvesTab.Text = "Кривые 2-го порядка";
             SecondDegreeCurvesTab.UseVisualStyleBackColor = true;
@@ -232,9 +250,11 @@
             CurveParametersGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             CurveParametersGroupBox.Controls.Add(CurveParametersLayoutPanel);
             CurveParametersGroupBox.Dock = DockStyle.Fill;
-            CurveParametersGroupBox.Location = new Point(203, 3);
+            CurveParametersGroupBox.Location = new Point(254, 4);
+            CurveParametersGroupBox.Margin = new Padding(4);
             CurveParametersGroupBox.Name = "CurveParametersGroupBox";
-            CurveParametersGroupBox.Size = new Size(968, 146);
+            CurveParametersGroupBox.Padding = new Padding(4);
+            CurveParametersGroupBox.Size = new Size(1212, 190);
             CurveParametersGroupBox.TabIndex = 7;
             CurveParametersGroupBox.TabStop = false;
             CurveParametersGroupBox.Text = "Параметры";
@@ -244,10 +264,10 @@
             CurveParametersLayoutPanel.AutoScroll = true;
             CurveParametersLayoutPanel.AutoSize = true;
             CurveParametersLayoutPanel.Dock = DockStyle.Fill;
-            CurveParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
-            CurveParametersLayoutPanel.Location = new Point(3, 23);
+            CurveParametersLayoutPanel.Location = new Point(4, 28);
+            CurveParametersLayoutPanel.Margin = new Padding(4);
             CurveParametersLayoutPanel.Name = "CurveParametersLayoutPanel";
-            CurveParametersLayoutPanel.Size = new Size(962, 120);
+            CurveParametersLayoutPanel.Size = new Size(1204, 158);
             CurveParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox4
@@ -255,9 +275,11 @@
             groupBox4.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox4.Controls.Add(tableLayoutPanel2);
             groupBox4.Dock = DockStyle.Left;
-            groupBox4.Location = new Point(3, 3);
+            groupBox4.Location = new Point(4, 4);
+            groupBox4.Margin = new Padding(4);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(200, 146);
+            groupBox4.Padding = new Padding(4);
+            groupBox4.Size = new Size(250, 190);
             groupBox4.TabIndex = 3;
             groupBox4.TabStop = false;
             groupBox4.Text = "Тип";
@@ -272,21 +294,23 @@
             tableLayoutPanel2.Controls.Add(DrawCurveButton, 0, 1);
             tableLayoutPanel2.Dock = DockStyle.Fill;
             tableLayoutPanel2.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-            tableLayoutPanel2.Location = new Point(3, 23);
+            tableLayoutPanel2.Location = new Point(4, 28);
+            tableLayoutPanel2.Margin = new Padding(4);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
             tableLayoutPanel2.RowCount = 2;
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.Size = new Size(194, 120);
+            tableLayoutPanel2.Size = new Size(242, 158);
             tableLayoutPanel2.TabIndex = 8;
             // 
             // CurveTypeCombobox
             // 
             CurveTypeCombobox.Dock = DockStyle.Fill;
             CurveTypeCombobox.FormattingEnabled = true;
-            CurveTypeCombobox.Location = new Point(3, 3);
+            CurveTypeCombobox.Location = new Point(4, 4);
+            CurveTypeCombobox.Margin = new Padding(4);
             CurveTypeCombobox.Name = "CurveTypeCombobox";
-            CurveTypeCombobox.Size = new Size(188, 28);
+            CurveTypeCombobox.Size = new Size(234, 33);
             CurveTypeCombobox.TabIndex = 0;
             CurveTypeCombobox.SelectedIndexChanged += CurveTypeCombobox_SelectedIndexChanged;
             // 
@@ -294,9 +318,10 @@
             // 
             DrawCurveButton.AutoSize = true;
             DrawCurveButton.Dock = DockStyle.Fill;
-            DrawCurveButton.Location = new Point(3, 63);
+            DrawCurveButton.Location = new Point(4, 83);
+            DrawCurveButton.Margin = new Padding(4);
             DrawCurveButton.Name = "DrawCurveButton";
-            DrawCurveButton.Size = new Size(188, 54);
+            DrawCurveButton.Size = new Size(234, 71);
             DrawCurveButton.TabIndex = 6;
             DrawCurveButton.Text = "Построить";
             DrawCurveButton.UseVisualStyleBackColor = true;
@@ -307,9 +332,10 @@
             SplinesTab.Controls.Add(groupBox3);
             SplinesTab.Controls.Add(groupBox5);
             SplinesTab.Location = new Point(4, 29);
+            SplinesTab.Margin = new Padding(4);
             SplinesTab.Name = "SplinesTab";
-            SplinesTab.Padding = new Padding(3);
-            SplinesTab.Size = new Size(1174, 152);
+            SplinesTab.Padding = new Padding(4);
+            SplinesTab.Size = new Size(1470, 198);
             SplinesTab.TabIndex = 2;
             SplinesTab.Text = "Параметрические кривые";
             SplinesTab.UseVisualStyleBackColor = true;
@@ -320,9 +346,11 @@
             groupBox3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox3.Controls.Add(SplineParametersLayoutPanel);
             groupBox3.Dock = DockStyle.Fill;
-            groupBox3.Location = new Point(203, 3);
+            groupBox3.Location = new Point(254, 4);
+            groupBox3.Margin = new Padding(4);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(968, 146);
+            groupBox3.Padding = new Padding(4);
+            groupBox3.Size = new Size(1212, 190);
             groupBox3.TabIndex = 9;
             groupBox3.TabStop = false;
             groupBox3.Text = "Параметры";
@@ -332,10 +360,10 @@
             SplineParametersLayoutPanel.AutoScroll = true;
             SplineParametersLayoutPanel.AutoSize = true;
             SplineParametersLayoutPanel.Dock = DockStyle.Fill;
-            SplineParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
-            SplineParametersLayoutPanel.Location = new Point(3, 23);
+            SplineParametersLayoutPanel.Location = new Point(4, 28);
+            SplineParametersLayoutPanel.Margin = new Padding(4);
             SplineParametersLayoutPanel.Name = "SplineParametersLayoutPanel";
-            SplineParametersLayoutPanel.Size = new Size(962, 120);
+            SplineParametersLayoutPanel.Size = new Size(1204, 158);
             SplineParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox5
@@ -343,9 +371,11 @@
             groupBox5.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox5.Controls.Add(tableLayoutPanel3);
             groupBox5.Dock = DockStyle.Left;
-            groupBox5.Location = new Point(3, 3);
+            groupBox5.Location = new Point(4, 4);
+            groupBox5.Margin = new Padding(4);
             groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(200, 146);
+            groupBox5.Padding = new Padding(4);
+            groupBox5.Size = new Size(250, 190);
             groupBox5.TabIndex = 8;
             groupBox5.TabStop = false;
             groupBox5.Text = "Тип";
@@ -360,21 +390,23 @@
             tableLayoutPanel3.Controls.Add(SplineTypeCombobox, 0, 0);
             tableLayoutPanel3.Dock = DockStyle.Fill;
             tableLayoutPanel3.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-            tableLayoutPanel3.Location = new Point(3, 23);
+            tableLayoutPanel3.Location = new Point(4, 28);
+            tableLayoutPanel3.Margin = new Padding(4);
             tableLayoutPanel3.Name = "tableLayoutPanel3";
             tableLayoutPanel3.RowCount = 2;
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel3.Size = new Size(194, 120);
+            tableLayoutPanel3.Size = new Size(242, 158);
             tableLayoutPanel3.TabIndex = 9;
             // 
             // DrawSplineButton
             // 
             DrawSplineButton.AutoSize = true;
             DrawSplineButton.Dock = DockStyle.Fill;
-            DrawSplineButton.Location = new Point(3, 63);
+            DrawSplineButton.Location = new Point(4, 83);
+            DrawSplineButton.Margin = new Padding(4);
             DrawSplineButton.Name = "DrawSplineButton";
-            DrawSplineButton.Size = new Size(188, 54);
+            DrawSplineButton.Size = new Size(234, 71);
             DrawSplineButton.TabIndex = 6;
             DrawSplineButton.Text = "Построить";
             DrawSplineButton.UseVisualStyleBackColor = true;
@@ -384,46 +416,107 @@
             // 
             SplineTypeCombobox.Dock = DockStyle.Fill;
             SplineTypeCombobox.FormattingEnabled = true;
-            SplineTypeCombobox.Location = new Point(3, 3);
+            SplineTypeCombobox.Location = new Point(4, 4);
+            SplineTypeCombobox.Margin = new Padding(4);
             SplineTypeCombobox.Name = "SplineTypeCombobox";
-            SplineTypeCombobox.Size = new Size(188, 28);
+            SplineTypeCombobox.Size = new Size(234, 33);
             SplineTypeCombobox.TabIndex = 0;
             SplineTypeCombobox.SelectedIndexChanged += SplineTypeCombobox_SelectedIndexChanged;
             // 
             // PolygonsPage
             // 
+            PolygonsPage.AutoScroll = true;
+            PolygonsPage.Controls.Add(groupBox8);
+            PolygonsPage.Controls.Add(groupBox7);
             PolygonsPage.Controls.Add(PolygonParamsGroupbox);
             PolygonsPage.Controls.Add(groupBox2);
             PolygonsPage.Location = new Point(4, 29);
+            PolygonsPage.Margin = new Padding(4);
             PolygonsPage.Name = "PolygonsPage";
-            PolygonsPage.Padding = new Padding(3);
-            PolygonsPage.Size = new Size(1174, 152);
+            PolygonsPage.Padding = new Padding(4);
+            PolygonsPage.Size = new Size(1470, 198);
             PolygonsPage.TabIndex = 3;
             PolygonsPage.Text = "Полигоны";
             PolygonsPage.UseVisualStyleBackColor = true;
+            // 
+            // groupBox8
+            // 
+            groupBox8.AutoSize = true;
+            groupBox8.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox8.Controls.Add(LineIntersectionLayoutPanel);
+            groupBox8.Dock = DockStyle.Left;
+            groupBox8.Location = new Point(270, 4);
+            groupBox8.Margin = new Padding(4);
+            groupBox8.Name = "groupBox8";
+            groupBox8.Padding = new Padding(4);
+            groupBox8.Size = new Size(8, 190);
+            groupBox8.TabIndex = 12;
+            groupBox8.TabStop = false;
+            groupBox8.Text = "Пересечение с прямой";
+            // 
+            // LineIntersectionLayoutPanel
+            // 
+            LineIntersectionLayoutPanel.AutoScroll = true;
+            LineIntersectionLayoutPanel.AutoSize = true;
+            LineIntersectionLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            LineIntersectionLayoutPanel.Dock = DockStyle.Fill;
+            LineIntersectionLayoutPanel.Location = new Point(4, 28);
+            LineIntersectionLayoutPanel.Margin = new Padding(4);
+            LineIntersectionLayoutPanel.Name = "LineIntersectionLayoutPanel";
+            LineIntersectionLayoutPanel.Size = new Size(0, 158);
+            LineIntersectionLayoutPanel.TabIndex = 0;
+            // 
+            // groupBox7
+            // 
+            groupBox7.AutoSize = true;
+            groupBox7.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox7.Controls.Add(PointBelongingLayoutPanel);
+            groupBox7.Dock = DockStyle.Left;
+            groupBox7.Location = new Point(262, 4);
+            groupBox7.Margin = new Padding(4);
+            groupBox7.Name = "groupBox7";
+            groupBox7.Padding = new Padding(4);
+            groupBox7.Size = new Size(8, 190);
+            groupBox7.TabIndex = 11;
+            groupBox7.TabStop = false;
+            groupBox7.Text = "Принадлежность точки";
+            // 
+            // PointBelongingLayoutPanel
+            // 
+            PointBelongingLayoutPanel.AutoScroll = true;
+            PointBelongingLayoutPanel.AutoSize = true;
+            PointBelongingLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            PointBelongingLayoutPanel.Dock = DockStyle.Fill;
+            PointBelongingLayoutPanel.Location = new Point(4, 28);
+            PointBelongingLayoutPanel.Margin = new Padding(4);
+            PointBelongingLayoutPanel.Name = "PointBelongingLayoutPanel";
+            PointBelongingLayoutPanel.Size = new Size(0, 158);
+            PointBelongingLayoutPanel.TabIndex = 0;
             // 
             // PolygonParamsGroupbox
             // 
             PolygonParamsGroupbox.AutoSize = true;
             PolygonParamsGroupbox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             PolygonParamsGroupbox.Controls.Add(PolygonParametersLayoutPanel);
-            PolygonParamsGroupbox.Dock = DockStyle.Fill;
-            PolygonParamsGroupbox.Location = new Point(203, 3);
+            PolygonParamsGroupbox.Dock = DockStyle.Left;
+            PolygonParamsGroupbox.Location = new Point(254, 4);
+            PolygonParamsGroupbox.Margin = new Padding(4);
             PolygonParamsGroupbox.Name = "PolygonParamsGroupbox";
-            PolygonParamsGroupbox.Size = new Size(968, 146);
+            PolygonParamsGroupbox.Padding = new Padding(4);
+            PolygonParamsGroupbox.Size = new Size(8, 190);
             PolygonParamsGroupbox.TabIndex = 10;
             PolygonParamsGroupbox.TabStop = false;
             PolygonParamsGroupbox.Text = "Параметры полигона";
             // 
             // PolygonParametersLayoutPanel
             // 
-            PolygonParametersLayoutPanel.AutoScroll = true;
             PolygonParametersLayoutPanel.AutoSize = true;
+            PolygonParametersLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             PolygonParametersLayoutPanel.Dock = DockStyle.Fill;
-            PolygonParametersLayoutPanel.FlowDirection = FlowDirection.TopDown;
-            PolygonParametersLayoutPanel.Location = new Point(3, 23);
+            PolygonParametersLayoutPanel.Location = new Point(4, 28);
+            PolygonParametersLayoutPanel.Margin = new Padding(4);
             PolygonParametersLayoutPanel.Name = "PolygonParametersLayoutPanel";
-            PolygonParametersLayoutPanel.Size = new Size(962, 120);
+            PolygonParametersLayoutPanel.Size = new Size(0, 158);
             PolygonParametersLayoutPanel.TabIndex = 0;
             // 
             // groupBox2
@@ -431,9 +524,11 @@
             groupBox2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox2.Controls.Add(tableLayoutPanel4);
             groupBox2.Dock = DockStyle.Left;
-            groupBox2.Location = new Point(3, 3);
+            groupBox2.Location = new Point(4, 4);
+            groupBox2.Margin = new Padding(4);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(200, 146);
+            groupBox2.Padding = new Padding(4);
+            groupBox2.Size = new Size(250, 190);
             groupBox2.TabIndex = 9;
             groupBox2.TabStop = false;
             groupBox2.Text = "Тип";
@@ -448,21 +543,23 @@
             tableLayoutPanel4.Controls.Add(PolygonAlgorithmCombobox, 0, 0);
             tableLayoutPanel4.Dock = DockStyle.Fill;
             tableLayoutPanel4.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-            tableLayoutPanel4.Location = new Point(3, 23);
+            tableLayoutPanel4.Location = new Point(4, 28);
+            tableLayoutPanel4.Margin = new Padding(4);
             tableLayoutPanel4.Name = "tableLayoutPanel4";
             tableLayoutPanel4.RowCount = 2;
             tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Size = new Size(194, 120);
+            tableLayoutPanel4.Size = new Size(242, 158);
             tableLayoutPanel4.TabIndex = 9;
             // 
             // DrawPolygonButton
             // 
             DrawPolygonButton.AutoSize = true;
             DrawPolygonButton.Dock = DockStyle.Fill;
-            DrawPolygonButton.Location = new Point(3, 63);
+            DrawPolygonButton.Location = new Point(4, 83);
+            DrawPolygonButton.Margin = new Padding(4);
             DrawPolygonButton.Name = "DrawPolygonButton";
-            DrawPolygonButton.Size = new Size(188, 54);
+            DrawPolygonButton.Size = new Size(234, 71);
             DrawPolygonButton.TabIndex = 6;
             DrawPolygonButton.Text = "Построить";
             DrawPolygonButton.UseVisualStyleBackColor = true;
@@ -472,9 +569,10 @@
             // 
             PolygonAlgorithmCombobox.Dock = DockStyle.Fill;
             PolygonAlgorithmCombobox.FormattingEnabled = true;
-            PolygonAlgorithmCombobox.Location = new Point(3, 3);
+            PolygonAlgorithmCombobox.Location = new Point(4, 4);
+            PolygonAlgorithmCombobox.Margin = new Padding(4);
             PolygonAlgorithmCombobox.Name = "PolygonAlgorithmCombobox";
-            PolygonAlgorithmCombobox.Size = new Size(188, 28);
+            PolygonAlgorithmCombobox.Size = new Size(234, 33);
             PolygonAlgorithmCombobox.TabIndex = 0;
             // 
             // WorkSpaceSplitContainer
@@ -482,6 +580,7 @@
             WorkSpaceSplitContainer.Dock = DockStyle.Fill;
             WorkSpaceSplitContainer.FixedPanel = FixedPanel.Panel2;
             WorkSpaceSplitContainer.Location = new Point(0, 0);
+            WorkSpaceSplitContainer.Margin = new Padding(4);
             WorkSpaceSplitContainer.Name = "WorkSpaceSplitContainer";
             // 
             // WorkSpaceSplitContainer.Panel1
@@ -496,8 +595,9 @@
             WorkSpaceSplitContainer.Panel2.Controls.Add(DebugGridView);
             WorkSpaceSplitContainer.Panel2.Controls.Add(button2);
             WorkSpaceSplitContainer.Panel2.Controls.Add(EnableDebugButton);
-            WorkSpaceSplitContainer.Size = new Size(1182, 564);
-            WorkSpaceSplitContainer.SplitterDistance = 736;
+            WorkSpaceSplitContainer.Size = new Size(1478, 705);
+            WorkSpaceSplitContainer.SplitterDistance = 899;
+            WorkSpaceSplitContainer.SplitterWidth = 5;
             WorkSpaceSplitContainer.TabIndex = 0;
             // 
             // CanvasPictureBox
@@ -505,10 +605,10 @@
             CanvasPictureBox.Anchor = AnchorStyles.None;
             CanvasPictureBox.BackColor = Color.White;
             CanvasPictureBox.BorderStyle = BorderStyle.FixedSingle;
-            CanvasPictureBox.Location = new Point(115, 21);
+            CanvasPictureBox.Location = new Point(133, 26);
             CanvasPictureBox.Margin = new Padding(2);
             CanvasPictureBox.Name = "CanvasPictureBox";
-            CanvasPictureBox.Size = new Size(512, 512);
+            CanvasPictureBox.Size = new Size(640, 640);
             CanvasPictureBox.TabIndex = 1;
             CanvasPictureBox.TabStop = false;
             // 
@@ -521,19 +621,20 @@
             DebugGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             DebugGridView.BorderStyle = BorderStyle.None;
             DebugGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            DebugGridView.Location = new Point(0, 34);
+            DebugGridView.Location = new Point(0, 42);
             DebugGridView.Margin = new Padding(0);
             DebugGridView.Name = "DebugGridView";
             DebugGridView.RowHeadersWidth = 51;
-            DebugGridView.Size = new Size(436, 530);
+            DebugGridView.Size = new Size(545, 662);
             DebugGridView.TabIndex = 3;
             // 
             // button2
             // 
             button2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button2.Location = new Point(273, 2);
+            button2.Location = new Point(341, 2);
+            button2.Margin = new Padding(4);
             button2.Name = "button2";
-            button2.Size = new Size(157, 29);
+            button2.Size = new Size(196, 36);
             button2.TabIndex = 2;
             button2.Text = "Очистить все";
             button2.UseVisualStyleBackColor = true;
@@ -542,19 +643,21 @@
             // EnableDebugButton
             // 
             EnableDebugButton.AutoSize = true;
-            EnableDebugButton.Location = new Point(5, 5);
+            EnableDebugButton.Location = new Point(6, 6);
+            EnableDebugButton.Margin = new Padding(4);
             EnableDebugButton.Name = "EnableDebugButton";
-            EnableDebugButton.Size = new Size(137, 24);
+            EnableDebugButton.Size = new Size(163, 29);
             EnableDebugButton.TabIndex = 0;
             EnableDebugButton.Text = "Режим отладки";
             EnableDebugButton.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1182, 753);
+            ClientSize = new Size(1478, 941);
             Controls.Add(FormSplitContainer);
+            Margin = new Padding(4);
             Name = "MainForm";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -590,6 +693,10 @@
             tableLayoutPanel3.PerformLayout();
             PolygonsPage.ResumeLayout(false);
             PolygonsPage.PerformLayout();
+            groupBox8.ResumeLayout(false);
+            groupBox8.PerformLayout();
+            groupBox7.ResumeLayout(false);
+            groupBox7.PerformLayout();
             PolygonParamsGroupbox.ResumeLayout(false);
             PolygonParamsGroupbox.PerformLayout();
             groupBox2.ResumeLayout(false);
@@ -643,5 +750,9 @@
         private TableLayoutPanel tableLayoutPanel4;
         private Button DrawPolygonButton;
         private ComboBox PolygonAlgorithmCombobox;
+        private GroupBox groupBox7;
+        private FlowLayoutPanel PointBelongingLayoutPanel;
+        private GroupBox groupBox8;
+        private FlowLayoutPanel LineIntersectionLayoutPanel;
     }
 }
