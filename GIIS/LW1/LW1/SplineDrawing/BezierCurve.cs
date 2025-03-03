@@ -1,4 +1,6 @@
 ﻿using LW1.Common;
+using LW1.LineDrawing;
+using LW1.LineDrawing.Common;
 using LW1.SplineDrawing.Common;
 using MathNet.Numerics.LinearAlgebra.Complex;
 using System.Numerics;
@@ -12,7 +14,7 @@ namespace LW1.SplineDrawing
         public Parameter<Point> P2 { get; init; } = new() { DisplayName = "P2", Value = new(0, 15) };
         public Parameter<Point> P3 { get; init; } = new() { DisplayName = "P3", Value = new(31, 5) };
         public Parameter<Point> P4 { get; init; } = new() { DisplayName = "P4", Value = new(31, 31) };
-        public Parameter<int> Iterations { get; init; } = new() { DisplayName = "Разрешение", Value = 20 };
+        public Parameter<int> Iterations { get; init; } = new() { DisplayName = "Разрешение", Value = 10 };
     }
 
     public class BezierCurve : ISplineDrawingAlgorithm
@@ -24,6 +26,9 @@ namespace LW1.SplineDrawing
         public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
         {
             if (param is not BezierCurveParameters parameters) yield break;
+
+            var cda = new Wu();
+            Point? previousPoint = null;
 
             for (var i = 0; i < parameters.Iterations + 1; i++)
             {
@@ -59,6 +64,23 @@ namespace LW1.SplineDrawing
                     Y_T = Y,
                 };
                 yield return new(new(point, param.Color), info);
+                
+                if(previousPoint is not null)
+                {
+                    var lineParams = new LineDrawingParameters()
+                    {
+                        Color = parameters.Color,
+                        Start = previousPoint!,
+                        End = point,
+                    };
+
+                    foreach(var linePoint in cda.Draw(lineParams))
+                    {
+                        yield return linePoint;
+                    }
+                }
+
+                previousPoint = point;
             }
         }
     }

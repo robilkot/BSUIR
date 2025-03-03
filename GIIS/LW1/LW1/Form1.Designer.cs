@@ -54,12 +54,16 @@
             PolygonsPage = new TabPage();
             groupBox8 = new GroupBox();
             LineIntersectionLayoutPanel = new FlowLayoutPanel();
+            IntersectLineButton = new Button();
             groupBox7 = new GroupBox();
+            CheckBelongingButton = new Button();
             PointBelongingLayoutPanel = new FlowLayoutPanel();
             PolygonParamsGroupbox = new GroupBox();
             PolygonParametersLayoutPanel = new FlowLayoutPanel();
             groupBox2 = new GroupBox();
             tableLayoutPanel4 = new TableLayoutPanel();
+            DrawPolygonNormalsButton = new Button();
+            CheckConvexButton = new Button();
             DrawPolygonButton = new Button();
             PolygonAlgorithmCombobox = new ComboBox();
             WorkSpaceSplitContainer = new SplitContainer();
@@ -444,6 +448,7 @@
             groupBox8.AutoSize = true;
             groupBox8.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox8.Controls.Add(LineIntersectionLayoutPanel);
+            groupBox8.Controls.Add(IntersectLineButton);
             groupBox8.Dock = DockStyle.Left;
             groupBox8.Location = new Point(270, 4);
             groupBox8.Margin = new Padding(4);
@@ -456,20 +461,34 @@
             // 
             // LineIntersectionLayoutPanel
             // 
-            LineIntersectionLayoutPanel.AutoScroll = true;
             LineIntersectionLayoutPanel.AutoSize = true;
             LineIntersectionLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             LineIntersectionLayoutPanel.Dock = DockStyle.Fill;
             LineIntersectionLayoutPanel.Location = new Point(4, 28);
             LineIntersectionLayoutPanel.Margin = new Padding(4);
             LineIntersectionLayoutPanel.Name = "LineIntersectionLayoutPanel";
-            LineIntersectionLayoutPanel.Size = new Size(0, 158);
+            LineIntersectionLayoutPanel.Size = new Size(0, 123);
             LineIntersectionLayoutPanel.TabIndex = 0;
+            // 
+            // IntersectLineButton
+            // 
+            IntersectLineButton.AutoSize = true;
+            IntersectLineButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            IntersectLineButton.Dock = DockStyle.Bottom;
+            IntersectLineButton.Location = new Point(4, 151);
+            IntersectLineButton.Margin = new Padding(4);
+            IntersectLineButton.Name = "IntersectLineButton";
+            IntersectLineButton.Size = new Size(0, 35);
+            IntersectLineButton.TabIndex = 7;
+            IntersectLineButton.Text = "Пересечь";
+            IntersectLineButton.UseVisualStyleBackColor = true;
+            IntersectLineButton.Click += IntersectLineButton_Click;
             // 
             // groupBox7
             // 
             groupBox7.AutoSize = true;
             groupBox7.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox7.Controls.Add(CheckBelongingButton);
             groupBox7.Controls.Add(PointBelongingLayoutPanel);
             groupBox7.Dock = DockStyle.Left;
             groupBox7.Location = new Point(262, 4);
@@ -480,6 +499,20 @@
             groupBox7.TabIndex = 11;
             groupBox7.TabStop = false;
             groupBox7.Text = "Принадлежность точки";
+            // 
+            // CheckBelongingButton
+            // 
+            CheckBelongingButton.AutoSize = true;
+            CheckBelongingButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            CheckBelongingButton.Dock = DockStyle.Bottom;
+            CheckBelongingButton.Location = new Point(4, 151);
+            CheckBelongingButton.Margin = new Padding(4);
+            CheckBelongingButton.Name = "CheckBelongingButton";
+            CheckBelongingButton.Size = new Size(0, 35);
+            CheckBelongingButton.TabIndex = 8;
+            CheckBelongingButton.Text = "Проверить принадлежность";
+            CheckBelongingButton.UseVisualStyleBackColor = true;
+            CheckBelongingButton.Click += CheckBelongingButton_Click;
             // 
             // PointBelongingLayoutPanel
             // 
@@ -539,6 +572,8 @@
             tableLayoutPanel4.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             tableLayoutPanel4.ColumnCount = 1;
             tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel4.Controls.Add(DrawPolygonNormalsButton, 0, 2);
+            tableLayoutPanel4.Controls.Add(CheckConvexButton, 0, 2);
             tableLayoutPanel4.Controls.Add(DrawPolygonButton, 0, 1);
             tableLayoutPanel4.Controls.Add(PolygonAlgorithmCombobox, 0, 0);
             tableLayoutPanel4.Dock = DockStyle.Fill;
@@ -546,20 +581,48 @@
             tableLayoutPanel4.Location = new Point(4, 28);
             tableLayoutPanel4.Margin = new Padding(4);
             tableLayoutPanel4.Name = "tableLayoutPanel4";
-            tableLayoutPanel4.RowCount = 2;
-            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.RowCount = 4;
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006237F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006275F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 25.0006237F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 24.9981289F));
             tableLayoutPanel4.Size = new Size(242, 158);
             tableLayoutPanel4.TabIndex = 9;
+            // 
+            // DrawPolygonNormalsButton
+            // 
+            DrawPolygonNormalsButton.AutoSize = true;
+            DrawPolygonNormalsButton.Dock = DockStyle.Fill;
+            DrawPolygonNormalsButton.Location = new Point(4, 82);
+            DrawPolygonNormalsButton.Margin = new Padding(4);
+            DrawPolygonNormalsButton.Name = "DrawPolygonNormalsButton";
+            DrawPolygonNormalsButton.Size = new Size(234, 31);
+            DrawPolygonNormalsButton.TabIndex = 8;
+            DrawPolygonNormalsButton.Text = "Построить нормали";
+            DrawPolygonNormalsButton.UseVisualStyleBackColor = true;
+            DrawPolygonNormalsButton.Click += DrawPolygonNormalsButton_Click;
+            // 
+            // CheckConvexButton
+            // 
+            CheckConvexButton.AutoSize = true;
+            CheckConvexButton.Dock = DockStyle.Fill;
+            CheckConvexButton.Location = new Point(4, 121);
+            CheckConvexButton.Margin = new Padding(4);
+            CheckConvexButton.Name = "CheckConvexButton";
+            CheckConvexButton.Size = new Size(234, 33);
+            CheckConvexButton.TabIndex = 7;
+            CheckConvexButton.Text = "Проверка выпуклости";
+            CheckConvexButton.UseVisualStyleBackColor = true;
+            CheckConvexButton.Click += CheckConvexButton_Click;
             // 
             // DrawPolygonButton
             // 
             DrawPolygonButton.AutoSize = true;
             DrawPolygonButton.Dock = DockStyle.Fill;
-            DrawPolygonButton.Location = new Point(4, 83);
+            DrawPolygonButton.Location = new Point(4, 43);
             DrawPolygonButton.Margin = new Padding(4);
             DrawPolygonButton.Name = "DrawPolygonButton";
-            DrawPolygonButton.Size = new Size(234, 71);
+            DrawPolygonButton.Size = new Size(234, 31);
             DrawPolygonButton.TabIndex = 6;
             DrawPolygonButton.Text = "Построить";
             DrawPolygonButton.UseVisualStyleBackColor = true;
@@ -596,7 +659,7 @@
             WorkSpaceSplitContainer.Panel2.Controls.Add(button2);
             WorkSpaceSplitContainer.Panel2.Controls.Add(EnableDebugButton);
             WorkSpaceSplitContainer.Size = new Size(1478, 705);
-            WorkSpaceSplitContainer.SplitterDistance = 899;
+            WorkSpaceSplitContainer.SplitterDistance = 863;
             WorkSpaceSplitContainer.SplitterWidth = 5;
             WorkSpaceSplitContainer.TabIndex = 0;
             // 
@@ -605,7 +668,7 @@
             CanvasPictureBox.Anchor = AnchorStyles.None;
             CanvasPictureBox.BackColor = Color.White;
             CanvasPictureBox.BorderStyle = BorderStyle.FixedSingle;
-            CanvasPictureBox.Location = new Point(133, 26);
+            CanvasPictureBox.Location = new Point(115, 26);
             CanvasPictureBox.Margin = new Padding(2);
             CanvasPictureBox.Name = "CanvasPictureBox";
             CanvasPictureBox.Size = new Size(640, 640);
@@ -754,5 +817,9 @@
         private FlowLayoutPanel PointBelongingLayoutPanel;
         private GroupBox groupBox8;
         private FlowLayoutPanel LineIntersectionLayoutPanel;
+        private Button IntersectLineButton;
+        private Button CheckBelongingButton;
+        private Button CheckConvexButton;
+        private Button DrawPolygonNormalsButton;
     }
 }

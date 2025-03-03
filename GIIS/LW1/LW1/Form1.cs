@@ -6,6 +6,7 @@ using LW1.Polygons;
 using LW1.Polygons.Common;
 using LW1.SplineDrawing.Common;
 using LW1.View;
+using MathNet.Numerics.LinearAlgebra.Factorization;
 
 namespace LW1
 {
@@ -33,10 +34,21 @@ namespace LW1
             _pointBelongingParametersWrapper = new(PointBelongingLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
             _lineIntersectionParametersWrapper = new(LineIntersectionLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
 
-            _polygonParametersWrapper.Parameters = new PolygonParameters();
             _lineParametersWrapper.Parameters = new LineDrawingParameters();
-            _pointBelongingParametersWrapper.Parameters = new PointDrawingParameters();
-            _lineIntersectionParametersWrapper.Parameters = new LineDrawingParameters();
+            
+            var polygonParameters = new PolygonParameters();
+            polygonParameters.Color.Value = Color.DarkGreen;
+            _polygonParametersWrapper.Parameters = polygonParameters;
+
+            var pointParams = new PointDrawingParameters();
+            pointParams.Point.Value = new(37, 30);
+            _pointBelongingParametersWrapper.Parameters = pointParams;
+
+            var lineIntersectParam = new LineDrawingParameters();
+            lineIntersectParam.Color.Value = Color.LightGray;
+            lineIntersectParam.Start.Value = new Point(2, 48);
+            lineIntersectParam.End.Value = new Point(53, 46);
+            _lineIntersectionParametersWrapper.Parameters = lineIntersectParam;
 
             InitCanvas();
 
@@ -168,17 +180,15 @@ namespace LW1
         private async void DrawCurveButton_ClickAsync(object sender, EventArgs e)
         {
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
-            IDrawingParameters parameters = _curveParametersWrapper.Parameters;
 
-            await Draw(algorithm, parameters);
+            await Draw(algorithm, _curveParametersWrapper.Parameters);
         }
 
         private async void DrawLineButton_Click(object sender, EventArgs e)
         {
             ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingAlgorithmCombobox.SelectedItem!;
-            IDrawingParameters parameters = _lineParametersWrapper.Parameters;
 
-            await Draw(algorithm, parameters);
+            await Draw(algorithm, _lineParametersWrapper.Parameters);
         }
 
         private void SplineTypeCombobox_SelectedIndexChanged(object sender, EventArgs e)
@@ -191,17 +201,70 @@ namespace LW1
         private async void DrawSplineButton_Click(object sender, EventArgs e)
         {
             ISplineDrawingAlgorithm algorithm = (ISplineDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
-            IDrawingParameters parameters = _splineParametersWrapper.Parameters;
 
-            await Draw(algorithm, parameters);
+            await Draw(algorithm, _splineParametersWrapper.Parameters);
         }
 
         private async void DrawPolygonButton_Click(object sender, EventArgs e)
         {
             IPolygonDrawingAlgorithm algorithm = (IPolygonDrawingAlgorithm)PolygonAlgorithmCombobox.SelectedItem!;
-            IDrawingParameters parameters = _polygonParametersWrapper.Parameters;
 
-            await Draw(algorithm, parameters);
+            await Draw(algorithm, _polygonParametersWrapper.Parameters);
+        }
+
+        private void CheckConvexButton_Click(object sender, EventArgs e)
+        {
+            var result = new ConvexCheck().Execute((PolygonParameters)_polygonParametersWrapper.Parameters);
+
+            string text = result ? "Полигон выпуклый" : "Полигон не выпуклый";
+
+            MessageBox.Show(text, "Результат проверки");
+        }
+
+        private async void IntersectLineButton_Click(object sender, EventArgs e)
+        {
+            var lineAlgorithm = new CDA();
+            LineDrawingParameters lineParams = (LineDrawingParameters)_lineIntersectionParametersWrapper.Parameters;
+            PolygonParameters polyParams = (PolygonParameters)_polygonParametersWrapper.Parameters;
+
+            await Draw(lineAlgorithm, lineParams);
+
+            var points = new IntersectionCheck().Execute((polyParams, lineParams));
+
+            var crossAlgorithm = new CrossDrawingAlgorithm();
+
+            foreach (var point in points)
+            {
+                var crossParams = new PointDrawingParameters()
+                {
+                    Point = point,
+                    Color = Color.OrangeRed
+                };
+
+                await Draw(crossAlgorithm, crossParams);
+            }
+        }
+
+        private async void CheckBelongingButton_Click(object sender, EventArgs e)
+        {
+            var polygonParam = (PolygonParameters)_polygonParametersWrapper.Parameters;
+            var pointParam = (PointDrawingParameters)_pointBelongingParametersWrapper.Parameters;
+            var pointAlgorithm = new PointDrawingAlgorithm();
+
+            await Draw(pointAlgorithm, pointParam);
+
+            var result = new BelongingCheck().Execute((polygonParam, pointParam));
+
+            string text = result ? "Точка принадлежит полигону" : "Точка не принадлежит полигону";
+
+            MessageBox.Show(text, "Результат проверки");
+        }
+
+        private async void DrawPolygonNormalsButton_Click(object sender, EventArgs e)
+        {
+            var normalsDrawingAlgorithm = new PolygonNormalsDrawingAlgorithm();
+
+            await Draw(normalsDrawingAlgorithm, _polygonParametersWrapper.Parameters);
         }
     }
 }
