@@ -7,25 +7,7 @@ from view.scrollable_frame import Scrollable
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from view.formstable import FormsTable
-
-#todo в отдельный файл
-POS_TRANSLATIONS = {
-            "NOUN": "Существительное",
-            "VERB": "Глагол",
-            "ADJ": "Прилагательное",
-            "ADV": "Наречие",
-            "PRON": "Местоимение",
-            "DET": "Определитель",
-            "ADP": "Предлог",
-            "CCONJ": "Сочинительный союз",
-            "SCONJ": "Подчинительный союз",
-            "PART": "Частица",
-            "NUM": "Числительное",
-            "INTJ": "Междометие",
-            "PROPN": "Имя собственное",
-            "AUX": "Вспомогательный глагол",
-            "X": "Неопределенная категория"
-        }
+from dicts import *
 
 class CorpusApp(tk.Tk):
     def __init__(self):
@@ -91,20 +73,19 @@ class CorpusApp(tk.Tk):
         morph_frame.pack(fill=tk.BOTH, padx=5, pady=5)
         criteria_frame = tk.Frame(morph_frame)
         criteria_frame.pack(fill=tk.X, padx=5, pady=5)
-        # todo перевести
-        ttk.Label(criteria_frame, text="Part of speech:").grid(row=0, column=0, padx=2, pady=2)
+        ttk.Label(criteria_frame, text="Часть речи:").grid(row=0, column=0, padx=2, pady=2)
         self.pos_entry = tk.Entry(criteria_frame)
         self.pos_entry.grid(row=0, column=1, padx=2, pady=2)
-        ttk.Label(criteria_frame, text="Gender:").grid(row=1, column=0, padx=2, pady=2)
+        ttk.Label(criteria_frame, text="Род:").grid(row=1, column=0, padx=2, pady=2)
         self.gender_var = tk.StringVar(value="Любой")
         # todo перевести
-        gender_options = ["Любой", "masc", "fem", "neut"]
+        gender_options = ["Любой", "Masc", "Fem", "Neut"]
         self.gender_menu = ttk.OptionMenu(criteria_frame, self.gender_var, *gender_options)
         self.gender_menu.grid(row=1, column=1, padx=2, pady=2)
-        ttk.Label(criteria_frame, text="Number:").grid(row=2, column=0, padx=2, pady=2)
+        ttk.Label(criteria_frame, text="Число:").grid(row=2, column=0, padx=2, pady=2)
         self.number_var = tk.StringVar(value="Любой")
         # todo перевести
-        number_options = ["Любой", "sing", "plur"]
+        number_options = ["Любой", "Sing", "Plur"]
         self.number_menu = ttk.OptionMenu(criteria_frame, self.number_var, *number_options)
         self.number_menu.grid(row=2, column=1, padx=2, pady=2)
         self.morph_search_button = ttk.Button(morph_frame, text="Поиск по критериям", command=self.search_morph)
@@ -176,7 +157,6 @@ class CorpusApp(tk.Tk):
         table.pack(fill=tk.BOTH, expand=True)
 
         freq = self.corpus_manager.compute_frequency()
-        # todo перевести
         feats_to_skip = [
             "Variant",
             "Aspect",
@@ -186,23 +166,7 @@ class CorpusApp(tk.Tk):
             "Foreign",
             "Animacy"
         ]
-        POS_TRANSLATIONS = {
-            "NOUN": "Существительное",
-            "VERB": "Глагол",
-            "ADJ": "Прилагательное",
-            "ADV": "Наречие",
-            "PRON": "Местоимение",
-            "DET": "Определитель",
-            "ADP": "Предлог",
-            "CCONJ": "Сочинительный союз",
-            "SCONJ": "Подчинительный союз",
-            "PART": "Частица",
-            "NUM": "Числительное",
-            "INTJ": "Междометие",
-            "PROPN": "Имя собственное",
-            "AUX": "Вспомогательный глагол",
-            "X": "Неопределенная категория"
-        }
+
         feats_with_charts = [
             "pos",
             "Person",
@@ -226,7 +190,6 @@ class CorpusApp(tk.Tk):
             pos_frame = ttk.LabelFrame(parent, text=f"Характеристика: {characteristic}")
 
             pos_tree = ttk.Treeview(pos_frame, columns=("pos", "count"), show="headings")
-            # todo перевести
             pos_tree.heading("pos", text=characteristic)
             pos_tree.heading("count", text="Количество вхождений")
             if need_plot:
@@ -353,9 +316,15 @@ class CorpusApp(tk.Tk):
 
         if results:
             for entry_id, token in results:
-                pos_name = POS_TRANSLATIONS.get(token.pos, token.pos)  # Отображаем полное название части речи
+                pos_name = POS_TRANSLATIONS.get(token.pos, token.pos)
+                morph_details = []
+                for feat, value in token.feats.items():
+                    feat_ru = MORPH_FEATURES_RU.get(feat, feat)
+                    value_ru = MORPH_TRANSLATIONS.get(feat, {}).get(value, value)
+                    morph_details.append(f"{feat_ru}: {value_ru}")
+                morph_details_str = ", ".join(morph_details)
                 line = (f"Запись: {entry_id}, Токен: {token.text}, Лемма: {token.lemma}, "
-                        f"Часть речи: {pos_name}, Характеристики: {token.feats}\n")
+                        f"Часть речи: {pos_name}, Характеристики: {morph_details_str}\n")
                 self.morph_results_text.insert(tk.END, line)
         else:
             self.morph_results_text.insert(tk.END, "Нет результатов.")

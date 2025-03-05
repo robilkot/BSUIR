@@ -39,6 +39,7 @@ class CorpusManager:
                 if key.startswith("feats__"):
                     feats_key = key.split("__", 1)[1]
                     if token.feats.get(feats_key) != value:
+                        print(token.feats.get(feats_key))
                         return False
                 else:
                     if getattr(token, key, None) != value:
