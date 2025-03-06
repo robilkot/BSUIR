@@ -18,9 +18,13 @@ class CorpusApp(tk.Tk):
         self.create_menu()
         self.create_widgets()
 
-        self.add_text_from_file('./dataset/1.txt')
-        self.add_text_from_file('./dataset/2.txt')
-        self.add_text_from_file('./dataset/9.txt')
+        self.entries_dict = {}
+
+        self.add_text_from_file('./dataset/5.txt')
+        self.add_text_from_file('./dataset/7.txt')
+        self.add_text_from_file('./dataset/11.txt')
+        self.add_text_from_file('./dataset/17.txt')
+        self.add_text_from_file('./dataset/19.txt')
 
     def create_menu(self):
         self.menubar = tk.Menu(self)
@@ -118,6 +122,9 @@ class CorpusApp(tk.Tk):
             edit_button = ttk.Button(btn_frame, text="Редактировать")
             edit_button.configure(command=lambda button=edit_button, eid=entry_id, tw=text_widget: self.edit_entry(button, eid, tw))
             edit_button.pack(side=tk.LEFT, padx=2)
+            self.entries_dict[entry_id] = text_widget
+
+        self.entry_container.update()
 
 
     def delete_entry(self, entry_id):
@@ -243,6 +250,9 @@ class CorpusApp(tk.Tk):
             widget.destroy()
 
         if concordances:
+            for text in self.entries_dict.values():
+                text.tag_remove('highlight', 0.0, tk.END)
+
             for i, c in enumerate(concordances):
                 self.concordance_results.rowconfigure(i, weight=1)
                 import re
@@ -281,6 +291,26 @@ class CorpusApp(tk.Tk):
                                                relief="raised")
 
                 concordance_text.config(state="disabled")
+
+                text = self.entries_dict[c['entry_id']]
+                text.config(state="normal")
+                text.tag_configure("highlight", background="orange", foreground="black", font="TkFixedFont",
+                                   relief="raised")
+
+                cur = 1.0  # current position
+                length = tk.IntVar()  # num of matched chars
+                pattern = f"\m{c["target"]}\M"  # Ensure full word match
+
+                while True:
+                    cur = text.search(pattern, cur, tk.END, count=length, regexp=True)
+                    if not cur:
+                        break
+
+                    matchEnd = f'{cur}+{length.get()}c'
+                    text.tag_add('highlight', cur, matchEnd)
+                    cur = text.index(matchEnd)
+
+                text.config(state="disabled")
 
             self.data_container.update()
         else:
