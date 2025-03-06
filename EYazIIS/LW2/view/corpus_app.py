@@ -61,41 +61,18 @@ class CorpusApp(tk.Tk):
         concordance_frame.columnconfigure(0, weight=1)
         concordance_frame.columnconfigure(1, weight=1)
 
-        self.concordance_entry = ttk.Entry(concordance_frame)
-        self.concordance_entry.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
-        self.concordance_entry.bind("<Return>", lambda event: self.search_concordance())
+        concordance_entry = ttk.Entry(concordance_frame)
+        concordance_entry.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        concordance_entry.bind("<Return>", lambda event: self.search_concordance(concordance_entry.get().strip()))
 
-        self.concordance_button = ttk.Button(concordance_frame, text="Построить конкорданс", command=self.search_concordance)
-        self.concordance_button.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
+        concordance_button = ttk.Button(concordance_frame,
+                                        text="Построить конкорданс",
+                                        command=lambda: self.search_concordance(concordance_entry.get().strip()))
+        concordance_button.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
 
         self.concordance_results = tk.Frame(concordance_frame)
         self.concordance_results.columnconfigure(0, weight=1)
         self.concordance_results.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky='nsew')
-
-        # Область для поиска по морфологическим признакам
-        morph_frame = ttk.LabelFrame(data_static_container, text="Поиск по морфологическим признакам")
-        morph_frame.pack(fill=tk.BOTH, padx=5, pady=5)
-        criteria_frame = tk.Frame(morph_frame)
-        criteria_frame.pack(fill=tk.X, padx=5, pady=5)
-        ttk.Label(criteria_frame, text="Часть речи:").grid(row=0, column=0, padx=2, pady=2)
-        self.pos_entry = tk.Entry(criteria_frame)
-        self.pos_entry.grid(row=0, column=1, padx=2, pady=2)
-        ttk.Label(criteria_frame, text="Род:").grid(row=1, column=0, padx=2, pady=2)
-        self.gender_var = tk.StringVar(value="Любой")
-        # todo перевести
-        gender_options = ["Любой", "Masc", "Fem", "Neut"]
-        self.gender_menu = ttk.OptionMenu(criteria_frame, self.gender_var, *gender_options)
-        self.gender_menu.grid(row=1, column=1, padx=2, pady=2)
-        ttk.Label(criteria_frame, text="Число:").grid(row=2, column=0, padx=2, pady=2)
-        self.number_var = tk.StringVar(value="Любой")
-        # todo перевести
-        number_options = ["Любой", "Sing", "Plur"]
-        self.number_menu = ttk.OptionMenu(criteria_frame, self.number_var, *number_options)
-        self.number_menu.grid(row=2, column=1, padx=2, pady=2)
-        self.morph_search_button = ttk.Button(morph_frame, text="Поиск по критериям", command=self.search_morph)
-        self.morph_search_button.pack(padx=5, pady=5)
-        self.morph_results_text = tk.Text(morph_frame, height=10)
-        self.morph_results_text.pack(fill=tk.BOTH, padx=5, pady=5)
 
         data_static_container.pack(fill=tk.X, padx=5, pady=5, expand=True)
         self.data_dynamic_container.pack(fill=tk.X, padx=5, pady=5, expand=True)
@@ -105,6 +82,8 @@ class CorpusApp(tk.Tk):
         self.data_container.update()
 
     def refresh_entries(self):
+        self.entries_dict = {}
+
         for widget in self.entry_container.winfo_children():
             widget.destroy()
 
@@ -125,7 +104,6 @@ class CorpusApp(tk.Tk):
             self.entries_dict[entry_id] = text_widget
 
         self.entry_container.update()
-
 
     def delete_entry(self, entry_id):
         if messagebox.askyesno("Подтверждение", "Удалить запись?"):
@@ -238,8 +216,7 @@ class CorpusApp(tk.Tk):
         grid.pack(fill=tk.BOTH)
         self.data_container.update()
 
-    def search_concordance(self):
-        target = self.concordance_entry.get().strip()
+    def search_concordance(self, target):
         if not target:
             messagebox.showwarning("Внимание", "Введите слово для поиска конкорданса")
             return
@@ -315,50 +292,6 @@ class CorpusApp(tk.Tk):
             self.data_container.update()
         else:
             messagebox.showwarning("Внимание", "Совпадений не найдено")
-
-    def search_morph(self):
-        criteria = {}
-
-        # Получаем введенное пользователем название части речи
-        pos_input = self.pos_entry.get().strip()
-
-        # Обратный словарь для поиска по пользовательскому вводу
-        REVERSE_POS_TRANSLATIONS = {v.lower(): k for k, v in POS_TRANSLATIONS.items()}
-
-        # Если введено что-то, пытаемся перевести в сокращение
-        if pos_input:
-            pos_code = REVERSE_POS_TRANSLATIONS.get(pos_input.lower())
-            if pos_code:
-                criteria["pos"] = pos_code
-            else:
-                self.morph_results_text.delete("1.0", tk.END)
-                self.morph_results_text.insert(tk.END, "Некорректная часть речи.\n")
-                return  # Останавливаем выполнение, если введено что-то неправильное
-
-        gender = self.gender_var.get()
-        if gender != "Любой":
-            criteria["feats__gender"] = gender
-        number = self.number_var.get()
-        if number != "Любой":
-            criteria["feats__number"] = number
-
-        results = self.corpus_manager.filter_tokens(**criteria)
-        self.morph_results_text.delete("1.0", tk.END)
-
-        if results:
-            for entry_id, token in results:
-                pos_name = POS_TRANSLATIONS.get(token.pos, token.pos)
-                morph_details = []
-                for feat, value in token.feats.items():
-                    feat_ru = MORPH_FEATURES_TRANSLATIONS.get(feat, feat)
-                    value_ru = MORPH_VALUES_TRANSLATIONS.get(feat, {}).get(value, value)
-                    morph_details.append(f"{feat_ru}: {value_ru}")
-                morph_details_str = ", ".join(morph_details)
-                line = (f"Запись: {entry_id}, Токен: {token.text}, Лемма: {token.lemma}, "
-                        f"Часть речи: {pos_name}, Характеристики: {morph_details_str}\n")
-                self.morph_results_text.insert(tk.END, line)
-        else:
-            self.morph_results_text.insert(tk.END, "Нет результатов.")
 
     def open_file(self):
         filepath = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
