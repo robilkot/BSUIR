@@ -99,3 +99,16 @@ MORPH_VALUES_TRANSLATIONS = {
         "Sup": "Превосходная"
     }
 }
+# Словарь для определения характеристик к частям речи
+POS_APPLICABLE_FEATURES = {
+    "NOUN": ["Animacy", "Gender", "Number", "Case"],
+    "VERB": ["Aspect", "Mood", "Number", "Person", "Tense", "VerbForm", "Voice"],
+    "ADJ":  ["Degree", "Gender", "Number", "Case"],
+    "ADV":  [],  # Наречия обычно не имеют выраженной морфологии
+    "PRON": ["Gender", "Number", "Person", "Case"],
+    "ADP":  [],  # Предлоги не обладают морфологическими признаками
+    "CONJ": [],  # Союзы также не имеют морфологии
+    "PART": [],  # Частицы не меняются по морфологическим признакам
+    "NUM":  ["Number", "Case"],  # Числительные могут иметь признаки числа и падежа
+    "INTJ": []   # Междометия, как правило, не имеют морфологии
+}
