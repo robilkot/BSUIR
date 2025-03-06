@@ -29,24 +29,6 @@ class CorpusManager:
                     results.append((entry.id, token))
         return results
 
-    def filter_tokens(self, **criteria):
-        """
-        Фильтрация токенов по критериям.
-        Для морфологических признаков используется префикс "feats__".
-        """
-        def condition(token):
-            for key, value in criteria.items():
-                if key.startswith("feats__"):
-                    feats_key = key.split("__", 1)[1]
-                    if token.feats.get(feats_key) != value:
-                        print(token.feats.get(feats_key))
-                        return False
-                else:
-                    if getattr(token, key, None) != value:
-                        return False
-            return True
-        return self.search_tokens(condition)
-
     def compute_frequency(self):
         freq_feats = {}
         for entry in self.entries.values():

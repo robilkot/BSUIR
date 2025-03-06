@@ -42,16 +42,16 @@ class CorpusApp(tk.Tk):
         paned_window = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
         paned_window.pack(expand=True, fill=tk.BOTH)
 
-        self.left_frame = tk.Frame(paned_window)
-        self.right_frame = tk.Frame(paned_window)
+        left_frame = tk.Frame(paned_window)
+        right_frame = tk.Frame(paned_window)
 
-        paned_window.add(self.left_frame)
-        paned_window.add(self.right_frame)
+        paned_window.add(left_frame)
+        paned_window.add(right_frame)
 
         # Левая панель – список записей с вертикальной прокруткой
-        self.entry_container = Scrollable(self.left_frame)
+        self.entry_container = Scrollable(left_frame)
         # Правая панель – область для вывода таблиц частотных характеристик и элементов поиска
-        self.data_container = Scrollable(self.right_frame)
+        self.data_container = Scrollable(right_frame)
         data_static_container = tk.Frame(self.data_container)
         self.data_dynamic_container = tk.Frame(self.data_container)
 
