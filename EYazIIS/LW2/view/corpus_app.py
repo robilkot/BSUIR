@@ -18,9 +18,9 @@ class CorpusApp(tk.Tk):
         self.create_menu()
         self.create_widgets()
 
-        # self.add_text_from_file('./dataset/1.txt')
-        # self.add_text_from_file('./dataset/2.txt')
-        # self.add_text_from_file('./dataset/9.txt')
+        self.add_text_from_file('./dataset/1.txt')
+        self.add_text_from_file('./dataset/2.txt')
+        self.add_text_from_file('./dataset/9.txt')
 
     def create_menu(self):
         self.menubar = tk.Menu(self)
@@ -187,41 +187,42 @@ class CorpusApp(tk.Tk):
         for characteristic, need_plot in characteristics:
             parent = self.data_dynamic_container if need_plot else grid
 
-            pos_frame = ttk.LabelFrame(parent, text=f"Характеристика: {characteristic}")
+            table_title = MORPH_FEATURES_TRANSLATIONS[characteristic]
+            table_frame = ttk.LabelFrame(parent, text=f"Характеристика: {table_title}")
 
-            pos_tree = ttk.Treeview(pos_frame, columns=("pos", "count"), show="headings")
-            pos_tree.heading("pos", text=characteristic)
-            pos_tree.heading("count", text="Количество вхождений")
+            tree = ttk.Treeview(table_frame, columns=("pos", "count"), show="headings")
+            tree.heading("pos", text=table_title)
+            tree.heading("count", text="Количество вхождений")
             if need_plot:
-                pos_tree.grid(column=0, row=0, sticky="nsew", padx=5, pady=5)
+                tree.grid(column=0, row=0, sticky="nsew", padx=5, pady=5)
             else:
-                pos_tree.pack(fill=tk.BOTH, padx=5, pady=5)
+                tree.pack(fill=tk.BOTH, padx=5, pady=5)
 
-            for pos, count in freq[characteristic].items():
-                readable_pos = POS_TRANSLATIONS.get(pos, pos)
-                pos_tree.insert("", tk.END, values=(readable_pos, count))
+            for feat, count in freq[characteristic].items():
+                readable_feat = MORPH_VALUES_TRANSLATIONS[characteristic].get(feat, feat)
+                tree.insert("", tk.END, values=(readable_feat, count))
 
             if need_plot:
-                pos_frame.columnconfigure(1, weight=1)
-                pos_frame.columnconfigure(0, weight=1)
-                pos_frame.rowconfigure(0, weight=1)
+                table_frame.columnconfigure(1, weight=1)
+                table_frame.columnconfigure(0, weight=1)
+                table_frame.rowconfigure(0, weight=1)
 
                 height_coef = len(freq[characteristic].keys()) / 12 * 3
 
-                labels = [POS_TRANSLATIONS.get(pos, pos) for pos in freq[characteristic].keys()]
+                labels = [MORPH_VALUES_TRANSLATIONS[characteristic].get(pos, pos) for pos in freq[characteristic].keys()]
                 values = list(freq[characteristic].values())
 
                 fig, ax = plt.subplots(figsize=(5, height_coef))
                 ax.barh(labels, values, color='orange')
                 ax.set_title("Количество вхождений")
 
-                canvas = FigureCanvasTkAgg(fig, master=pos_frame)
+                canvas = FigureCanvasTkAgg(fig, master=table_frame)
                 canvas_widget = canvas.get_tk_widget()
                 canvas_widget.grid(column=1, row=0, sticky="nsew", padx=5, pady=5)
                 canvas.draw()
-                pos_frame.pack(fill=tk.BOTH, padx=5, pady=5)
+                table_frame.pack(fill=tk.BOTH, padx=5, pady=5)
             else:
-                pos_frame.grid(sticky='nsew', column=column, row=row)
+                table_frame.grid(sticky='nsew', column=column, row=row)
                 column += 1
                 if column == total_columns:
                     column = 0
@@ -319,8 +320,8 @@ class CorpusApp(tk.Tk):
                 pos_name = POS_TRANSLATIONS.get(token.pos, token.pos)
                 morph_details = []
                 for feat, value in token.feats.items():
-                    feat_ru = MORPH_FEATURES_RU.get(feat, feat)
-                    value_ru = MORPH_TRANSLATIONS.get(feat, {}).get(value, value)
+                    feat_ru = MORPH_FEATURES_TRANSLATIONS.get(feat, feat)
+                    value_ru = MORPH_VALUES_TRANSLATIONS.get(feat, {}).get(value, value)
                     morph_details.append(f"{feat_ru}: {value_ru}")
                 morph_details_str = ", ".join(morph_details)
                 line = (f"Запись: {entry_id}, Токен: {token.text}, Лемма: {token.lemma}, "

@@ -28,6 +28,18 @@ class CorpusEntry:
                 feats=token.feats,
                 index=i
             )
+
+            if token_data.pos == 'DET':
+                token_data.pos = 'PRON'
+            elif token_data.pos == 'CCONJ' or token_data.pos == 'SCONJ':
+                token_data.pos = 'CONJ'
+            elif token_data.pos == 'PROPN':
+                token_data.pos = 'NOUN'
+            elif token_data.pos == 'AUX':
+                token_data.pos = 'VERB'
+
+            token_data.feats['pos'] = token_data.pos
+
             tokens.append(token_data)
         return tokens
 

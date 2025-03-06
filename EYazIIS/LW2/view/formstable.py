@@ -1,6 +1,8 @@
 from tkinter import ttk
 import tkinter as tk
 
+from dicts import MORPH_FEATURES_TRANSLATIONS, MORPH_VALUES_TRANSLATIONS
+
 
 # Класс, представляющий таблицу в правой части интерфейса
 # и обеспечивающий отображение словаря с информацией о словоформах
@@ -38,7 +40,27 @@ class FormsTable(ttk.Frame):
         for item in sorted(self.db.items(), key=lambda kvp: kvp[1]['lemma']):
             if item[0].lower().count(search_string) <= 0 and item[1]['lemma'].count(search_string) <= 0:
                 continue
-            self.table.insert('', tk.END, values=(item[0], item[1]['lemma'], item[1]['freq'], item[1]['morph']))
+            try:
+                feats = item[1]['morph']
+                self.table.insert('', tk.END, values=(
+                    item[0],
+                    item[1]['lemma'],
+                    item[1]['freq'],
+                    self.to_feats_str(feats)
+                ))
+            except:
+                print(item[0], feats)
+
+    def to_feats_str(self, feats_dict) -> str:
+        pairs = []
+
+        for feat, value in feats_dict.items():
+            key = MORPH_FEATURES_TRANSLATIONS.get(feat, feat)
+            values_dict = MORPH_VALUES_TRANSLATIONS.get(feat, {})
+            value = values_dict.get(value, value)
+            pairs.append(f"{key}: {value}")
+
+        return ", ".join(pairs)
 
     def create_table_widgets(self):
         frame = tk.Frame(self)
