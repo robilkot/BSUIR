@@ -7,22 +7,26 @@ namespace LW1.View
         private readonly Canvas _workspace;
         private readonly FlowLayoutPanel _panel;
 
+        private bool _tabSelected = false;
         private readonly List<PointHandle> _handles = [];
         private readonly List<Control> _views = [];
 
-        private IDrawingParameters _parameters;
-        public IDrawingParameters Parameters
+        private IParameters _parameters;
+        public IParameters Parameters
         {
             get => _parameters;
             set
             {
                 _parameters = value;
-
+                
                 ClearViews();
-                ClearHandles();
-
                 CreateViews();
-                CreateHandles();
+            
+                if(_tabSelected)
+                {
+                    ClearHandles();
+                    CreateHandles();
+                }
             }
         }
 
@@ -68,7 +72,6 @@ namespace LW1.View
 
         private void CreateHandles()
         {
-
             var parameters = _parameters.Properties().ToList();
             var pointParameters = parameters.OfType<Parameter<Point>>().ToList();
             var listPointParameters = parameters.OfType<ParametersList<Point>>().ToList();
@@ -108,19 +111,26 @@ namespace LW1.View
         }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public ParametersWrapper(FlowLayoutPanel panel, Canvas workspace, TabControl instrumentCluster, int v)
+        public ParametersWrapper(FlowLayoutPanel panel, Canvas workspace, TabPage tab)
         {
             _panel = panel;
             _workspace = workspace;
 
-            instrumentCluster.SelectedIndexChanged += (o, e) =>
+            var tabControl = (TabControl)tab.Parent!;
+
+            tabControl.Selected += (o, e) =>
             {
-                if (instrumentCluster.SelectedIndex == v)
+                if (e.TabPage == tab)
                 {
+                    _tabSelected = true;
                     CreateHandles();
                 }
-                else
+            };
+            tabControl.Deselected += (o, e) =>
+            {
+                if(e.TabPage == tab)
                 {
+                    _tabSelected = false;
                     ClearHandles();
                 }
             };

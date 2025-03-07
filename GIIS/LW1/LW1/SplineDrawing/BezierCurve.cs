@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.SplineDrawing.Common;
@@ -23,7 +24,7 @@ namespace LW1.SplineDrawing
 
         public IDrawingParameters EmptyParameters => new BezierCurveParameters();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if (param is not BezierCurveParameters parameters) yield break;
 
@@ -63,7 +64,11 @@ namespace LW1.SplineDrawing
                     X_T = X,
                     Y_T = Y,
                 };
-                yield return new(new(point, param.Color), info);
+                yield return new()
+                {
+                    Drawable = new ColorPoint(point, parameters.Color),
+                    DebugInfo = info,
+                };
                 
                 if(previousPoint is not null)
                 {

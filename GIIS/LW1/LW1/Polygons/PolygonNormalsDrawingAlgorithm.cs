@@ -1,6 +1,8 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
+using LW1.Polygons.Common;
 
 namespace LW1.Polygons
 {
@@ -13,7 +15,7 @@ namespace LW1.Polygons
 
         public string DisplayName => throw new NotImplementedException();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters parameters)
+        public IEnumerable<DrawInfo> Draw(IParameters parameters)
         {
             if (parameters is not PolygonParameters polygon)
                 yield break;

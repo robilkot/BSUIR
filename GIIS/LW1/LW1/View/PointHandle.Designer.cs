@@ -35,6 +35,7 @@
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Transparent;
+            DoubleBuffered = true;
             Name = "PointHandle";
             ResumeLayout(false);
         }

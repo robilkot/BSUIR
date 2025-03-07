@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.Polygons.Common;
@@ -10,7 +11,7 @@ namespace LW1.Polygons
         public IDrawingParameters EmptyParameters => new PolygonParameters();
         public string DisplayName => "Выпуклая оболочка (Грэхем)";
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters parameters)
+        public IEnumerable<DrawInfo> Draw(IParameters parameters)
         {
             if (parameters is not PolygonParameters param)
                 yield break;

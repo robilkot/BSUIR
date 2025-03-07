@@ -1,7 +1,7 @@
 ﻿using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 
-namespace LW1.Common
+namespace LW1.Common.Algorithms
 {
     public class CrossDrawingAlgorithm : IDrawingAlgorithm
     {
@@ -10,7 +10,7 @@ namespace LW1.Common
 
         public string DisplayName => throw new NotImplementedException();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters parameters)
+        public IEnumerable<DrawInfo> Draw(IParameters parameters)
         {
             if (parameters is not PointDrawingParameters pointParams)
                 yield break;
@@ -26,7 +26,7 @@ namespace LW1.Common
                 End = end,
                 Color = pointParams.Color,
             };
-            foreach(var pair in cda.Draw(lineParams)) 
+            foreach (var pair in cda.Draw(lineParams))
             {
                 yield return pair;
             }

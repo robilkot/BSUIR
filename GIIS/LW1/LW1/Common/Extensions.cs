@@ -1,4 +1,6 @@
-﻿namespace LW1.Common
+﻿using LW1.LineDrawing;
+
+namespace LW1.Common
 {
     public static class Extensions
     {
@@ -31,6 +33,13 @@
             }
 
             return list;
+        }
+
+        public static void InitWithSubtypes<T>(this ComboBox comboBox)
+        {
+            comboBox.DataSource = new List<T>().FilledWithSubtypes();
+            comboBox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
+            comboBox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
         }
     }
 }

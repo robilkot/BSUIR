@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.CurvesDrawing.Common;
 
 namespace LW1.CurvesDrawing
@@ -26,11 +27,11 @@ namespace LW1.CurvesDrawing
 
         public IDrawingParameters EmptyParameters => new CircleDrawingParameters();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if(param is not CircleDrawingParameters parameters) yield break;
 
-            IEnumerable<(ColorPoint point, DebugInfo info)> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
+            IEnumerable<DrawInfo> yieldPoint(int i, int delta, int? sigma, int? sigma_star, char? pixel, int x, int y, CircleDrawingParameters parameters)
             {
                 Point[] points = [
                     new(parameters.Center.Value.X + x, parameters.Center.Value.Y + y),
@@ -52,7 +53,11 @@ namespace LW1.CurvesDrawing
                         Pixel = pixel,
                     };
 
-                    yield return (new(point, parameters.Color.Value), info);
+                    yield return new()
+                    {
+                        Drawable = new ColorPoint(point, parameters.Color),
+                        DebugInfo = info,
+                    };
                 }
             }
 

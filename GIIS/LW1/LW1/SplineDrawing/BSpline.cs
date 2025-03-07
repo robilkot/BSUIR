@@ -1,4 +1,6 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
+using LW1.LineDrawing;
 using LW1.SplineDrawing.Common;
 
 namespace LW1.SplineDrawing
@@ -19,7 +21,7 @@ namespace LW1.SplineDrawing
 
         public IDrawingParameters EmptyParameters => new BSplineParameters();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if (param is not BSplineParameters parameters) yield break;
 
@@ -52,7 +54,11 @@ namespace LW1.SplineDrawing
                     X_T = X,
                     Y_T = Y,
                 };
-                yield return new(new(point, param.Color), info);
+                yield return new()
+                {
+                    Drawable = new ColorPoint(point, parameters.Color),
+                    DebugInfo = info,
+                };
             }
         }
 

@@ -8,6 +8,7 @@ namespace LW1.View
         {
             Parameter<int> param => CreateView(param),
             Parameter<Point> param => CreateView(param),
+            Parameter<Size> param => CreateView(param),
             Parameter<Color> param => CreateView(param),
             ParametersList<Point> param => CreateView(param),
             _ => throw new NotSupportedException()
@@ -69,7 +70,7 @@ namespace LW1.View
 
         private static FlowLayoutPanel CreateView(Parameter<int> parameter)
         {
-            var numericUpDown = new NumericUpDown() { Value = parameter.Value };
+            var numericUpDown = new NumericUpDown() { Maximum = decimal.MaxValue, Value = parameter.Value};
             numericUpDown.ValueChanged += (sender, args) =>
             {
                 var updown = sender as NumericUpDown;
@@ -88,15 +89,28 @@ namespace LW1.View
 
             return panel;
         }
-        private static GroupBox CreateView(Parameter<Point> parameter)
+
+        private static GroupBox CreateView(Parameter<Size> parameter)
         {
-            var xControl = new NumericUpDown() { Value = parameter.Value.X };
+            Parameter<Point> pointParam = new()
+            {
+                DisplayName = parameter.DisplayName,
+                Value = new(parameter.Value.Width, parameter.Value.Height),
+            };
+
+            pointParam.ParameterChanged += (value) => parameter.Value = new(value.X, value.Y);
+
+            return CreateView(pointParam, "Ширина", "Высота");
+        }
+        private static GroupBox CreateView(Parameter<Point> parameter, string xLabel = "X", string yLabel = "Y")
+        {
+            var xControl = new NumericUpDown() { Maximum = decimal.MaxValue, Value = parameter.Value.X };
             xControl.ValueChanged += (sender, args) =>
             {
                 parameter.Value = parameter.Value with { X = (int)(sender as NumericUpDown)!.Value };
             };
 
-            var yControl = new NumericUpDown() { Value = parameter.Value.Y };
+            var yControl = new NumericUpDown() { Maximum = decimal.MaxValue, Value = parameter.Value.Y};
             yControl.ValueChanged += (sender, args) =>
             {
                 parameter.Value = parameter.Value with { Y = (int)(sender as NumericUpDown)!.Value };
@@ -120,7 +134,7 @@ namespace LW1.View
                 FlowDirection = FlowDirection.LeftToRight,
                 AutoSize = true,
             };
-            panel_X.Controls.Add(CreateLabel("X"));
+            panel_X.Controls.Add(CreateLabel(xLabel));
             panel_X.Controls.Add(xControl);
 
 
@@ -129,7 +143,7 @@ namespace LW1.View
                 FlowDirection = FlowDirection.LeftToRight,
                 AutoSize = true,
             };
-            panel_Y.Controls.Add(CreateLabel("Y"));
+            panel_Y.Controls.Add(CreateLabel(yLabel));
             panel_Y.Controls.Add(yControl);
 
 

@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
@@ -21,7 +22,7 @@ namespace LW1.LineDrawing
 
         private static float FPart(float x) => x - (float)Math.Floor(x);
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 
@@ -78,9 +79,10 @@ namespace LW1.LineDrawing
                 var lower = new ColorPoint(new(lowerX, lowerY),
                     Color.FromArgb((int)(fpart * 255), color));
 
-                yield return (
-                    lower,
-                    new WuDrawInfo
+                yield return new()
+                {
+                    Drawable = lower,
+                    DebugInfo = new WuDrawInfo
                     {
                         Iteration = i,
                         X = steep ? yEnd : xEnd,
@@ -88,10 +90,12 @@ namespace LW1.LineDrawing
                         DisplayX = lowerX,
                         DisplayY = lowerY,
                         V = fpart,
-                    });
-                yield return (
-                    upper,
-                    new WuDrawInfo
+                    },
+                };
+                yield return new()
+                {
+                    Drawable = upper,
+                    DebugInfo = new WuDrawInfo
                     {
                         Iteration = i++,
                         X = steep ? yEnd : xEnd,
@@ -99,7 +103,8 @@ namespace LW1.LineDrawing
                         DisplayX = upperX,
                         DisplayY = upperY,
                         V = 1 - fpart,
-                    });
+                    },
+                };
 
                 if (xEnd >= end.X)
                     break;

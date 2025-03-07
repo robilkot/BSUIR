@@ -1,17 +1,22 @@
 ﻿using LW1.Common;
+using LW1.Common.Algorithms;
 using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.Polygons;
+using LW1.Polygons.Algorithms;
 using LW1.Polygons.Common;
 using LW1.SplineDrawing.Common;
 using LW1.View;
-using MathNet.Numerics.LinearAlgebra.Factorization;
 
 namespace LW1
 {
     public partial class MainForm : Form
     {
+        private readonly Dictionary<TabPage, int> _tabsHeight;
+
+        private readonly ParametersWrapper _appParametersWrapper;
+
         private readonly ParametersWrapper _lineParametersWrapper;
         private readonly ParametersWrapper _curveParametersWrapper;
         private readonly ParametersWrapper _splineParametersWrapper;
@@ -26,16 +31,36 @@ namespace LW1
         {
             InitializeComponent();
 
-            _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 0);
-            _curveParametersWrapper = new(CurveParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 1);
-            _splineParametersWrapper = new(SplineParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 2);
+            _tabsHeight = new()
+            {
+                { CommonTab, 200 },
+                { LinesTab, 200},
+                { SecondDegreeCurvesTab, 200},
+                { SplinesTab, 200},
+                { PolygonsTab, 300},
+            };
 
-            _polygonParametersWrapper = new(PolygonParametersLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
-            _pointBelongingParametersWrapper = new(PointBelongingLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
-            _lineIntersectionParametersWrapper = new(LineIntersectionLayoutPanel, CanvasPictureBox, InstrumentCluster, 3);
+            var appParameters = new ApplicationParameters();
+            appParameters.CanvasSize.ParameterChanged += (size) => CanvasPictureBox.Config = CanvasPictureBox.Config with { CanvasSize = size };
+            appParameters.CanvasPixelSize.ParameterChanged += (size) => CanvasPictureBox.Config = CanvasPictureBox.Config with { PixelSize = size };
 
-            _lineParametersWrapper.Parameters = new LineDrawingParameters();
-            
+            _appParametersWrapper = new(CommonParametersLayoutPanel, CanvasPictureBox, CommonTab)
+            {
+                Parameters = appParameters
+            };
+
+            _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, LinesTab)
+            {
+                Parameters = new LineDrawingParameters()
+            };
+            _curveParametersWrapper = new(CurveParametersLayoutPanel, CanvasPictureBox, SecondDegreeCurvesTab);
+            _splineParametersWrapper = new(SplineParametersLayoutPanel, CanvasPictureBox, SplinesTab);
+
+            _polygonParametersWrapper = new(PolygonParametersLayoutPanel, CanvasPictureBox, PolygonsTab);
+            _pointBelongingParametersWrapper = new(PointBelongingLayoutPanel, CanvasPictureBox, PolygonsTab);
+            _lineIntersectionParametersWrapper = new(LineIntersectionLayoutPanel, CanvasPictureBox, PolygonsTab);
+
+
             var polygonParameters = new PolygonParameters();
             polygonParameters.Color.Value = Color.DarkGreen;
             _polygonParametersWrapper.Parameters = polygonParameters;
@@ -50,32 +75,24 @@ namespace LW1
             lineIntersectParam.End.Value = new Point(53, 46);
             _lineIntersectionParametersWrapper.Parameters = lineIntersectParam;
 
-            InitCanvas();
 
-            LineDrawingAlgorithmCombobox.DataSource = new List<ILineDrawingAlgorithm>().FilledWithSubtypes();
-            LineDrawingAlgorithmCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
-            LineDrawingAlgorithmCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
+            InstrumentCluster.Selected += (object? sender, TabControlEventArgs e) =>
+            {
+                FormSplitContainer.SplitterDistance = _tabsHeight[e.TabPage!];
+            };
+            InstrumentCluster.Deselected += (object? sender, TabControlEventArgs e) =>
+            {
+                _tabsHeight[e.TabPage!] = FormSplitContainer.SplitterDistance;
+            };
+            FormSplitContainer.SplitterDistance = _tabsHeight[InstrumentCluster.SelectedTab!];
 
-            CurveTypeCombobox.DataSource = new List<ICurveDrawingAlgorithm>().FilledWithSubtypes();
-            CurveTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
-            CurveTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
-
-            SplineTypeCombobox.DataSource = new List<ISplineDrawingAlgorithm>().FilledWithSubtypes();
-            SplineTypeCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
-            SplineTypeCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
-
-            PolygonAlgorithmCombobox.DataSource = new List<IPolygonDrawingAlgorithm>().FilledWithSubtypes();
-            PolygonAlgorithmCombobox.DisplayMember = nameof(IDrawingAlgorithm.DisplayName);
-            PolygonAlgorithmCombobox.ValueMember = nameof(IDrawingAlgorithm.DisplayName);
+            LineDrawingAlgorithmCombobox.InitWithSubtypes<ILineDrawingAlgorithm>();
+            CurveTypeCombobox.InitWithSubtypes<ICurveDrawingAlgorithm>();
+            SplineTypeCombobox.InitWithSubtypes<ISplineDrawingAlgorithm>();
+            PolygonAlgorithmCombobox.InitWithSubtypes<IPolygonDrawingAlgorithm>();
         }
 
-        protected override void OnLoad(EventArgs e)
-        {
-            InstrumentCluster.SelectedIndex = -1;
-            InstrumentCluster.SelectedIndex = 0;
-        }
-
-        private async Task Draw(IDrawingAlgorithm algorithm, IDrawingParameters parameters)
+        private async Task Draw(IDrawingAlgorithm algorithm, IParameters parameters)
         {
             CancelCurrentTask();
             ClearDebugTable();
@@ -86,13 +103,13 @@ namespace LW1
             {
                 await Task.Run(async () =>
                 {
-                    foreach (var (point, info) in algorithm.Draw(parameters))
+                    foreach (var step in algorithm.Draw(parameters))
                     {
-                        CanvasPictureBox.DrawPoint(g, point.Coordinates, point.Color);
+                        CanvasPictureBox.Draw(g, step.Drawable);
 
-                        if (EnableDebugButton.Checked)
+                        if (EnableDebugButton.Checked && step.DebugInfo is not null)
                         {
-                            AddDebugSteps(info);
+                            AddDebugSteps(step.DebugInfo);
                             await Task.Delay(75, _cts.Token);
                         }
 
@@ -106,20 +123,6 @@ namespace LW1
             catch (TaskCanceledException)
             {
             }
-        }
-
-        private void InitCanvas()
-        {
-            var width = CanvasPictureBox.CanvasWidth * CanvasPictureBox.PixelSize;
-            var height = CanvasPictureBox.CanvasHeight * CanvasPictureBox.PixelSize;
-
-            CanvasPictureBox.Image = new Bitmap(width, height);
-
-            CanvasPictureBox.Width = width;
-            CanvasPictureBox.Height = height;
-
-            CanvasPictureBox.Left = (CanvasPictureBox.Parent?.Size.Width ?? 0) / 2 - width / 2;
-            CanvasPictureBox.Top = (CanvasPictureBox.Parent?.Size.Height ?? 0) / 2 - height / 2;
         }
         private void InitDebugTable(DebugInfo info)
         {
@@ -144,6 +147,11 @@ namespace LW1
                 InitDebugTable(drawInfo);
             }
 
+            if (!drawInfo.Values.Any())
+            {
+                return;
+            }
+
             DebugGridView.Invoke(() =>
             {
                 DebugGridView.Rows.Add(drawInfo.Values.ToArray());
@@ -161,7 +169,7 @@ namespace LW1
         {
             CancelCurrentTask();
             ClearDebugTable();
-            InitCanvas();
+            CanvasPictureBox.Clear();
         }
         private void CancelCurrentTask()
         {
@@ -253,7 +261,7 @@ namespace LW1
 
             await Draw(pointAlgorithm, pointParam);
 
-            var result = new BelongingCheck().Execute((polygonParam, pointParam));
+            var result = new BelongingCheck().Execute((polygonParam, pointParam.Point));
 
             string text = result ? "Точка принадлежит полигону" : "Точка не принадлежит полигону";
 

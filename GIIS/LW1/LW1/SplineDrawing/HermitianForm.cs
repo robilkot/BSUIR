@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.SplineDrawing.Common;
 using MathNet.Numerics.LinearAlgebra.Complex;
 using System.Numerics;
@@ -21,7 +22,7 @@ namespace LW1.SplineDrawing
 
         public IDrawingParameters EmptyParameters => new HermitianFormParameters();
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if (param is not HermitianFormParameters parameters) yield break;
 
@@ -58,7 +59,11 @@ namespace LW1.SplineDrawing
                     X_T = X,
                     Y_T = Y,
                 };
-                yield return new(new(point, param.Color), info);
+                yield return new()
+                {
+                    Drawable = new ColorPoint(point, parameters.Color),
+                    DebugInfo = info,
+                };
             }
         }
     }

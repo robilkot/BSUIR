@@ -1,15 +1,15 @@
 ﻿using LW1.Common;
+using LW1.Polygons.Common;
 
 namespace LW1.Polygons
 {
-    public class BelongingCheck : IAlgorithm<(PolygonParameters polygon, PointDrawingParameters pointParams), bool>
+    public class BelongingCheck : IAlgorithm<(PolygonParameters polygon, Point pointParams), bool>
     {
-        public bool Execute((PolygonParameters polygon, PointDrawingParameters pointParams) param)
+        public bool Execute((PolygonParameters polygon, Point pointParams) param)
         {
-            var (polygon, pointParams) = (param.polygon, param.pointParams);
+            var (polygon, p) = (param.polygon, param.pointParams);
 
             // Извлекаем точку и список вершин
-            Point p = pointParams.Point.Value;
             var vertices = polygon.Vertices.Select(v => v.Value).ToList();
             int n = vertices.Count;
             if (n < 3)

@@ -1,4 +1,5 @@
 ﻿using LW1.Common;
+using LW1.Common.Shapes;
 using LW1.LineDrawing.Common;
 
 namespace LW1.LineDrawing
@@ -17,7 +18,7 @@ namespace LW1.LineDrawing
         public IDrawingParameters EmptyParameters => new LineDrawingParameters();
         public string DisplayName => "ЦДА";
 
-        public IEnumerable<(ColorPoint point, DebugInfo info)> Draw(IDrawingParameters param)
+        public IEnumerable<DrawInfo> Draw(IParameters param)
         {
             if (param is not LineDrawingParameters parameters) yield break;
 
@@ -46,7 +47,11 @@ namespace LW1.LineDrawing
                     DisplayX = displayX,
                     DisplayY = displayY,
                 };
-                yield return (point, drawInfo);
+                yield return new()
+                {
+                    Drawable = point,
+                    DebugInfo = drawInfo,
+                };
 
                 x += dx;
                 y += dy;

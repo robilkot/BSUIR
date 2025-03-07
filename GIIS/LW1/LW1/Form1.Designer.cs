@@ -28,8 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             FormSplitContainer = new SplitContainer();
             InstrumentCluster = new TabControl();
+            CommonTab = new TabPage();
             LinesTab = new TabPage();
             groupBox1 = new GroupBox();
             LineParametersLayoutPanel = new FlowLayoutPanel();
@@ -51,7 +53,7 @@
             tableLayoutPanel3 = new TableLayoutPanel();
             DrawSplineButton = new Button();
             SplineTypeCombobox = new ComboBox();
-            PolygonsPage = new TabPage();
+            PolygonsTab = new TabPage();
             groupBox8 = new GroupBox();
             LineIntersectionLayoutPanel = new FlowLayoutPanel();
             IntersectLineButton = new Button();
@@ -68,14 +70,18 @@
             PolygonAlgorithmCombobox = new ComboBox();
             WorkSpaceSplitContainer = new SplitContainer();
             CanvasPictureBox = new View.Canvas();
-            DebugGridView = new DataGridView();
-            button2 = new Button();
+            panel1 = new Panel();
             EnableDebugButton = new CheckBox();
+            button2 = new Button();
+            DebugGridView = new DataGridView();
+            groupBox9 = new GroupBox();
+            CommonParametersLayoutPanel = new FlowLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)FormSplitContainer).BeginInit();
             FormSplitContainer.Panel1.SuspendLayout();
             FormSplitContainer.Panel2.SuspendLayout();
             FormSplitContainer.SuspendLayout();
             InstrumentCluster.SuspendLayout();
+            CommonTab.SuspendLayout();
             LinesTab.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox6.SuspendLayout();
@@ -88,7 +94,7 @@
             groupBox3.SuspendLayout();
             groupBox5.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
-            PolygonsPage.SuspendLayout();
+            PolygonsTab.SuspendLayout();
             groupBox8.SuspendLayout();
             groupBox7.SuspendLayout();
             PolygonParamsGroupbox.SuspendLayout();
@@ -99,7 +105,9 @@
             WorkSpaceSplitContainer.Panel2.SuspendLayout();
             WorkSpaceSplitContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).BeginInit();
+            panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DebugGridView).BeginInit();
+            groupBox9.SuspendLayout();
             SuspendLayout();
             // 
             // FormSplitContainer
@@ -125,10 +133,11 @@
             // 
             // InstrumentCluster
             // 
+            InstrumentCluster.Controls.Add(CommonTab);
             InstrumentCluster.Controls.Add(LinesTab);
             InstrumentCluster.Controls.Add(SecondDegreeCurvesTab);
             InstrumentCluster.Controls.Add(SplinesTab);
-            InstrumentCluster.Controls.Add(PolygonsPage);
+            InstrumentCluster.Controls.Add(PolygonsTab);
             InstrumentCluster.Dock = DockStyle.Fill;
             InstrumentCluster.ItemSize = new Size(150, 25);
             InstrumentCluster.Location = new Point(0, 0);
@@ -137,6 +146,17 @@
             InstrumentCluster.SelectedIndex = 0;
             InstrumentCluster.Size = new Size(1478, 231);
             InstrumentCluster.TabIndex = 0;
+            // 
+            // CommonTab
+            // 
+            CommonTab.Controls.Add(groupBox9);
+            CommonTab.Location = new Point(4, 29);
+            CommonTab.Name = "CommonTab";
+            CommonTab.Padding = new Padding(3);
+            CommonTab.Size = new Size(1470, 198);
+            CommonTab.TabIndex = 4;
+            CommonTab.Text = "Главная";
+            CommonTab.UseVisualStyleBackColor = true;
             // 
             // LinesTab
             // 
@@ -427,21 +447,21 @@
             SplineTypeCombobox.TabIndex = 0;
             SplineTypeCombobox.SelectedIndexChanged += SplineTypeCombobox_SelectedIndexChanged;
             // 
-            // PolygonsPage
+            // PolygonsTab
             // 
-            PolygonsPage.AutoScroll = true;
-            PolygonsPage.Controls.Add(groupBox8);
-            PolygonsPage.Controls.Add(groupBox7);
-            PolygonsPage.Controls.Add(PolygonParamsGroupbox);
-            PolygonsPage.Controls.Add(groupBox2);
-            PolygonsPage.Location = new Point(4, 29);
-            PolygonsPage.Margin = new Padding(4);
-            PolygonsPage.Name = "PolygonsPage";
-            PolygonsPage.Padding = new Padding(4);
-            PolygonsPage.Size = new Size(1470, 198);
-            PolygonsPage.TabIndex = 3;
-            PolygonsPage.Text = "Полигоны";
-            PolygonsPage.UseVisualStyleBackColor = true;
+            PolygonsTab.AutoScroll = true;
+            PolygonsTab.Controls.Add(groupBox8);
+            PolygonsTab.Controls.Add(groupBox7);
+            PolygonsTab.Controls.Add(PolygonParamsGroupbox);
+            PolygonsTab.Controls.Add(groupBox2);
+            PolygonsTab.Location = new Point(4, 29);
+            PolygonsTab.Margin = new Padding(4);
+            PolygonsTab.Name = "PolygonsTab";
+            PolygonsTab.Padding = new Padding(4);
+            PolygonsTab.Size = new Size(1470, 198);
+            PolygonsTab.TabIndex = 3;
+            PolygonsTab.Text = "Полигоны";
+            PolygonsTab.UseVisualStyleBackColor = true;
             // 
             // groupBox8
             // 
@@ -655,11 +675,10 @@
             // 
             // WorkSpaceSplitContainer.Panel2
             // 
+            WorkSpaceSplitContainer.Panel2.Controls.Add(panel1);
             WorkSpaceSplitContainer.Panel2.Controls.Add(DebugGridView);
-            WorkSpaceSplitContainer.Panel2.Controls.Add(button2);
-            WorkSpaceSplitContainer.Panel2.Controls.Add(EnableDebugButton);
             WorkSpaceSplitContainer.Size = new Size(1478, 705);
-            WorkSpaceSplitContainer.SplitterDistance = 863;
+            WorkSpaceSplitContainer.SplitterDistance = 1059;
             WorkSpaceSplitContainer.SplitterWidth = 5;
             WorkSpaceSplitContainer.TabIndex = 0;
             // 
@@ -668,12 +687,48 @@
             CanvasPictureBox.Anchor = AnchorStyles.None;
             CanvasPictureBox.BackColor = Color.White;
             CanvasPictureBox.BorderStyle = BorderStyle.FixedSingle;
-            CanvasPictureBox.Location = new Point(115, 26);
+            CanvasPictureBox.Cursor = Cursors.Cross;
+            CanvasPictureBox.Image = (Image)resources.GetObject("CanvasPictureBox.Image");
+            CanvasPictureBox.Location = new Point(229, 31);
             CanvasPictureBox.Margin = new Padding(2);
             CanvasPictureBox.Name = "CanvasPictureBox";
-            CanvasPictureBox.Size = new Size(640, 640);
+            CanvasPictureBox.Size = new Size(512, 512);
             CanvasPictureBox.TabIndex = 1;
             CanvasPictureBox.TabStop = false;
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(EnableDebugButton);
+            panel1.Controls.Add(button2);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(414, 40);
+            panel1.TabIndex = 4;
+            // 
+            // EnableDebugButton
+            // 
+            EnableDebugButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            EnableDebugButton.AutoSize = true;
+            EnableDebugButton.Location = new Point(6, 6);
+            EnableDebugButton.Margin = new Padding(4);
+            EnableDebugButton.Name = "EnableDebugButton";
+            EnableDebugButton.Size = new Size(163, 29);
+            EnableDebugButton.TabIndex = 0;
+            EnableDebugButton.Text = "Режим отладки";
+            EnableDebugButton.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            button2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            button2.Location = new Point(218, 3);
+            button2.Margin = new Padding(4);
+            button2.Name = "button2";
+            button2.Size = new Size(196, 36);
+            button2.TabIndex = 2;
+            button2.Text = "Очистить все";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += ClearAll_Click;
             // 
             // DebugGridView
             // 
@@ -684,35 +739,38 @@
             DebugGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             DebugGridView.BorderStyle = BorderStyle.None;
             DebugGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            DebugGridView.Location = new Point(0, 42);
+            DebugGridView.Location = new Point(0, 43);
             DebugGridView.Margin = new Padding(0);
             DebugGridView.Name = "DebugGridView";
             DebugGridView.RowHeadersWidth = 51;
-            DebugGridView.Size = new Size(545, 662);
+            DebugGridView.Size = new Size(404, 662);
             DebugGridView.TabIndex = 3;
             // 
-            // button2
+            // groupBox9
             // 
-            button2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button2.Location = new Point(341, 2);
-            button2.Margin = new Padding(4);
-            button2.Name = "button2";
-            button2.Size = new Size(196, 36);
-            button2.TabIndex = 2;
-            button2.Text = "Очистить все";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += ClearAll_Click;
+            groupBox9.AutoSize = true;
+            groupBox9.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            groupBox9.Controls.Add(CommonParametersLayoutPanel);
+            groupBox9.Dock = DockStyle.Fill;
+            groupBox9.Location = new Point(3, 3);
+            groupBox9.Margin = new Padding(4);
+            groupBox9.Name = "groupBox9";
+            groupBox9.Padding = new Padding(4);
+            groupBox9.Size = new Size(1464, 192);
+            groupBox9.TabIndex = 8;
+            groupBox9.TabStop = false;
+            groupBox9.Text = "Параметры";
             // 
-            // EnableDebugButton
+            // CommonParametersLayoutPanel
             // 
-            EnableDebugButton.AutoSize = true;
-            EnableDebugButton.Location = new Point(6, 6);
-            EnableDebugButton.Margin = new Padding(4);
-            EnableDebugButton.Name = "EnableDebugButton";
-            EnableDebugButton.Size = new Size(163, 29);
-            EnableDebugButton.TabIndex = 0;
-            EnableDebugButton.Text = "Режим отладки";
-            EnableDebugButton.UseVisualStyleBackColor = true;
+            CommonParametersLayoutPanel.AutoScroll = true;
+            CommonParametersLayoutPanel.AutoSize = true;
+            CommonParametersLayoutPanel.Dock = DockStyle.Fill;
+            CommonParametersLayoutPanel.Location = new Point(4, 28);
+            CommonParametersLayoutPanel.Margin = new Padding(4);
+            CommonParametersLayoutPanel.Name = "CommonParametersLayoutPanel";
+            CommonParametersLayoutPanel.Size = new Size(1456, 160);
+            CommonParametersLayoutPanel.TabIndex = 0;
             // 
             // MainForm
             // 
@@ -730,6 +788,8 @@
             ((System.ComponentModel.ISupportInitialize)FormSplitContainer).EndInit();
             FormSplitContainer.ResumeLayout(false);
             InstrumentCluster.ResumeLayout(false);
+            CommonTab.ResumeLayout(false);
+            CommonTab.PerformLayout();
             LinesTab.ResumeLayout(false);
             LinesTab.PerformLayout();
             groupBox1.ResumeLayout(false);
@@ -754,8 +814,8 @@
             groupBox5.PerformLayout();
             tableLayoutPanel3.ResumeLayout(false);
             tableLayoutPanel3.PerformLayout();
-            PolygonsPage.ResumeLayout(false);
-            PolygonsPage.PerformLayout();
+            PolygonsTab.ResumeLayout(false);
+            PolygonsTab.PerformLayout();
             groupBox8.ResumeLayout(false);
             groupBox8.PerformLayout();
             groupBox7.ResumeLayout(false);
@@ -768,11 +828,14 @@
             tableLayoutPanel4.PerformLayout();
             WorkSpaceSplitContainer.Panel1.ResumeLayout(false);
             WorkSpaceSplitContainer.Panel2.ResumeLayout(false);
-            WorkSpaceSplitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)WorkSpaceSplitContainer).EndInit();
             WorkSpaceSplitContainer.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)CanvasPictureBox).EndInit();
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DebugGridView).EndInit();
+            groupBox9.ResumeLayout(false);
+            groupBox9.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -806,7 +869,7 @@
         private TableLayoutPanel tableLayoutPanel2;
         private TableLayoutPanel tableLayoutPanel3;
         private GroupBox groupBox6;
-        private TabPage PolygonsPage;
+        private TabPage PolygonsTab;
         private GroupBox PolygonParamsGroupbox;
         private FlowLayoutPanel PolygonParametersLayoutPanel;
         private GroupBox groupBox2;
@@ -821,5 +884,9 @@
         private Button CheckBelongingButton;
         private Button CheckConvexButton;
         private Button DrawPolygonNormalsButton;
+        private Panel panel1;
+        private TabPage CommonTab;
+        private GroupBox groupBox9;
+        private FlowLayoutPanel CommonParametersLayoutPanel;
     }
 }

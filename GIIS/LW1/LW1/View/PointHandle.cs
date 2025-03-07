@@ -40,8 +40,8 @@ namespace LW1.View
             if (_canvas is not null)
             {
                 Location = new(
-                            Point.Value.X * _canvas.PixelSize - s_size.Width / 2,
-                            Point.Value.Y * _canvas.PixelSize - s_size.Height / 2
+                            Point.Value.X * _canvas.Config.PixelSize - s_size.Width / 2,
+                            Point.Value.Y * _canvas.Config.PixelSize - s_size.Height / 2
                             );
             }
         }
@@ -49,7 +49,13 @@ namespace LW1.View
         protected override void OnParentChanged(EventArgs e)
         {
             _canvas = Parent as Canvas;
+
             RelocatePoint(Point);
+            
+            if(_canvas is not null)
+            {
+                _canvas.CanvasConfigChanged += (config) => InitHandlers(_dot);
+            }
         }
         public PointHandle()
         {
@@ -97,32 +103,40 @@ namespace LW1.View
         private Point _mouseDownLocation;
         private void InitHandlers(PictureBox dot)
         {
-            dot.MouseDown += (o, e) =>
-            {
-                if (e.Button == System.Windows.Forms.MouseButtons.Left)
-                {
-                    _mouseDownLocation = e.Location;
-                }
-            };
-            dot.MouseMove += (o, e) =>
-            {
-                if (e.Button == System.Windows.Forms.MouseButtons.Left)
-                {
-                    int dx = e.X - _mouseDownLocation.X;
-                    int dy = e.Y - _mouseDownLocation.Y;
+            MouseEventHandler mouseDownHandler = (o, e) =>
+                        {
+                            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+                            {
+                                _mouseDownLocation = e.Location;
+                            }
+                        };
 
-                    int dx_canvas = dx / _canvas.PixelSize;
-                    int dy_canvas = dy / _canvas.PixelSize;
+            MouseEventHandler mouseMoveHandler = (o, e) =>
+                        {
+                            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+                            {
+                                int dx = e.X - _mouseDownLocation.X;
+                                int dy = e.Y - _mouseDownLocation.Y;
 
-                    if (dx_canvas != 0 || dy_canvas != 0)
-                    {
-                        var new_x = Math.Max(0, Math.Min(Point.Value.X + dx_canvas, _canvas.CanvasWidth - 1));
-                        var new_y = Math.Max(0, Math.Min(Point.Value.Y + dy_canvas, _canvas.CanvasHeight - 1));
-                        
-                        Point.Value = new(new_x, new_y);
-                    }
-                }
-            };
+                                int dx_canvas = dx / _canvas!.Config.PixelSize;
+                                int dy_canvas = dy / _canvas.Config.PixelSize;
+
+                                if (dx_canvas != 0 || dy_canvas != 0)
+                                {
+                                    var new_x = Math.Max(0, Math.Min(Point.Value.X + dx_canvas, _canvas.Config.CanvasSize.Width - 1));
+                                    var new_y = Math.Max(0, Math.Min(Point.Value.Y + dy_canvas, _canvas.Config.CanvasSize.Height - 1));
+
+                                    Point.Value = new(new_x, new_y);
+                                }
+                            }
+                        };
+
+            // Resubscribe
+            dot.MouseDown -= mouseDownHandler;
+            dot.MouseMove -= mouseMoveHandler;
+            
+            dot.MouseDown += mouseDownHandler;
+            dot.MouseMove += mouseMoveHandler;
         }
     }
 }

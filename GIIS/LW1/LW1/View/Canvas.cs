@@ -1,20 +1,72 @@
-﻿namespace LW1.View
+﻿using LW1.Common.Shapes;
+
+namespace LW1.View
 {
     public partial class Canvas : PictureBox
     {
-        public int PixelSize = 8;
-        public int CanvasWidth = 64;
-        public int CanvasHeight = 64;
+        public record CanvasConfig(int PixelSize, Size CanvasSize);
+
+        public delegate void CanvasConfigChangeHandler(CanvasConfig value);
+        public event CanvasConfigChangeHandler? CanvasConfigChanged;
+
+        private CanvasConfig _config = new(2, new Size(256, 256));
+        public CanvasConfig Config
+        {
+            get => _config;
+            set 
+            {
+                if (_config != value 
+                    && value.PixelSize > 0
+                    && value.CanvasSize.Width > 0
+                    && value.CanvasSize.Height > 0)
+                {
+                    _config = value;
+                    CanvasConfigChanged?.Invoke(value);
+                }
+            }
+        }
+        private Size ActualSize => _config.CanvasSize * _config.PixelSize;
 
         public Canvas()
         {
             InitializeComponent();
+            CanvasConfigChanged += (config) => ResizeCanvas();
         }
-        public void DrawPoint(Graphics g, Point point, Color color)
+        
+        private void ResizeCanvas()
         {
-            using var brush = new SolidBrush(color);
-                
-            g.FillRectangle(brush, point.X * PixelSize, point.Y * PixelSize, PixelSize, PixelSize);
+            Size = ActualSize;
+
+            Center();
+            Clear();
+        }
+        
+        private void Center()
+        {
+            Left = (Parent?.Size.Width ?? 0) / 2 - Width / 2;
+            Top = (Parent?.Size.Height ?? 0) / 2 - Height / 2;
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            ResizeCanvas();
+        }
+
+        public void Clear()
+        {
+            Image = new Bitmap(ActualSize.Width, ActualSize.Height);
+        }
+
+        public void Draw(Graphics g, IDrawable drawable)
+        {
+            using var brush = new SolidBrush(drawable.Color);
+
+            if (drawable is not ColorPoint point)
+                return; // todo extend
+
+            g.FillRectangle(brush, point.Coordinates.X * _config.PixelSize, point.Coordinates.Y * _config.PixelSize, _config.PixelSize, _config.PixelSize);
 
             Invalidate();
         }
