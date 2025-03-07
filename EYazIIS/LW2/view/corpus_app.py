@@ -20,11 +20,8 @@ class CorpusApp(tk.Tk):
 
         self.entries_dict = {}
 
-        self.add_text_from_file('./dataset/5.txt')
-        self.add_text_from_file('./dataset/7.txt')
-        self.add_text_from_file('./dataset/11.txt')
-        self.add_text_from_file('./dataset/17.txt')
-        self.add_text_from_file('./dataset/19.txt')
+        for i in range(1, 16):
+            self.add_text_from_file(f'./dataset/{i}.txt')
 
     def create_menu(self):
         self.menubar = tk.Menu(self)
