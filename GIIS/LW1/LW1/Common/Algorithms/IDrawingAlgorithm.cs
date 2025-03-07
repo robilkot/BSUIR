@@ -1,6 +1,6 @@
-﻿using LW1.Common;
+﻿using LW1.Common.Parameters;
 
-namespace LW1.LineDrawing
+namespace LW1.Common.Algorithms
 {
     public interface IDrawingAlgorithm : INamed
     {

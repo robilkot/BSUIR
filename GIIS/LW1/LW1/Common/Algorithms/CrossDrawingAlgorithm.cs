@@ -1,4 +1,5 @@
-﻿using LW1.LineDrawing;
+﻿using LW1.Common.Parameters;
+using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 
 namespace LW1.Common.Algorithms

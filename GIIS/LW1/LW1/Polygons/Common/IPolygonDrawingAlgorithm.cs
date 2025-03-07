@@ -1,4 +1,4 @@
-﻿using LW1.LineDrawing;
+﻿using LW1.Common.Algorithms;
 
 namespace LW1.Polygons.Common
 {

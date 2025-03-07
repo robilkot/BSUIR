@@ -1,5 +1,13 @@
-﻿namespace LW1.Common
+﻿using LW1.Common.Shapes;
+
+namespace LW1.Common.Algorithms
 {
+    public class DrawInfo
+    {
+        public required IDrawable Drawable { get; set; }
+        public DebugInfo? DebugInfo { get; set; } = null;
+    }
+
     public abstract class DebugInfo
     {
         // skipping these two properties with skiplast(2). not ideal, but let it be

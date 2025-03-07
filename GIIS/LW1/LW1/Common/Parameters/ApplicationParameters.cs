@@ -1,4 +1,6 @@
-﻿namespace LW1.Common
+﻿using LW1.Common.Parameters;
+
+namespace LW1.Common
 {
     public class ApplicationParameters : IParameters
     {

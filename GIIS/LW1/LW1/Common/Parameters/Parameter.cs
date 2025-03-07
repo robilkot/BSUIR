@@ -1,4 +1,4 @@
-﻿namespace LW1.Common
+﻿namespace LW1.Common.Parameters
 {
     public interface IParameter : INamed;
     public class Parameter<T> : IParameter
@@ -7,9 +7,11 @@
         public event ParameterChangeHandler? ParameterChanged;
 
         private T _value;
-        public required T Value { get => _value; set
+        public required T Value
+        {
+            get => _value; set
             {
-                if(!(_value?.Equals(value) ?? false))
+                if (!(_value?.Equals(value) ?? false))
                 {
                     _value = value;
                     ParameterChanged?.Invoke(_value);
@@ -42,12 +44,5 @@
             base.Remove(param);
             ParameterRemoved?.Invoke(param);
         }
-    }
-
-    public interface IParameters;
-
-    public interface IDrawingParameters : IParameters
-    {
-        public Parameter<Color> Color { get; init; }
     }
 }

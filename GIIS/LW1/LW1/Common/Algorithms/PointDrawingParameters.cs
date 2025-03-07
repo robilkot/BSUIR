@@ -1,4 +1,6 @@
-﻿namespace LW1.Common.Algorithms
+﻿using LW1.Common.Parameters;
+
+namespace LW1.Common.Algorithms
 {
     public class PointDrawingParameters : IDrawingParameters
     {

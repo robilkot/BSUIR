@@ -1,4 +1,4 @@
-﻿using LW1.Common;
+﻿using LW1.Common.Algorithms;
 using LW1.Polygons.Common;
 
 namespace LW1.Polygons.Algorithms

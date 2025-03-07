@@ -1,5 +1,6 @@
 ﻿using LW1.Common;
 using LW1.Common.Algorithms;
+using LW1.Common.Parameters;
 using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;

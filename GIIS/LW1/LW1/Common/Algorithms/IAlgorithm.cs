@@ -1,4 +1,4 @@
-﻿namespace LW1.Common
+﻿namespace LW1.Common.Algorithms
 {
     public interface IAlgorithm;
 
