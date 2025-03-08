@@ -1,6 +1,5 @@
 ﻿using LW1.Common.Algorithms;
 using LW1.Common.Parameters;
-using LW1.Common.Shapes;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.Polygons.Common;
@@ -55,11 +54,11 @@ namespace LW1.Polygons
                 {
                     if (candidate.Equals(currentPoint))
                         continue;
-                    double cross = CrossProduct(currentPoint, nextPoint, candidate);
+                    double cross = Helpers.CrossProduct(currentPoint, nextPoint, candidate);
                     // Если nextPoint равна currentPoint или кандидат находится левее относительно текущего направления,
                     // либо лежит на одной прямой, но дальше от currentPoint, выбираем кандидата.
                     if (nextPoint.Equals(currentPoint) || cross > 0 ||
-                        (Math.Abs(cross) < 1e-9 && Distance(currentPoint, candidate) > Distance(currentPoint, nextPoint)))
+                        (Math.Abs(cross) < 1e-9 && Helpers.Distance(currentPoint, candidate) > Helpers.Distance(currentPoint, nextPoint)))
                     {
                         nextPoint = candidate;
                     }
@@ -85,20 +84,6 @@ namespace LW1.Polygons
                     yield return pt;
                 }
             }
-        }
-
-        // Вспомогательный метод для вычисления векторного произведения (определение ориентации)
-        private double CrossProduct(Point a, Point b, Point c)
-        {
-            return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
-        }
-
-        // Вспомогательный метод для вычисления расстояния между двумя точками
-        private double Distance(Point a, Point b)
-        {
-            double dx = a.X - b.X;
-            double dy = a.Y - b.Y;
-            return Math.Sqrt(dx * dx + dy * dy);
         }
     }
 }

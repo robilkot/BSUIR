@@ -4,6 +4,7 @@ using LW1.Common.Parameters;
 using LW1.CurvesDrawing.Common;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
+using LW1.Other;
 using LW1.Polygons;
 using LW1.Polygons.Algorithms;
 using LW1.Polygons.Common;
@@ -25,6 +26,8 @@ namespace LW1
         private readonly ParametersWrapper _polygonParametersWrapper;
         private readonly ParametersWrapper _pointBelongingParametersWrapper;
         private readonly ParametersWrapper _lineIntersectionParametersWrapper;
+        
+        private readonly ParametersWrapper _otherParametersWrapper;
 
         private CancellationTokenSource _cts = new();
 
@@ -39,11 +42,20 @@ namespace LW1
                 { SecondDegreeCurvesTab, 200},
                 { SplinesTab, 200},
                 { PolygonsTab, 300},
+                { OtherAlgorithmsTab, 300},
             };
 
             var appParameters = new ApplicationParameters();
-            appParameters.CanvasSize.ParameterChanged += (size) => CanvasPictureBox.Config = CanvasPictureBox.Config with { CanvasSize = size };
-            appParameters.CanvasPixelSize.ParameterChanged += (size) => CanvasPictureBox.Config = CanvasPictureBox.Config with { PixelSize = size };
+            appParameters.CanvasSize.ParameterChanged += (size) =>
+            {
+                CanvasPictureBox.Config = CanvasPictureBox.Config with { CanvasSize = size };
+                WorkSpaceSplitContainer.Panel1.AutoScrollMinSize = CanvasPictureBox.Size + new Size(25, 25);
+            };
+            appParameters.CanvasPixelSize.ParameterChanged += (size) =>
+            {
+                CanvasPictureBox.Config = CanvasPictureBox.Config with { PixelSize = size };
+                WorkSpaceSplitContainer.Panel1.AutoScrollMinSize = CanvasPictureBox.Size + new Size(25, 25);
+            };
 
             _appParametersWrapper = new(CommonParametersLayoutPanel, CanvasPictureBox, CommonTab)
             {
@@ -61,6 +73,7 @@ namespace LW1
             _pointBelongingParametersWrapper = new(PointBelongingLayoutPanel, CanvasPictureBox, PolygonsTab);
             _lineIntersectionParametersWrapper = new(LineIntersectionLayoutPanel, CanvasPictureBox, PolygonsTab);
 
+            _otherParametersWrapper = new(OtherParametersPanel, CanvasPictureBox, OtherAlgorithmsTab);
 
             var polygonParameters = new PolygonParameters();
             polygonParameters.Color.Value = Color.DarkGreen;
@@ -91,6 +104,7 @@ namespace LW1
             CurveTypeCombobox.InitWithSubtypes<ICurveDrawingAlgorithm>();
             SplineTypeCombobox.InitWithSubtypes<ISplineDrawingAlgorithm>();
             PolygonAlgorithmCombobox.InitWithSubtypes<IPolygonDrawingAlgorithm>();
+            OtherAlgorithmCombobox.InitWithSubtypes<IOtherDrawingAlgorithm>();
         }
 
         private async Task Draw(IDrawingAlgorithm algorithm, IParameters parameters)
@@ -98,32 +112,26 @@ namespace LW1
             CancelCurrentTask();
             ClearDebugTable();
 
-            using var g = Graphics.FromImage(CanvasPictureBox.Image);
+            CanvasPictureBox.BeginDraw();
 
             try
             {
-                await Task.Run(async () =>
+                foreach (var step in algorithm.Draw(parameters))
                 {
-                    foreach (var step in algorithm.Draw(parameters))
+                    CanvasPictureBox.Draw(step.Drawable, EnableDebugButton.Checked);
+
+                    if (EnableDebugButton.Checked && step.DebugInfo is not null)
                     {
-                        CanvasPictureBox.Draw(g, step.Drawable);
-
-                        if (EnableDebugButton.Checked && step.DebugInfo is not null)
-                        {
-                            AddDebugSteps(step.DebugInfo);
-                            await Task.Delay(75, _cts.Token);
-                        }
-
-                        if (_cts.IsCancellationRequested)
-                        {
-                            return;
-                        }
+                        AddDebugSteps(step.DebugInfo);
+                        await Task.Delay(75, _cts.Token);
                     }
-                }, _cts.Token);
+                }
             }
             catch (TaskCanceledException)
             {
             }
+
+            CanvasPictureBox.EndDraw();
         }
         private void InitDebugTable(DebugInfo info)
         {
@@ -274,6 +282,20 @@ namespace LW1
             var normalsDrawingAlgorithm = new PolygonNormalsDrawingAlgorithm();
 
             await Draw(normalsDrawingAlgorithm, _polygonParametersWrapper.Parameters);
+        }
+
+        private async void DrawOtherButton_Click(object sender, EventArgs e)
+        {
+            IOtherDrawingAlgorithm algorithm = (IOtherDrawingAlgorithm)OtherAlgorithmCombobox.SelectedItem!;
+
+            await Draw(algorithm, _otherParametersWrapper.Parameters);
+        }
+        
+        private void OtherAlgorithmCombobox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            IDrawingAlgorithm algorithm = (IDrawingAlgorithm)OtherAlgorithmCombobox.SelectedItem!;
+
+            _otherParametersWrapper.Parameters = algorithm.EmptyParameters;
         }
     }
 }

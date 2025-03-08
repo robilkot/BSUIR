@@ -1,6 +1,5 @@
 ﻿using LW1.Common.Algorithms;
 using LW1.Common.Parameters;
-using LW1.Common.Shapes;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.Polygons.Common;
@@ -56,7 +55,7 @@ namespace LW1.Polygons
                     var q = hull.Pop();
                     var r = hull.Peek();
                     // Если тройка (r, q, pt) не образует левый поворот (то есть не против часовой стрелки), отбрасываем q.
-                    if (CrossProduct(r, q, pt) <= 0)
+                    if (Helpers.CrossProduct(r, q, pt) <= 0)
                         continue;
                     else
                     {
@@ -88,10 +87,6 @@ namespace LW1.Polygons
                     yield return pt;
                 }
             }
-        }
-        private double CrossProduct(Point a, Point b, Point c)
-        {
-            return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
         }
     }
 }

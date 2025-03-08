@@ -9,6 +9,7 @@ namespace LW1.View
         public delegate void CanvasConfigChangeHandler(CanvasConfig value);
         public event CanvasConfigChangeHandler? CanvasConfigChanged;
 
+        private Graphics _graphics;
         private CanvasConfig _config = new(2, new Size(256, 256));
         public CanvasConfig Config
         {
@@ -59,16 +60,27 @@ namespace LW1.View
             Image = new Bitmap(ActualSize.Width, ActualSize.Height);
         }
 
-        public void Draw(Graphics g, IDrawable drawable)
+        public void BeginDraw()
+        {
+            _graphics = Graphics.FromImage(Image);
+        }
+        public void EndDraw()
+        {
+            Invalidate();
+        }
+        public void Draw(IDrawable drawable, bool immediatlyUpdate)
         {
             using var brush = new SolidBrush(drawable.Color);
 
             if (drawable is not ColorPoint point)
                 return; // todo extend
 
-            g.FillRectangle(brush, point.Coordinates.X * _config.PixelSize, point.Coordinates.Y * _config.PixelSize, _config.PixelSize, _config.PixelSize);
+            _graphics.FillRectangle(brush, point.Coordinates.X * _config.PixelSize, point.Coordinates.Y * _config.PixelSize, _config.PixelSize, _config.PixelSize);
 
-            Invalidate();
+            if(immediatlyUpdate)
+            {
+                Invalidate();
+            }
         }
     }
 }
