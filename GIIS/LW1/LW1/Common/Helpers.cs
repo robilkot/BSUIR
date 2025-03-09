@@ -74,5 +74,50 @@
             double tMin = tValues.Min();
             return new PointF((float)(origin.X + tMin * dir.X), (float)(origin.Y + tMin * dir.Y));
         }
+
+        /// <summary>
+        /// Вычисляет ближайшую к прямой (определяемой точками origin и pre_end) точку из списка points.
+        /// Расстояние от точки p до прямой вычисляется по формуле:
+        ///   distance = |(p - origin) × (pre_end - origin)| / |pre_end - origin|
+        /// Для сравнения можно использовать квадрат расстояния: 
+        ///   distance² = ((p - origin) × (pre_end - origin))² / |pre_end - origin|²
+        /// </summary>
+        /// <param name="start">Первая точка, задающая прямую</param>
+        /// <param name="end">Вторая точка, задающая прямую</param>
+        /// <param name="points">Список точек, среди которых ищется ближайшая</param>
+        /// <returns>Ближайшая к прямой точка</returns>
+        public static Point FindClosestPointToLine(PointF start, PointF end, IEnumerable<Point> points)
+        {
+            // Вычисляем вектор, задающий направление прямой
+            double dx = end.X - start.X;
+            double dy = end.Y - start.Y;
+            double lineLengthSquared = dx * dx + dy * dy;
+
+            if (lineLengthSquared < 1e-9)
+                throw new ArgumentException("Точки origin и pre_end должны быть различны, иначе прямая не определена.");
+
+            Point closestPoint = default;
+            double minDistanceSquared = double.MaxValue;
+
+            foreach (var p in points)
+            {
+                // Вычисляем вектор от origin до текущей точки
+                double vx = p.X - start.X;
+                double vy = p.Y - start.Y;
+                // В 2D «векторное произведение» (скалярное значение) – это определитель:
+                // |vx  vy|
+                // |dx  dy|
+                double cross = vx * dy - vy * dx;
+                // Квадрат расстояния от p до прямой:
+                double distanceSquared = (cross * cross) / lineLengthSquared;
+
+                if (distanceSquared < minDistanceSquared)
+                {
+                    minDistanceSquared = distanceSquared;
+                    closestPoint = p;
+                }
+            }
+            return closestPoint;
+        }
     }
 }

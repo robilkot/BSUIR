@@ -154,10 +154,7 @@ namespace LW1.Other.Voronoi
                     var pre_end = new PointF(origin.X + dir.X, origin.Y + dir.Y);
 
                     // Инвертируем луч, если он "крайний" и направлен внутрь диаграммы
-                    var checkPoint = triangles
-                        .SelectMany(t => t.Select(a => a))
-                        .OrderBy(p => Distance(p, edge.A) + Distance(p, edge.B))
-                        .First(p => edge.A != p && edge.B != p);
+                    var checkPoint = FindClosestPointToLine(origin, pre_end, points);
 
                     if(Distance(checkPoint, origin) > Distance(checkPoint, pre_end))
                     {

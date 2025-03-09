@@ -21,7 +21,7 @@
         public required string DisplayName { get; init; }
 
         public static implicit operator T(Parameter<T> param) => param.Value;
-        public static implicit operator Parameter<T>(T param) => new() { DisplayName = "New parameter", Value = param };
+        public static implicit operator Parameter<T>(T param) => new() { DisplayName = "Параметр без имени", Value = param };
     }
 
     public class ParametersList<T> : List<Parameter<T>>, IParameter

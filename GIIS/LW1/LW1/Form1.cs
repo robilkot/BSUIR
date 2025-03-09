@@ -29,6 +29,7 @@ namespace LW1
         
         private readonly ParametersWrapper _otherParametersWrapper;
 
+        private int _debugStepsInterval = 75;
         private CancellationTokenSource _cts = new();
 
         public MainForm()
@@ -55,6 +56,13 @@ namespace LW1
             {
                 CanvasPictureBox.Config = CanvasPictureBox.Config with { PixelSize = size };
                 WorkSpaceSplitContainer.Panel1.AutoScrollMinSize = CanvasPictureBox.Size + new Size(25, 25);
+            };
+            appParameters.DebugStepsInterval.ParameterChanged += (interval) =>
+            {
+                if(interval > 0)
+                {
+                    _debugStepsInterval = interval;
+                }
             };
 
             _appParametersWrapper = new(CommonParametersLayoutPanel, CanvasPictureBox, CommonTab)
@@ -127,7 +135,7 @@ namespace LW1
                     if (EnableDebugButton.Checked && step.DebugInfo is not null)
                     {
                         AddDebugSteps(step.DebugInfo);
-                        await Task.Delay(75, _cts.Token);
+                        await Task.Delay(_debugStepsInterval, _cts.Token);
                     }
                 }
             }
