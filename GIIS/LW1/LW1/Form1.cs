@@ -75,6 +75,10 @@ namespace LW1
 
             _otherParametersWrapper = new(OtherParametersPanel, CanvasPictureBox, OtherAlgorithmsTab);
 
+            var otherParameters = new PolygonParameters();
+            otherParameters.Color.Value = Color.DarkGreen;
+            _otherParametersWrapper.Parameters = otherParameters;
+
             var polygonParameters = new PolygonParameters();
             polygonParameters.Color.Value = Color.DarkGreen;
             _polygonParametersWrapper.Parameters = polygonParameters;
@@ -289,13 +293,6 @@ namespace LW1
             IOtherDrawingAlgorithm algorithm = (IOtherDrawingAlgorithm)OtherAlgorithmCombobox.SelectedItem!;
 
             await Draw(algorithm, _otherParametersWrapper.Parameters);
-        }
-        
-        private void OtherAlgorithmCombobox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            IDrawingAlgorithm algorithm = (IDrawingAlgorithm)OtherAlgorithmCombobox.SelectedItem!;
-
-            _otherParametersWrapper.Parameters = algorithm.EmptyParameters;
         }
     }
 }

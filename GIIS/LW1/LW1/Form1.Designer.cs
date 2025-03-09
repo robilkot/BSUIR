@@ -733,7 +733,6 @@
             OtherAlgorithmCombobox.Name = "OtherAlgorithmCombobox";
             OtherAlgorithmCombobox.Size = new Size(188, 28);
             OtherAlgorithmCombobox.TabIndex = 0;
-            OtherAlgorithmCombobox.SelectedIndexChanged += OtherAlgorithmCombobox_SelectedIndexChanged;
             // 
             // WorkSpaceSplitContainer
             // 

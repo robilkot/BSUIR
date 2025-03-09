@@ -6,7 +6,7 @@ namespace LW1.Common.Algorithms
 {
     public class CrossDrawingAlgorithm : IDrawingAlgorithm
     {
-        private static readonly int CrossLeaf = 2;
+        private static readonly int CrossLeaf = 4;
         public IDrawingParameters EmptyParameters => new PointDrawingParameters();
 
         public string DisplayName => throw new NotImplementedException();

@@ -45,13 +45,13 @@ namespace LW1.Polygons.Fill
 
                 // Находим левую границу заливки на текущей строке
                 int xLeft = x;
-                while (!filled.Contains(new Point(xLeft - 1, y)) && Helpers.IsPointInsidePolygon(new Point(xLeft - 1, y), polygon))
+                while (!filled.Contains(new Point(xLeft - 1, y)) && Common.PolygonsHelpers.IsPointInsidePolygon(new Point(xLeft - 1, y), polygon))
                 {
                     xLeft--;
                 }
                 // Находим правую границу
                 int xRight = x;
-                while (!filled.Contains(new Point(xRight + 1, y)) && Helpers.IsPointInsidePolygon(new Point(xRight + 1, y), polygon))
+                while (!filled.Contains(new Point(xRight + 1, y)) && Common.PolygonsHelpers.IsPointInsidePolygon(new Point(xRight + 1, y), polygon))
                 {
                     xRight++;
                 }
@@ -59,7 +59,7 @@ namespace LW1.Polygons.Fill
                 for (int xi = xLeft; xi <= xRight; xi++)
                 {
                     var pt = new Point(xi, y);
-                    if (!filled.Contains(pt) && Helpers.IsPointInsidePolygon(pt, polygon))
+                    if (!filled.Contains(pt) && Common.PolygonsHelpers.IsPointInsidePolygon(pt, polygon))
                     {
                         filled.Add(pt);
                         yield return new()
@@ -74,9 +74,9 @@ namespace LW1.Polygons.Fill
                             },
                         };
                         // Если сверху/снизу есть незалитые точки – добавляем их в стек
-                        if (!filled.Contains(new Point(xi, y - 1)) && Helpers.IsPointInsidePolygon(new Point(xi, y - 1), polygon))
+                        if (!filled.Contains(new Point(xi, y - 1)) && Common.PolygonsHelpers.IsPointInsidePolygon(new Point(xi, y - 1), polygon))
                             stack.Push(new Point(xi, y - 1));
-                        if (!filled.Contains(new Point(xi, y + 1)) && Helpers.IsPointInsidePolygon(new Point(xi, y + 1), polygon))
+                        if (!filled.Contains(new Point(xi, y + 1)) && Common.PolygonsHelpers.IsPointInsidePolygon(new Point(xi, y + 1), polygon))
                             stack.Push(new Point(xi, y + 1));
                     }
                 }

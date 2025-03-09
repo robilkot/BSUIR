@@ -12,11 +12,11 @@ namespace LW1.SplineDrawing
     public class BezierCurveParameters : IDrawingParameters
     {
         public Parameter<Color> Color { get; init; } = new() { DisplayName = "Цвет", Value = System.Drawing.Color.Black };
-        public Parameter<Point> P1 { get; init; } = new() { DisplayName = "P1", Value = new(0, 0) };
-        public Parameter<Point> P2 { get; init; } = new() { DisplayName = "P2", Value = new(0, 15) };
-        public Parameter<Point> P3 { get; init; } = new() { DisplayName = "P3", Value = new(31, 5) };
-        public Parameter<Point> P4 { get; init; } = new() { DisplayName = "P4", Value = new(31, 31) };
-        public Parameter<int> Iterations { get; init; } = new() { DisplayName = "Разрешение", Value = 10 };
+        public Parameter<Point> P1 { get; init; } = new() { DisplayName = "P1", Value = new(7, 10) };
+        public Parameter<Point> P2 { get; init; } = new() { DisplayName = "P2", Value = new(19, 243) };
+        public Parameter<Point> P3 { get; init; } = new() { DisplayName = "P3", Value = new(229, 20) };
+        public Parameter<Point> P4 { get; init; } = new() { DisplayName = "P4", Value = new(221, 229) };
+        public Parameter<int> Iterations { get; init; } = new() { DisplayName = "Разрешение", Value = 15 };
     }
 
     public class BezierCurve : ISplineDrawingAlgorithm

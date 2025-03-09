@@ -3,6 +3,7 @@ using LW1.Common.Parameters;
 using LW1.LineDrawing;
 using LW1.LineDrawing.Common;
 using LW1.Polygons.Common;
+using static LW1.Common.Helpers;
 
 namespace LW1.Polygons
 {
@@ -55,7 +56,7 @@ namespace LW1.Polygons
                     var q = hull.Pop();
                     var r = hull.Peek();
                     // Если тройка (r, q, pt) не образует левый поворот (то есть не против часовой стрелки), отбрасываем q.
-                    if (Helpers.CrossProduct(r, q, pt) <= 0)
+                    if (CrossProduct(r, q, pt) <= 0)
                         continue;
                     else
                     {
