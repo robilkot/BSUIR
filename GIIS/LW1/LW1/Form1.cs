@@ -15,19 +15,19 @@ namespace LW1
 {
     public partial class MainForm : Form
     {
-        private readonly Dictionary<TabPage, int> _tabsHeight;
+        private Dictionary<TabPage, int> _tabsHeight;
 
-        private readonly ParametersWrapper _appParametersWrapper;
+        private ParametersWrapper _appParametersWrapper;
 
-        private readonly ParametersWrapper _lineParametersWrapper;
-        private readonly ParametersWrapper _curveParametersWrapper;
-        private readonly ParametersWrapper _splineParametersWrapper;
+        private ParametersWrapper _lineParametersWrapper;
+        private ParametersWrapper _curveParametersWrapper;
+        private ParametersWrapper _splineParametersWrapper;
 
-        private readonly ParametersWrapper _polygonParametersWrapper;
-        private readonly ParametersWrapper _pointBelongingParametersWrapper;
-        private readonly ParametersWrapper _lineIntersectionParametersWrapper;
-        
-        private readonly ParametersWrapper _otherParametersWrapper;
+        private ParametersWrapper _polygonParametersWrapper;
+        private ParametersWrapper _pointBelongingParametersWrapper;
+        private ParametersWrapper _lineIntersectionParametersWrapper;
+
+        private ParametersWrapper _otherParametersWrapper;
 
         private int _debugStepsInterval = 75;
         private CancellationTokenSource _cts = new();
@@ -36,6 +36,13 @@ namespace LW1
         {
             InitializeComponent();
 
+            InitAppParametersWrapper();
+            InitParametersWrappers();
+            InitInstrumentCluster();
+        }
+
+        private void InitInstrumentCluster()
+        {
             _tabsHeight = new()
             {
                 { CommonTab, 200 },
@@ -46,6 +53,25 @@ namespace LW1
                 { OtherAlgorithmsTab, 300},
             };
 
+            InstrumentCluster.Selected += (object? sender, TabControlEventArgs e) =>
+            {
+                FormSplitContainer.SplitterDistance = _tabsHeight[e.TabPage!];
+            };
+            InstrumentCluster.Deselected += (object? sender, TabControlEventArgs e) =>
+            {
+                _tabsHeight[e.TabPage!] = FormSplitContainer.SplitterDistance;
+            };
+
+            FormSplitContainer.SplitterDistance = _tabsHeight[InstrumentCluster.SelectedTab!];
+
+            LineDrawingAlgorithmCombobox.InitWithSubtypes<ILineDrawingAlgorithm>();
+            CurveTypeCombobox.InitWithSubtypes<ICurveDrawingAlgorithm>();
+            SplineTypeCombobox.InitWithSubtypes<ISplineDrawingAlgorithm>();
+            PolygonAlgorithmCombobox.InitWithSubtypes<IPolygonDrawingAlgorithm>();
+            OtherAlgorithmCombobox.InitWithSubtypes<IOtherDrawingAlgorithm>();
+        }
+        private void InitAppParametersWrapper()
+        {
             var appParameters = new ApplicationParameters();
             appParameters.CanvasSize.ParameterChanged += (size) =>
             {
@@ -59,7 +85,7 @@ namespace LW1
             };
             appParameters.DebugStepsInterval.ParameterChanged += (interval) =>
             {
-                if(interval > 0)
+                if (interval > 0)
                 {
                     _debugStepsInterval = interval;
                 }
@@ -69,7 +95,9 @@ namespace LW1
             {
                 Parameters = appParameters
             };
-
+        }
+        private void InitParametersWrappers()
+        {
             _lineParametersWrapper = new(LineParametersLayoutPanel, CanvasPictureBox, LinesTab)
             {
                 Parameters = new LineDrawingParameters()
@@ -100,23 +128,6 @@ namespace LW1
             lineIntersectParam.Start.Value = new Point(2, 48);
             lineIntersectParam.End.Value = new Point(53, 46);
             _lineIntersectionParametersWrapper.Parameters = lineIntersectParam;
-
-
-            InstrumentCluster.Selected += (object? sender, TabControlEventArgs e) =>
-            {
-                FormSplitContainer.SplitterDistance = _tabsHeight[e.TabPage!];
-            };
-            InstrumentCluster.Deselected += (object? sender, TabControlEventArgs e) =>
-            {
-                _tabsHeight[e.TabPage!] = FormSplitContainer.SplitterDistance;
-            };
-            FormSplitContainer.SplitterDistance = _tabsHeight[InstrumentCluster.SelectedTab!];
-
-            LineDrawingAlgorithmCombobox.InitWithSubtypes<ILineDrawingAlgorithm>();
-            CurveTypeCombobox.InitWithSubtypes<ICurveDrawingAlgorithm>();
-            SplineTypeCombobox.InitWithSubtypes<ISplineDrawingAlgorithm>();
-            PolygonAlgorithmCombobox.InitWithSubtypes<IPolygonDrawingAlgorithm>();
-            OtherAlgorithmCombobox.InitWithSubtypes<IOtherDrawingAlgorithm>();
         }
 
         private async Task Draw(IDrawingAlgorithm algorithm, IParameters parameters)
@@ -186,12 +197,6 @@ namespace LW1
                 DebugGridView.Columns.Clear();
             });
         }
-        private void ClearAll_Click(object sender, EventArgs e)
-        {
-            CancelCurrentTask();
-            ClearDebugTable();
-            CanvasPictureBox.Clear();
-        }
         private void CancelCurrentTask()
         {
             _cts.Cancel();
@@ -199,48 +204,48 @@ namespace LW1
             _cts = new();
         }
 
+        private void ClearAll_Click(object sender, EventArgs e)
+        {
+            CancelCurrentTask();
+            ClearDebugTable();
+            CanvasPictureBox.Clear();
+        }
         private void CurveTypeCombobox_SelectedIndexChanged(object sender, EventArgs e)
         {
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
 
             _curveParametersWrapper.Parameters = algorithm.EmptyParameters;
         }
-
         private async void DrawCurveButton_ClickAsync(object sender, EventArgs e)
         {
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)CurveTypeCombobox.SelectedItem!;
 
             await Draw(algorithm, _curveParametersWrapper.Parameters);
         }
-
         private async void DrawLineButton_Click(object sender, EventArgs e)
         {
             ILineDrawingAlgorithm algorithm = (ILineDrawingAlgorithm)LineDrawingAlgorithmCombobox.SelectedItem!;
 
             await Draw(algorithm, _lineParametersWrapper.Parameters);
         }
-
         private void SplineTypeCombobox_SelectedIndexChanged(object sender, EventArgs e)
         {
             IDrawingAlgorithm algorithm = (IDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
 
             _splineParametersWrapper.Parameters = algorithm.EmptyParameters;
         }
-
         private async void DrawSplineButton_Click(object sender, EventArgs e)
         {
             ISplineDrawingAlgorithm algorithm = (ISplineDrawingAlgorithm)SplineTypeCombobox.SelectedItem!;
 
             await Draw(algorithm, _splineParametersWrapper.Parameters);
         }
-
         private async void DrawPolygonButton_Click(object sender, EventArgs e)
         {
             IPolygonDrawingAlgorithm algorithm = (IPolygonDrawingAlgorithm)PolygonAlgorithmCombobox.SelectedItem!;
 
             await Draw(algorithm, _polygonParametersWrapper.Parameters);
         }
-
         private void CheckConvexButton_Click(object sender, EventArgs e)
         {
             var result = new ConvexCheck().Execute((PolygonParameters)_polygonParametersWrapper.Parameters);
@@ -249,7 +254,6 @@ namespace LW1
 
             MessageBox.Show(text, "Результат проверки");
         }
-
         private async void IntersectLineButton_Click(object sender, EventArgs e)
         {
             var lineAlgorithm = new CDA();
@@ -273,7 +277,6 @@ namespace LW1
                 await Draw(crossAlgorithm, crossParams);
             }
         }
-
         private async void CheckBelongingButton_Click(object sender, EventArgs e)
         {
             var polygonParam = (PolygonParameters)_polygonParametersWrapper.Parameters;
@@ -288,14 +291,12 @@ namespace LW1
 
             MessageBox.Show(text, "Результат проверки");
         }
-
         private async void DrawPolygonNormalsButton_Click(object sender, EventArgs e)
         {
             var normalsDrawingAlgorithm = new PolygonNormalsDrawingAlgorithm();
 
             await Draw(normalsDrawingAlgorithm, _polygonParametersWrapper.Parameters);
         }
-
         private async void DrawOtherButton_Click(object sender, EventArgs e)
         {
             IOtherDrawingAlgorithm algorithm = (IOtherDrawingAlgorithm)OtherAlgorithmCombobox.SelectedItem!;
