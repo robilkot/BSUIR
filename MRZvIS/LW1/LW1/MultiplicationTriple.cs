@@ -4,13 +4,13 @@
     {
         public int Index { get; init; }
         
-        public Number Multiplicand;
-        public Number Factor;
-        public Number PartialSum;
+        public required Number Multiplicand;
+        public required Number Factor;
+        public required Number PartialSum;
 
         public override string ToString() =>
-                $"mul: {Multiplicand}\n" +
-                $"fac: {Factor}\n" +
-                $"sum: {PartialSum}\n";
+                $"Множимое:        {Multiplicand}\n" +
+                $"Множитель:       {Factor}\n" +
+                $"Частичная сумма: {PartialSum}\n";
     };
 }

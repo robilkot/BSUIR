@@ -2,10 +2,10 @@
 {
     public static class Arithmetics
     {
-        public static Pipeline.PipelineStageFunction PipelineStageFunction = (MultiplicationTriple triple) =>
+        public static Pipeline.PipelineStageFunction PipelineStageFunction => (MultiplicationTriple triple) =>
         {
-            /*printf("input triple (index %zu):\n", triple->index);
-            triple->print();*/
+            Debug.Log($"Вход (индекс тройки {triple.Index}):");
+            Debug.Log(triple);
 
             if ((triple.Factor & 1) == 1)
             {
@@ -15,11 +15,11 @@
             triple.Multiplicand <<= 1;
             triple.Factor >>= 1;
 
-            //printf("output triple:\n");
-            //triple->print();
+            Debug.Log("Выход:");
+            Debug.Log(triple);
         };
 
-        public static List<Number> MultiplyPairs(List<(Number A, Number B)> pairs)
+        public static (int tacts, List<Number> numbers) Multiply(this List<(Number A, Number B)> pairs)
         {
             Pipeline pipeline = new();
 
@@ -27,13 +27,13 @@
             var resultBitDepth = sourceBitDepth * 2;
 
             int index = 0;
-            foreach (var pair in pairs)
+            foreach (var (A, B) in pairs)
             {
                 pipeline.Input.Enqueue(new()
                 {
                     Index = index++,
-                    Multiplicand = pair.A with { BitDepth = resultBitDepth },
-                    Factor = pair.B with { BitDepth = resultBitDepth },
+                    Multiplicand = A with { BitDepth = resultBitDepth },
+                    Factor = B with { BitDepth = resultBitDepth },
                     PartialSum = new Number(0, resultBitDepth)
                 });
             }
@@ -43,20 +43,27 @@
                 pipeline.AddStage(PipelineStageFunction);
             }
 
-            for (var i = 0; i < sourceBitDepth + pairs.Count; i++)
+            bool still_active = false;
+            do
             {
-                Console.Clear();
+                Debug.Clear();
 
-                pipeline.Tick();
+                still_active = pipeline.Tick();
 
-                Console.ReadKey();
-            }
+                if (Debug.Enabled)
+                {
+                    Console.ReadKey();
+                }
+            } while (still_active);
 
-            var output = pipeline.Output.Select(triple => new Number(triple.PartialSum, resultBitDepth)).ToList();
+            Debug.Log($"Количество тактов: {pipeline.CurrentTick - 1}");
 
-            Console.WriteLine($" Количество тактов: {pipeline.CurrentTick - 1}\n");
-
-            return output;
+            return (
+                pipeline.CurrentTick - 1, 
+                pipeline.Output
+                    .Select(triple => new Number(triple.PartialSum, resultBitDepth))
+                    .ToList()
+                    );
         }
     }
 }

@@ -23,5 +23,12 @@
 
             return result;
         }
+
+        public static Number operator +(Number num, Number other)
+            => num with { Data = num.Data + other.Data };
+        public static Number operator <<(Number num, int count)
+            => num with { Data = num.Data << count };
+        public static Number operator >>(Number num, int count)
+            => num with { Data = num.Data >> count };
     }
 }

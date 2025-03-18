@@ -29,22 +29,22 @@
             Stages.Add(new PipelineStage(Stages.Count, func));
         }
 
-        public void Tick()
+        public bool Tick()
         {
-            Console.WriteLine($"\nТАКТ {CurrentTick}\n\n");
-
-            Console.WriteLine("Входная очередь:\n");
+            Debug.Log($"\nТАКТ {CurrentTick++}");
+            Debug.Log();
+            Debug.Log("Входная очередь:");
             foreach (var triple in Input)
             {
-                Console.WriteLine($"{triple.Multiplicand}, {triple.Factor}\n");
+                Debug.Log($"{(uint)triple.Multiplicand} ({triple.Multiplicand}), {(uint)triple.Factor} ({triple.Factor})");
             }
-            Console.WriteLine();
+            Debug.Log();
 
             foreach (var stage in Stages)
             {
-                Console.WriteLine($"Этап {stage.Index}\n");
+                Debug.Log($"Этап {stage.Index}");
                 stage.Execute();
-                Console.WriteLine();
+                Debug.Log();
             }
 
             var lastData = Stages.Last().Data;
@@ -60,14 +60,15 @@
 
             Stages.First().Data = Input.Count > 0 ? Input.Dequeue() : null;
 
-            Console.WriteLine("Выход:\n");
+            Debug.Log("Выход:");
             foreach (var triple in Output)
             {
-                Console.WriteLine($"{triple.PartialSum}\n");
+                Debug.Log($"{triple.PartialSum}");
             }
-            Console.WriteLine();
+            Debug.Log();
 
-            CurrentTick++;
+            var nonEmptyStagesCount = Stages.Count(stage => stage.Data is not null);
+            return nonEmptyStagesCount > 0 || CurrentTick == 1;
         }
     };
 }
