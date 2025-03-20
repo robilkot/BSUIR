@@ -31,12 +31,16 @@
 
         public bool Tick()
         {
-            Debug.Log($"\nТАКТ {CurrentTick++}");
-            Debug.Log();
-            Debug.Log("Входная очередь:");
+            if(Stages.Count == 0)
+            {
+                CurrentTick++;
+                return false;
+            }
+
+            Debug.Log($"\nТАКТ {CurrentTick++}\nВходная очередь:");
             foreach (var triple in Input)
             {
-                Debug.Log($"{(uint)triple.Multiplicand} ({triple.Multiplicand}), {(uint)triple.Factor} ({triple.Factor})");
+                Debug.Log($"{(uint)triple.Multiplicand}\t({triple.Multiplicand}), {(uint)triple.Factor}\t({triple.Factor})");
             }
             Debug.Log();
 
@@ -63,7 +67,7 @@
             Debug.Log("Выход:");
             foreach (var triple in Output)
             {
-                Debug.Log($"{triple.PartialSum}");
+                Debug.Log($"{(uint)triple.PartialSum}\t({triple.PartialSum})");
             }
             Debug.Log();
 

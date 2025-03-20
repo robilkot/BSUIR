@@ -4,8 +4,7 @@
     {
         public static Pipeline.PipelineStageFunction PipelineStageFunction => (MultiplicationTriple triple) =>
         {
-            Debug.Log($"Вход (индекс тройки {triple.Index}):");
-            Debug.Log(triple);
+            Debug.Log($"Вход (тройка с индексом {triple.Index}):", triple);
 
             if ((triple.Factor & 1) == 1)
             {
@@ -15,12 +14,16 @@
             triple.Multiplicand <<= 1;
             triple.Factor >>= 1;
 
-            Debug.Log("Выход:");
-            Debug.Log(triple);
+            Debug.Log("Выход:", triple);
         };
 
         public static (int tacts, List<Number> numbers) Multiply(this List<(Number A, Number B)> pairs)
         {
+            if (pairs.Count == 0)
+            {
+                return (0, []);
+            }
+
             Pipeline pipeline = new();
 
             var sourceBitDepth = pairs.First().A.BitDepth;
@@ -46,20 +49,19 @@
             bool still_active = false;
             do
             {
+                if (Debug.Enabled && still_active)
+                {
+                    Console.ReadKey();
+                }
+
                 Debug.Clear();
 
                 still_active = pipeline.Tick();
 
-                if (Debug.Enabled)
-                {
-                    Console.ReadKey();
-                }
             } while (still_active);
 
-            Debug.Log($"Количество тактов: {pipeline.CurrentTick - 1}");
-
             return (
-                pipeline.CurrentTick - 1, 
+                pipeline.CurrentTick - 1,
                 pipeline.Output
                     .Select(triple => new Number(triple.PartialSum, resultBitDepth))
                     .ToList()
