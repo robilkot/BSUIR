@@ -1,4 +1,14 @@
-﻿namespace LW1
+﻿// Лабораторная работа №1 по дисциплине МРЗвИС
+// Вариант 1: алгоритм вычисления произведения пары 4-разрядных чисел умножением с младших разрядов со сдвигом множимого (частичного произведения) влево
+// Выполнил студент группы 221701 БГУИР Робилко Тимур Маркович
+//
+// Файл, содержащий класс конвейера
+//
+// Источники:
+// - Формальные модели обработки информации и параллельные модели решения задач : учеб.-метод. пособие / В. П. Ивашенко. – Минск : БГУИР, 2020
+
+
+namespace LW1
 {
     public class Pipeline
     {
@@ -40,7 +50,7 @@
             Debug.Log($"\nТАКТ {CurrentTick++}\nВходная очередь:");
             foreach (var triple in Input)
             {
-                Debug.Log($"{(uint)triple.Multiplicand}\t({triple.Multiplicand}), {(uint)triple.Factor}\t({triple.Factor})");
+                Debug.Log($"{triple.Multiplicand}\t({(uint)triple.Multiplicand}),\t{triple.Factor}\t({(uint)triple.Factor})");
             }
             Debug.Log();
 
@@ -67,7 +77,7 @@
             Debug.Log("Выход:");
             foreach (var triple in Output)
             {
-                Debug.Log($"{(uint)triple.PartialSum}\t({triple.PartialSum})");
+                Debug.Log($"{triple.PartialSum}\t({(uint)triple.PartialSum})");
             }
             Debug.Log();
 
