@@ -178,48 +178,45 @@ def parse_syntax(sentence: Sentence) -> SentenceSyntax:
     doc.tag_morph(morph_tagger)
     doc.parse_syntax(syntax_parser)
 
-    doc_sents = list(doc.sents)
+    natasha_sent = list(doc.sents)[0]
     syntax_tokens = []
-    for sent, natasha_sent in zip(sentences, doc_sents):
 
+    def find_token(start, stop):
+        for token in sentence.tokens:
+            if token.start_idx == start and token.end_idx == stop:
+                return token
+        return None
 
-        def find_token(start, stop):
-            for token in sent.tokens:
-                if token.start_idx == start and token.end_idx == stop:
-                    return token
-            return None
+    for token in natasha_sent.tokens:
+        rel = SYNTAX_REL_MAPPING.get(token.rel, SyntaxRelation.nmod)
 
-        for token in natasha_sent.tokens:
-            rel = SYNTAX_REL_MAPPING.get(token.rel, SyntaxRelation.nmod)
-
-            matched_token = find_token(token.start, token.stop)
-            if matched_token is None:
-                matched_token = SentenceToken(
-                    start_idx=token.start,
-                    end_idx=token.stop,
-                    pos=POS_MAPPING.get(token.pos, PartOfSpeech.x),
-                    lemma=token.lemma,
-                    morph_info=token.morph.to_dict() if hasattr(token, 'morph') and callable(
-                        getattr(token.morph, "to_dict", None)) else None
-                )
-            else:
-                if not matched_token.lemma:
-                    matched_token.lemma = token.lemma
-                if not matched_token.morph_info and hasattr(token, 'morph') and callable(
-                        getattr(token.morph, "to_dict", None)):
-                    matched_token.morph_info = token.morph.to_dict()
-
-            head_id = getattr(token, 'head', -1)
-
-            stoken = SyntaxToken(
-                token=matched_token,
-                id=token.id,
-                head_id=head_id,
-                relation=rel,
+        matched_token = find_token(token.start, token.stop)
+        if matched_token is None:
+            matched_token = SentenceToken(
+                start_idx=token.start,
+                end_idx=token.stop,
+                pos=POS_MAPPING.get(token.pos, PartOfSpeech.x),
+                lemma=token.lemma,
+                morph_info=token.morph.to_dict() if hasattr(token, 'morph') and callable(getattr(token.morph, "to_dict", None)) else None
             )
-            syntax_tokens.append(stoken)
+        else:
+            if not matched_token.lemma:
+                matched_token.lemma = token.lemma
+            if not matched_token.morph_info and hasattr(token, 'morph') and callable(getattr(token.morph, "to_dict", None)):
+                matched_token.morph_info = token.morph.to_dict()
+
+        head_id = getattr(token, 'head', -1)
+
+        stoken = SyntaxToken(
+            token=matched_token,
+            id=token.id,
+            head_id=head_id,
+            relation=rel,
+        )
+        syntax_tokens.append(stoken)
 
     return SentenceSyntax(tokens=syntax_tokens)
+
 
 
 def parse_semantics(sentence: Sentence) -> SentenceSemantics:
