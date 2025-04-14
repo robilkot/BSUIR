@@ -1,9 +1,7 @@
-﻿using DynamicData;
-using ReactiveUI;
+﻿using ReactiveUI;
 using SentenceAnalysisClient.Model;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
@@ -25,7 +23,7 @@ namespace SentenceAnalysisClient.ViewModels
             }
         }
 
-        private List<SentenceViewModel>? _sentences;
+        private List<SentenceViewModel>? _sentences = null;
         public List<SentenceViewModel>? Sentences
         {
             get => _sentences;

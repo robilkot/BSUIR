@@ -13,7 +13,7 @@ namespace SentenceAnalysisClient.ViewModels
             set => this.RaiseAndSetIfChanged(ref _newText, value);
         }
 
-        private TextViewModel? _selectedText;
+        private TextViewModel? _selectedText = null;
         public TextViewModel? SelectedText
         {
             get => _selectedText;
@@ -24,6 +24,7 @@ namespace SentenceAnalysisClient.ViewModels
 
 
         public ReactiveCommand<Unit, Unit> AddTextCommand { get; }
+        public ReactiveCommand<TextViewModel, Unit> DeleteTextCommand { get; }
 
         public MainWindowViewModel()
         {
@@ -33,6 +34,8 @@ namespace SentenceAnalysisClient.ViewModels
                 );
 
             AddTextCommand = ReactiveCommand.Create(AddText, canAddText);
+
+            DeleteTextCommand = ReactiveCommand.Create<TextViewModel>(DeleteText);
 
             Texts = [
                 new() {
@@ -44,6 +47,10 @@ namespace SentenceAnalysisClient.ViewModels
                 ];
         }
 
+        private void DeleteText(TextViewModel model)
+        {
+            Texts.Remove(model);
+        }
         private void AddText()
         {
             Texts.Add(new() { Text = NewText });
