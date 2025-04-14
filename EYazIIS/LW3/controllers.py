@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
@@ -5,6 +6,8 @@ from datetime import datetime
 from model.model import *
 
 app = FastAPI(title="NLP Processing API", description="API for Russian text processing")
+
+logger = logging.getLogger('uvicorn.info')
 
 
 # Request models
@@ -66,6 +69,7 @@ async def split_into_sentences(request: TextRequest):
             }
             response_sentences.append(response_sentence)
 
+        # logger.info(str(response_sentences).encode('utf-8').decode('utf-8'))
         return SentencesResponse(sentences=response_sentences)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -75,6 +79,8 @@ async def split_into_sentences(request: TextRequest):
 async def parse_sentence_syntax(request: SentenceRequest):
     """Parse syntactic structure of a sentence"""
     try:
+        logger.info(str(request))
+
         # Convert request data back to Sentence object
         sentence = Sentence(
             text=request.text,
@@ -86,6 +92,7 @@ async def parse_sentence_syntax(request: SentenceRequest):
         # Process syntax parsing
         syntax_result = parse_syntax(sentence)
 
+        logger.info(str(sentence))
         return SentenceResponse(
             text=sentence.text,
             tokens=[token_to_dict(token) for token in sentence.tokens],
@@ -95,6 +102,7 @@ async def parse_sentence_syntax(request: SentenceRequest):
                                for token in syntax_result.tokens]}
         )
     except Exception as e:
+        logger.error(str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -111,6 +119,7 @@ async def parse_sentence_semantics(request: SentenceRequest):
 
         semantics_result = parse_semantics(sentence)
 
+        logger.info(str(sentence))
         return SentenceResponse(
             text=sentence.text,
             tokens=[token_to_dict(token) for token in sentence.tokens],
