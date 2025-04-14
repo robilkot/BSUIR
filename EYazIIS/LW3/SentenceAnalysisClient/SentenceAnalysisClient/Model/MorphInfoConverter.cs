@@ -23,6 +23,7 @@ namespace SentenceAnalysisClient.Model
             { "Animacy", "Одушевлённость" },
             { "Variant", "Форма" },
             { "Polarity", "Значение" },
+            { "Foreign", "Иностранное" },
         };
 
         private static readonly Dictionary<string, Dictionary<string, string>> MORPH_VALUES_TRANSLATIONS = new()
@@ -67,6 +68,11 @@ namespace SentenceAnalysisClient.Model
                 {
                     {"Sing", "единственное"},
                     {"Plur", "множественное"}
+                }
+            },
+            {"Foreign", new()
+                {
+                    {"Yes", "да"}
                 }
             },
             {"Person", new()
