@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Reactive;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SentenceAnalysisClient.ViewModels
@@ -55,13 +54,7 @@ namespace SentenceAnalysisClient.ViewModels
                 response.EnsureSuccessStatusCode();
                 var js = await response.Content.ReadAsStringAsync();
 
-                var options = new JsonSerializerOptions()
-                {
-                    PropertyNameCaseInsensitive = true,
-                };
-                options.Converters.Add(new HeadIdConverter());
-
-                var result = await response.Content.ReadFromJsonAsync<SentenceResponse>(options);
+                var result = await response.Content.ReadFromJsonAsync<SentenceResponse>();
                 SyntaxTokens = result.Syntax.Tokens;
             }
             catch (Exception ex)
@@ -70,18 +63,5 @@ namespace SentenceAnalysisClient.ViewModels
                 //await MessageBox.Show(GetParentWindow(), $"Error: {ex.Message}", "Error");
             }
         }
-    }
-
-    public class SentenceTokenViewModel : ViewModelBase
-    {
-        public required string Text { get; set; }
-        public int StartIdx { get; set; }
-        public int EndIdx { get; set; }
-        public PartOfSpeech? Pos { get; set; }
-        public string? Lemma { get; set; }
-        public Dictionary<string, string>? MorphInfo { get; set; }
-
-        public string Tooltip =>
-            $"POS: {Pos}\nLemma: {Lemma}\nMorph: {string.Join(", ", MorphInfo?.Select(kv => $"{kv.Key}:{kv.Value}") ?? [])}";
     }
 }

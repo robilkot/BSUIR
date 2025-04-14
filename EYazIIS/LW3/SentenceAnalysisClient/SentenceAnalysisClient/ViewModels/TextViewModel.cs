@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Controls;
+using ReactiveUI;
 using SentenceAnalysisClient.Model;
 using System;
 using System.Collections.Generic;

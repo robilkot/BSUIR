@@ -2,7 +2,7 @@
 {
     public enum PartOfSpeech
     {
-        noun,     // Существительное
+        noun = 1, // Существительное
         verb,     // Глагол
         adj,      // Прилагательное
         adv,      // Наречие

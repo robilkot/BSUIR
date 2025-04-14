@@ -141,7 +141,7 @@ def text_to_sentences(text: str) -> list[Sentence]:
             end_idx = token.stop
             pos_str = token.pos or 'x'
             try:
-                pos_enum = PartOfSpeech[pos_str]
+                pos_enum = POS_MAPPING[pos_str]
             except KeyError:
                 pos_enum = PartOfSpeech.x
 
@@ -205,7 +205,7 @@ def parse_syntax(sentence: Sentence) -> SentenceSyntax:
             if not matched_token.morph_info and hasattr(token, 'morph') and callable(getattr(token.morph, "to_dict", None)):
                 matched_token.morph_info = token.morph.to_dict()
 
-        head_id = getattr(token, 'head', -1)
+        head_id = getattr(token, 'head_id', -1)
 
         stoken = SyntaxToken(
             token=matched_token,
