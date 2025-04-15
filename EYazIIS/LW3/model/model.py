@@ -46,6 +46,7 @@ class PartOfSpeech(Enum):
     det = auto() # "Артикль или указательные слова"
     punct = auto() # "Знаки препинания"
     sym = auto() # "Символы"
+    propn = auto() # "Имя собственное"
     x = auto() # "Неопределенная часть речи"
 
 POS_MAPPING = {
@@ -63,6 +64,7 @@ POS_MAPPING = {
     'DET': PartOfSpeech.det,
     'PUNCT': PartOfSpeech.punct,
     'SYM': PartOfSpeech.sym,
+    'PROPN': PartOfSpeech.propn,
     'X': PartOfSpeech.x,
 }
 
@@ -88,27 +90,33 @@ SYNTAX_REL_MAPPING = {
         'nmod': SyntaxRelation.nmod,
     }
 
-@dataclass
-class SentenceToken:
-    start_idx: int  # start index in sentence string
-    end_idx: int  # end index in sentence string
-    pos: PartOfSpeech
-    lemma: str | None = None
-    morph_info: dict | None = None
-
 
 @dataclass
-class SyntaxToken:
-    token: SentenceToken
+class Syntax:
     id: int
     head_id: int
     relation: SyntaxRelation
 
+@dataclass
+class Morphology:
+    pos: PartOfSpeech
+    lemma: str | None = None
+    morph_info: dict | None = None
+
+@dataclass
+class SentenceToken:
+    start_idx: int  # start index in sentence string
+    end_idx: int  # end index in sentence string
+    syntax: Syntax | None = None
+    morphology: Morphology | None = None
 
 @dataclass
 class SentenceSyntax:
-    tokens: list[SyntaxToken]
+    tokens: list[Syntax]
 
+@dataclass
+class SentenceMorphology:
+    tokens: list[Morphology]
 
 @dataclass
 class SentenceSemantics:
@@ -129,41 +137,18 @@ class Sentence:
 def text_to_sentences(text: str) -> list[Sentence]:
     doc = Doc(text)
     doc.segment(segmenter)
-    doc.tag_morph(morph_tagger)
 
     sentences = []
     for sent_idx, sent in enumerate(doc.sents, start=1):
         tokens = []
         for token in sent.tokens:
-            token.lemmatize(morph_vocab)
-
             start_idx = token.start
             end_idx = token.stop
-            pos_str = token.pos or 'x'
-            try:
-                pos_enum = POS_MAPPING[pos_str]
-            except KeyError:
-                pos_enum = PartOfSpeech.x
-
-            morph_info = None
-            if token.feats:
-                if isinstance(token.feats, str):
-                    morph_info = {}
-                    feats = token.feats.split('|')
-                    for feat in feats:
-                        if '=' in feat:
-                            key, value = feat.split('=', 1)
-                            morph_info[key] = value
-                elif isinstance(token.feats, dict):
-                    morph_info = token.feats
 
             tokens.append(
                 SentenceToken(
                     start_idx=start_idx,
                     end_idx=end_idx,
-                    pos=pos_enum,
-                    lemma=token.lemma,
-                    morph_info=morph_info
                 )
             )
         sentence = Sentence(text=sent.text, tokens=tokens)
@@ -171,9 +156,27 @@ def text_to_sentences(text: str) -> list[Sentence]:
 
     return sentences
 
+def parse_morphology(sentence: str) -> SentenceMorphology:
+    doc = Doc(sentence)
+    doc.segment(segmenter)
+    doc.tag_morph(morph_tagger)
 
-def parse_syntax(sentence: Sentence) -> SentenceSyntax:
-    doc = Doc(sentence.text)
+    morph_tokens = []
+
+    for token in doc.sents[0].tokens:
+        token.lemmatize(morph_vocab)
+
+        mtoken = Morphology(
+            pos = POS_MAPPING[token.pos],
+            lemma = token.lemma,
+            morph_info=token.feats
+        )
+        morph_tokens.append(mtoken)
+
+    return SentenceMorphology(tokens=morph_tokens)
+
+def parse_syntax(sentence: str) -> SentenceSyntax:
+    doc = Doc(sentence)
     doc.segment(segmenter)
     doc.tag_morph(morph_tagger)
     doc.parse_syntax(syntax_parser)
@@ -181,34 +184,12 @@ def parse_syntax(sentence: Sentence) -> SentenceSyntax:
     natasha_sent = list(doc.sents)[0]
     syntax_tokens = []
 
-    def find_token(start, stop):
-        for token in sentence.tokens:
-            if token.start_idx == start and token.end_idx == stop:
-                return token
-        return None
-
     for token in natasha_sent.tokens:
         rel = SYNTAX_REL_MAPPING.get(token.rel, SyntaxRelation.nmod)
 
-        matched_token = find_token(token.start, token.stop)
-        if matched_token is None:
-            matched_token = SentenceToken(
-                start_idx=token.start,
-                end_idx=token.stop,
-                pos=POS_MAPPING.get(token.pos, PartOfSpeech.x),
-                lemma=token.lemma,
-                morph_info=token.morph.to_dict() if hasattr(token, 'morph') and callable(getattr(token.morph, "to_dict", None)) else None
-            )
-        else:
-            if not matched_token.lemma:
-                matched_token.lemma = token.lemma
-            if not matched_token.morph_info and hasattr(token, 'morph') and callable(getattr(token.morph, "to_dict", None)):
-                matched_token.morph_info = token.morph.to_dict()
-
         head_id = getattr(token, 'head_id', -1)
 
-        stoken = SyntaxToken(
-            token=matched_token,
+        stoken = Syntax(
             id=token.id,
             head_id=head_id,
             relation=rel,
@@ -218,24 +199,24 @@ def parse_syntax(sentence: Sentence) -> SentenceSyntax:
     return SentenceSyntax(tokens=syntax_tokens)
 
 
-
-def parse_semantics(sentence: Sentence) -> SentenceSemantics:
+def parse_semantics(sentence: str) -> SentenceSemantics:
     from natasha import NewsNERTagger
 
-    doc = Doc(sentence.text)
+    doc = Doc(sentence)
     doc.segment(segmenter)
     doc.tag_ner(NewsNERTagger(embedding))
 
     entities = [span.text for span in doc.spans] if doc.spans else []
 
     core_predicate = None
-    if sentence.syntax:
-        for syntax_token in sentence.syntax.tokens:
-            if syntax_token.relation == SyntaxRelation.root:
-                token = syntax_token.token
-                if token.pos == PartOfSpeech.verb:
-                    core_predicate = token.lemma or sentence.text[token.start_idx:token.end_idx]
-                    break
+    # todo repair
+    # if sentence.syntax:
+    #     for syntax_token in sentence.syntax.tokens:
+    #         if syntax_token.relation == SyntaxRelation.root:
+    #             token = syntax_token.token
+    #             if token.pos == PartOfSpeech.verb:
+    #                 core_predicate = token.lemma or sentence.text[token.start_idx:token.end_idx]
+    #                 break
 
     return SentenceSemantics(entities=entities, core_predicate=core_predicate)
 
@@ -246,11 +227,10 @@ if __name__ == '__main__':
 
     for i, sentence in enumerate(sentences):
         print(sentence)
-        sentence.syntax = parse_syntax(sentence)
+        sentence.syntax = parse_syntax(sentence.text)
 
-        sentence.semantics = parse_semantics(sentence)
+        sentence.semantics = parse_semantics(sentence.text)
 
         print(sentence.tokens)
         print(sentence.syntax)
         print(sentence.semantics)
-        # todo выводитьв человеческом виде

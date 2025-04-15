@@ -19,8 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\SentenceTokenView.axaml.cs">
-      <DependentUpon>SentenceTokenView.axaml</DependentUpon>
+    <Compile Update="Views\Sentence\TokenSyntaxView.axaml.cs">
+      <DependentUpon>TokenSyntaxView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Sentence\TokenMorphologyView.axaml.cs">
+      <DependentUpon>TokenMorphologyView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

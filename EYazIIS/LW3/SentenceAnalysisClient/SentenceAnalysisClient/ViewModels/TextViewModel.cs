@@ -55,14 +55,11 @@ namespace SentenceAnalysisClient.ViewModels
                     new SentenceViewModel
                     {
                         Text = sentence.Text,
-                        Tokens = sentence.Tokens.Select(t => new SentenceTokenViewModel
+                        Tokens = sentence.Tokens.Select(t => new SentenceTokenViewModel()
                         {
                             Text = Text[t.start_idx..t.end_idx],
                             StartIdx = t.start_idx,
                             EndIdx = t.end_idx,
-                            Pos = t.pos,
-                            Lemma = t.lemma,
-                            MorphInfo = t.morph_info
                         })
                         .ToList()
                     }).ToList();
@@ -72,7 +69,6 @@ namespace SentenceAnalysisClient.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error: {ex.Message}", "Error");
-                //await MessageBox.Show(GetParentWindow(), $"Error: {ex.Message}", "Error");
             }
         }
     }

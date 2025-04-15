@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace SentenceAnalysisClient.Views;
+namespace SentenceAnalysisClient.Views.Sentence;
 
 public partial class SentenceView : UserControl
 {

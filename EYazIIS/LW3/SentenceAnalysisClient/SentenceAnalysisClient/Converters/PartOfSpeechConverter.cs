@@ -1,9 +1,10 @@
 ﻿using Avalonia.Data.Converters;
+using SentenceAnalysisClient.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace SentenceAnalysisClient.Model
+namespace SentenceAnalysisClient.Converters
 {
     public class PartOfSpeechConverter : IValueConverter
     {
@@ -22,6 +23,7 @@ namespace SentenceAnalysisClient.Model
             { PartOfSpeech.det, "Артикль или указательное слово" },
             { PartOfSpeech.punct, "Знак препинания" },
             { PartOfSpeech.sym, "Символ" },
+            { PartOfSpeech.propn, "Имя собственное" },
             { PartOfSpeech.x, "Неопределенная часть речи" }
         };
 

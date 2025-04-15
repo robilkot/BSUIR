@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace SentenceAnalysisClient.Model
+namespace SentenceAnalysisClient.Converters
 {
     public class MorphInfoConverter : IValueConverter
     {
@@ -123,10 +123,15 @@ namespace SentenceAnalysisClient.Model
             }
         };
 
+        private static readonly string EmptyMorphInfo = "отсутствуют";
+
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is Dictionary<string, string> dict)
             {
+                if (dict.Count == 0)
+                    return EmptyMorphInfo;
+
                 var result = new List<string>();
 
                 foreach (var pair in dict)
@@ -142,12 +147,7 @@ namespace SentenceAnalysisClient.Model
                 return string.Join(", ", result);
             }
 
-            if(value is null)
-            {
-                return "отсутствуют";
-            }
-
-            return "ошибка отображения";
+            throw new NotImplementedException();
         }
 
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

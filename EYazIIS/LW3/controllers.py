@@ -17,40 +17,24 @@ class TextRequest(BaseModel):
 
 class SentenceRequest(BaseModel):
     text: str
-    tokens: List[dict]
 
+
+class SyntaxResponse(BaseModel):
+    tokens: list[Syntax]
+
+class MorphologyResponse(BaseModel):
+    tokens: list[Morphology]
 
 # Response models
 class SentenceResponse(BaseModel):
     text: str
-    tokens: List[dict]
-    syntax: Optional[dict] = None
-    semantics: Optional[dict] = None
+    tokens: List[SentenceToken]
+    syntax: Optional[SentenceSyntax] = None
+    semantics: Optional[SentenceSemantics] = None
 
 
 class SentencesResponse(BaseModel):
     sentences: List[SentenceResponse]
-
-
-# Convert SentenceToken to/from dictionary for serialization
-def token_to_dict(token: SentenceToken) -> dict:
-    return {
-        "start_idx": token.start_idx,
-        "end_idx": token.end_idx,
-        "pos": token.pos,
-        "lemma": token.lemma,
-        "morph_info": token.morph_info
-    }
-
-
-def dict_to_token(data: dict) -> SentenceToken:
-    return SentenceToken(
-        start_idx=data["start_idx"],
-        end_idx=data["end_idx"],
-        pos=data.get("pos"),
-        lemma=data.get("lemma"),
-        morph_info=data.get("morph_info")
-    )
 
 
 @app.post("/text-to-sentences", response_model=SentencesResponse)
@@ -61,12 +45,7 @@ async def split_into_sentences(request: TextRequest):
 
         response_sentences = []
         for sentence in sentences:
-            response_sentence = {
-                "text": sentence.text,
-                "tokens": [token_to_dict(token) for token in sentence.tokens],
-                "syntax": None,
-                "semantics": None
-            }
+            response_sentence = SentenceResponse(text=sentence.text, tokens=sentence.tokens)
             response_sentences.append(response_sentence)
 
         # logger.info(str(response_sentences).encode('utf-8').decode('utf-8'))
@@ -75,58 +54,45 @@ async def split_into_sentences(request: TextRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/parse-syntax", response_model=SentenceResponse)
-async def parse_sentence_syntax(request: SentenceRequest):
-    """Parse syntactic structure of a sentence"""
+@app.post("/parse-morphology", response_model=MorphologyResponse)
+async def parse_sentence_morphology(request: SentenceRequest):
     try:
         logger.info(str(request))
 
-        # Convert request data back to Sentence object
-        sentence = Sentence(
-            text=request.text,
-            tokens=list(dict_to_token(token) for token in request.tokens),
-            syntax=None,
-            semantics=None
-        )
+        result = parse_morphology(request.text)
 
-        # Process syntax parsing
-        syntax_result = parse_syntax(sentence)
+        return MorphologyResponse(tokens=result.tokens)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
-        logger.info(str(sentence))
-        return SentenceResponse(
-            text=sentence.text,
-            tokens=[token_to_dict(token) for token in sentence.tokens],
-            syntax={"tokens": [{"id": token.id,
-                                "head_id": token.head_id,
-                                "relation": token.relation.name}
-                               for token in syntax_result.tokens]}
-        )
+@app.post("/parse-syntax", response_model=SyntaxResponse)
+async def parse_sentence_syntax(request: SentenceRequest):
+    try:
+        logger.info(str(request))
+
+        result = parse_syntax(request.text)
+
+        return SyntaxResponse(tokens=result.tokens)
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/parse-semantics", response_model=SentenceResponse)
-async def parse_sentence_semantics(request: SentenceRequest):
-    """Parse semantic structure of a sentence"""
-    try:
-        sentence = Sentence(
-            text=request.text,
-            tokens=list(dict_to_token(token) for token in request.tokens),
-            syntax=None,
-            semantics=None
-        )
-
-        semantics_result = parse_semantics(sentence)
-
-        logger.info(str(sentence))
-        return SentenceResponse(
-            text=sentence.text,
-            tokens=[token_to_dict(token) for token in sentence.tokens],
-            semantics={"result": str(semantics_result)}
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# todo repair
+# @app.post("/parse-semantics", response_model=SentenceResponse)
+# async def parse_sentence_semantics(request: SentenceRequest):
+#     try:
+#         semantics_result = parse_semantics(request.text)
+#
+#         logger.info(str(sentence))
+#         return SentenceResponse(
+#             text=sentence.text,
+#             tokens=[token_to_dict(token) for token in sentence.tokens],
+#             semantics={"result": str(semantics_result)}
+#         )
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/health")
