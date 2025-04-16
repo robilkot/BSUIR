@@ -15,6 +15,9 @@
 !*.nb
 !*.cs
 !*.csproj
+!*.axaml
+!*.manifest
+!*.desktop
 !*.docx
 !*.pdf
 !*.sql

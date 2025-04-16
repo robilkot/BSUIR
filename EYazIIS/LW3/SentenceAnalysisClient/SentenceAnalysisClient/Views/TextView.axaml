@@ -1,0 +1,60 @@
+<ContentControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	xmlns:vm="using:SentenceAnalysisClient.ViewModels"
+	xmlns:view="using:SentenceAnalysisClient.Views"
+	xmlns:sentence="using:SentenceAnalysisClient.Views.Sentence"
+	x:Class="SentenceAnalysisClient.Views.TextView">
+
+	<Design.DataContext>
+		<vm:TextViewModel/>
+	</Design.DataContext>
+
+	<Grid
+		RowDefinitions="auto,*"
+		Grid.Column="2">
+		<Grid
+			Margin="0 0 0 10"
+			Grid.Row="0"
+			RowDefinitions="auto, auto">
+			<TextBox
+				Grid.Row="0"
+				Watermark="Редактирование текста"
+				Text="{Binding Text}"
+				AcceptsReturn="True"
+				TextWrapping="Wrap"
+				Margin="0 0 0 10"/>
+			<Button
+				Grid.Row="1"
+				HorizontalAlignment="Stretch"
+				HorizontalContentAlignment="Center"
+				IsVisible="{Binding Sentences, Converter={x:Static ObjectConverters.IsNull}}"
+				Content="Разбить на предложения"
+				Command="{Binding SplitIntoSentencesCommand}"/>
+			<TextBlock
+				Grid.Row="1"
+				HorizontalAlignment="Left"
+				IsVisible="{Binding Sentences, Converter={x:Static ObjectConverters.IsNotNull}}"
+				Classes="category"
+				Text="Предложения текста:"/>
+		</Grid>
+		<ScrollViewer
+			Grid.Row="1"
+			VerticalScrollBarVisibility="Auto">
+			<ItemsControl
+				ItemsSource="{Binding Sentences}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<sentence:SentenceView
+							Classes="fading"
+							Margin="0 0 0 10"
+							DataContext="{Binding}"/>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</Grid>
+</ContentControl>

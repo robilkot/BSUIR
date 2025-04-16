@@ -1,0 +1,51 @@
+<ContentControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
+	xmlns:vm="using:SentenceAnalysisClient.ViewModels"
+	xmlns:model="using:SentenceAnalysisClient.Model"
+	x:Class="SentenceAnalysisClient.Views.Sentence.TokenMorphologyView">
+
+	<Design.DataContext>
+		<vm:SentenceTokenViewModel/>
+	</Design.DataContext>
+
+	<Border
+		ToolTip.ShowDelay="0"
+		ToolTip.Placement="BottomEdgeAlignedLeft"
+		ToolTip.VerticalOffset="2">
+		<Border.Styles>
+			<Style Selector="Border">
+				<Setter Property="Background" Value="#50000000" />
+			</Style>
+			<Style Selector="Border:pointerover">
+				<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
+			</Style>
+		</Border.Styles>
+
+		<ToolTip.Tip>
+			<StackPanel
+				IsHitTestVisible="False"
+				Spacing="5">
+				<TextBlock FontSize="16" Text="{Binding Text}"/>
+				<TextBlock Classes="category" Text="{Binding Morphology.Pos, Converter={StaticResource posConverter}, Mode=OneWay}"/>
+				<TextBlock>
+					<Run Text="лемма: " />
+					<Run Classes="category" Text="{Binding Morphology.Lemma}" />
+				</TextBlock>
+				<TextBlock
+					IsVisible="{Binding #morphInfoText.Text, Converter={x:Static ObjectConverters.IsNotNull}}">
+					<Run Text="морф. признаки: " />
+					<Run x:Name="morphInfoText" Classes="category" Text="{Binding Morphology.MorphInfo, Converter={StaticResource morphInfoConverter}, Mode=OneWay}" />
+				</TextBlock>
+			</StackPanel>
+		</ToolTip.Tip>
+
+		<TextBlock
+			Text="{Binding Text}"
+			Margin="5 3">
+		</TextBlock>
+	</Border>
+</ContentControl>

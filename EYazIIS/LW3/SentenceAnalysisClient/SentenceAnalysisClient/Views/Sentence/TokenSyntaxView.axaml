@@ -1,0 +1,56 @@
+<ContentControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
+	xmlns:vm="using:SentenceAnalysisClient.ViewModels"
+	xmlns:model="using:SentenceAnalysisClient.Model"
+	xmlns:view="using:SentenceAnalysisClient.Views"
+	x:Class="SentenceAnalysisClient.Views.Sentence.TokenSyntaxView">
+
+	<Design.DataContext>
+		<vm:SentenceTokenViewModel/>
+	</Design.DataContext>
+
+	<StackPanel
+		Spacing="2">
+		<Border
+			x:Name="TokenBorder"
+			ToolTip.ShowDelay="0"
+			ToolTip.Placement="BottomEdgeAlignedLeft"
+			ToolTip.VerticalOffset="2">
+			<Border.Styles>
+				<Style Selector="Border">
+					<Setter Property="Background" Value="#50000000" />
+				</Style>
+				<Style Selector="Border:pointerover">
+					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
+				</Style>
+			</Border.Styles>
+
+			<ToolTip.Tip>
+				<StackPanel
+					IsHitTestVisible="False"
+					Spacing="5">
+					<TextBlock FontSize="16" Text="{Binding Text}"/>
+					<TextBlock Classes="category" Text="{Binding Syntax.Relation, Converter={StaticResource grammaticalRelationConverter}, Mode=OneWay}"/>
+				</StackPanel>
+			</ToolTip.Tip>
+
+			<TextBlock
+				Text="{Binding Text}"
+				Margin="5 3">
+			</TextBlock>
+		</Border>
+		<Line
+			x:Name="Underline1"
+			StrokeLineCap="Flat"
+			HorizontalAlignment="Stretch"/>
+		<Line
+			Margin="0 0 0 5"
+			x:Name="Underline2"
+			StrokeLineCap="Flat"
+			HorizontalAlignment="Stretch"/>
+	</StackPanel>
+</ContentControl>
