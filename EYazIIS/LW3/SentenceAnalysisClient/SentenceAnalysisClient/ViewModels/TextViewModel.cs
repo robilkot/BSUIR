@@ -58,8 +58,6 @@ namespace SentenceAnalysisClient.ViewModels
                         Tokens = sentence.Tokens.Select(t => new SentenceTokenViewModel()
                         {
                             Text = Text[t.start_idx..t.end_idx],
-                            StartIdx = t.start_idx,
-                            EndIdx = t.end_idx,
                         })
                         .ToList()
                     }).ToList();

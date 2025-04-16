@@ -4,9 +4,7 @@ namespace SentenceAnalysisClient.ViewModels
 {
     public class SentenceTokenViewModel : ViewModelBase
     {
-        public string Text { get; set; }
-        public int StartIdx { get; set; }
-        public int EndIdx { get; set; }
+        public required string Text { get; set; }
 
         private MorphologyViewModel? _morphology;
         public MorphologyViewModel? Morphology
