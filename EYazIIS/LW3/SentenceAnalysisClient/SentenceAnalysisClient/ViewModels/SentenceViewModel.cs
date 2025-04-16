@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using DynamicData.Binding;
 using ReactiveUI;
 using SentenceAnalysisClient.Model;
@@ -117,7 +118,7 @@ namespace SentenceAnalysisClient.ViewModels
 
                 Dictionary<string, SentenceTokenViewModel> idToTokens = result.Tokens.Zip(Tokens).ToDictionary(pair => pair.First.id, pair => pair.Second); ;
 
-                foreach(var (syntaxToken, sentenceToken) in result.Tokens.Zip(Tokens).OrderBy(pair => pair.First.id))
+                foreach(var (syntaxToken, sentenceToken) in result.Tokens.Zip(Tokens))
                 {
                     idToTokens.TryGetValue(syntaxToken.head_id, out var headToken);
 

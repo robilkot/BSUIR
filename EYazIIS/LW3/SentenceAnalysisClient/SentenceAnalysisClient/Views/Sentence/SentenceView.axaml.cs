@@ -48,19 +48,20 @@ public partial class SentenceView : UserControl
 
         if (DataContext is not SentenceViewModel viewModel)
             return;
+
+        viewModel.ParseSyntaxCommand.Subscribe(result => DrawArrows());
     }
 
     private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        TokenItems.EffectiveViewportChanged += OnLayoutUpdated;
+        TokenItems.EffectiveViewportChanged += OnTokenItemsRedraw;
     }
-
     private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        TokenItems.EffectiveViewportChanged -= OnLayoutUpdated;
+        TokenItems.EffectiveViewportChanged -= OnTokenItemsRedraw;
     }
 
-    private void OnLayoutUpdated(object? sender, EventArgs e)
+    private void OnTokenItemsRedraw(object? sender, EventArgs e)
     {
         DrawArrows();
     }
@@ -83,7 +84,7 @@ public partial class SentenceView : UserControl
                 || !tokenToControl.ContainsKey(token) 
                 || !tokenToControl.ContainsKey(syntax.HeadToken)
                 || syntax.Token == syntax.HeadToken
-                || syntax.Relation == Model.GrammaticalRelation.Punct)
+                || syntax.Relation == Model.SyntaxRole.Punct)
                 continue;
 
             var from = tokenToControl[syntax.HeadToken];

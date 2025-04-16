@@ -4,6 +4,6 @@
     {
         public required string Id { get; set; }
         public required string HeadId { get; set; }
-        public required GrammaticalRelation Relation { get; set; }
+        public required SyntaxRole Relation { get; set; }
     }
 }

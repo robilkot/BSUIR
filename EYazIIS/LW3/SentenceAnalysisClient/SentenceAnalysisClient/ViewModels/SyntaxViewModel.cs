@@ -1,4 +1,5 @@
-﻿using SentenceAnalysisClient.Model;
+﻿using ReactiveUI;
+using SentenceAnalysisClient.Model;
 
 namespace SentenceAnalysisClient.ViewModels
 {
@@ -6,6 +7,12 @@ namespace SentenceAnalysisClient.ViewModels
     {
         public required SentenceTokenViewModel Token { get; set; }
         public SentenceTokenViewModel? HeadToken { get; set; }
-        public GrammaticalRelation Relation { get; set; }
+
+        private SyntaxRole _relation;
+        public SyntaxRole Relation
+        {
+            get => _relation;
+            set => this.RaiseAndSetIfChanged(ref _relation, value);
+        }
     }
 }

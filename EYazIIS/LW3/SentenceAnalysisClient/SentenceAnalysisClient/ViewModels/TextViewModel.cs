@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace SentenceAnalysisClient.ViewModels
@@ -17,11 +18,7 @@ namespace SentenceAnalysisClient.ViewModels
         public string Text
         {
             get => _text;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _text, value);
-                Sentences = null;
-            }
+            set => this.RaiseAndSetIfChanged(ref _text, value);
         }
 
         private List<SentenceViewModel>? _sentences = null;
@@ -35,6 +32,8 @@ namespace SentenceAnalysisClient.ViewModels
 
         public TextViewModel()
         {
+            this.ObservableForProperty(vm => vm.Text).Subscribe(text => Sentences = null);
+
             var canSplit = this.WhenAnyValue(
                 x => x.Sentences,
                 sents => sents == null || sents.Count == 0);

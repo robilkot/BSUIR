@@ -206,9 +206,11 @@ def parse_semantics(sentence: str) -> SentenceSemantics:
     doc.segment(segmenter)
     doc.tag_ner(NewsNERTagger(embedding))
 
-    entities = [span.text for span in doc.spans] if doc.spans else []
+    print(doc.spans)
+    print(doc.spans)
+    # entities = [span.text for span in doc.spans] if doc.spans else []
 
-    core_predicate = None
+    # core_predicate = None
     # todo repair
     # if sentence.syntax:
     #     for syntax_token in sentence.syntax.tokens:
@@ -218,11 +220,11 @@ def parse_semantics(sentence: str) -> SentenceSemantics:
     #                 core_predicate = token.lemma or sentence.text[token.start_idx:token.end_idx]
     #                 break
 
-    return SentenceSemantics(entities=entities, core_predicate=core_predicate)
+    # return SentenceSemantics(entities=entities, core_predicate=core_predicate)
 
 
 if __name__ == '__main__':
-    text = 'Я пришёл домой уставший! Вчера был сложный день. Тимур, напоминаю о вреде наркотиков на военном факультете! Новости в Беларуси, новости в мире.'
+    text = 'Тимур, напоминаю о вреде наркотиков на военном факультете! Новости в Беларуси, новости в мире.'
     sentences = text_to_sentences(text)
 
     for i, sentence in enumerate(sentences):
@@ -231,6 +233,6 @@ if __name__ == '__main__':
 
         sentence.semantics = parse_semantics(sentence.text)
 
-        print(sentence.tokens)
-        print(sentence.syntax)
-        print(sentence.semantics)
+        # print(sentence.tokens)
+        # print(sentence.syntax)
+        # print(sentence.semantics)

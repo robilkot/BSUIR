@@ -123,14 +123,12 @@ namespace SentenceAnalysisClient.Converters
             }
         };
 
-        private static readonly string EmptyMorphInfo = "отсутствуют";
-
-        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is Dictionary<string, string> dict)
             {
                 if (dict.Count == 0)
-                    return EmptyMorphInfo;
+                    return null;
 
                 var result = new List<string>();
 
