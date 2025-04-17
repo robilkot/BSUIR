@@ -1,6 +1,20 @@
-﻿using ReactiveUI;
+﻿using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using Newtonsoft.Json;
+using ReactiveUI;
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http.Json;
 using System.Reactive;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace SentenceAnalysisClient.ViewModels
 {
@@ -24,6 +38,8 @@ namespace SentenceAnalysisClient.ViewModels
 
 
         public ReactiveCommand<Unit, Unit> AddTextCommand { get; }
+        public ReactiveCommand<Unit, Unit> SaveCommand { get; }
+        public ReactiveCommand<Unit, Unit> OpenCommand { get; }
         public ReactiveCommand<TextViewModel, Unit> DeleteTextCommand { get; }
 
         public MainWindowViewModel()
@@ -34,17 +50,106 @@ namespace SentenceAnalysisClient.ViewModels
                 );
 
             AddTextCommand = ReactiveCommand.Create(AddText, canAddText);
-
             DeleteTextCommand = ReactiveCommand.Create<TextViewModel>(DeleteText);
+
+            var canSaveText = this.WhenAnyValue(
+                x => x.SelectedText,
+                vm => (vm as TextViewModel) != null
+                );
+
+            SaveCommand = ReactiveCommand.CreateFromTask(Save, canSaveText);
+            OpenCommand = ReactiveCommand.CreateFromTask(Open);
 
             Texts = [
                 new() {
-                    Text = "Мы написали новый текст! Давайте его протестируем."
+                    Text = "В БГУИР прибыл важный гость, Тимур Маркович."
                 },
                 new() {
                     Text = "Друзья, поступайте на ФИТУ! Тут классно и очень весело, правда, очень весело. Не обманываю вас, потому что я сам студент этого замечательного факультета."
                 }
                 ];
+
+
+            //Task.Run(() =>
+            //{
+            //    var text = Open<TextViewModel>("C:/Users/robilkot/Desktop/a.json");
+            //    Dispatcher.UIThread.Post(() =>
+            //    {
+            //        Texts.Add(text);
+            //        SelectedText = text;
+            //    });
+            //});
+        }
+
+        private T Open<T>(string filename)
+        {
+            var fileContent = File.ReadAllText(filename);
+
+            var settings = new JsonSerializerSettings
+            {
+                Formatting = Newtonsoft.Json.Formatting.Indented,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects
+            };
+            var result = JsonConvert.DeserializeObject<T>(fileContent, settings);
+
+            return result;
+        }
+
+        private async Task Open()
+        {
+            try
+            {
+                var window = ((ClassicDesktopStyleApplicationLifetime)App.Current!.ApplicationLifetime!).MainWindow;
+
+                var files = await window!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Открыть текст",
+                    AllowMultiple = false
+                });
+
+                if (files.Count >= 1)
+                {
+                    var path = files[0].Path.AbsolutePath;
+
+                    var newText = Open<TextViewModel>(path);
+
+                    Texts.Add(newText!);
+                    SelectedText = newText;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private async Task Save()
+        {
+            try
+            {
+                var window = ((ClassicDesktopStyleApplicationLifetime)App.Current!.ApplicationLifetime!).MainWindow;
+
+                var file = await window!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Сохранить текст"
+                });
+
+                if (file is not null)
+                {
+                    var settings = new JsonSerializerSettings
+                    {
+                        Formatting = Newtonsoft.Json.Formatting.Indented,
+                        PreserveReferencesHandling = PreserveReferencesHandling.Objects
+                    };
+
+                    var json = JsonConvert.SerializeObject(SelectedText, settings);
+                    await File.WriteAllTextAsync(file.Path.AbsolutePath, json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         private void DeleteText(TextViewModel model)

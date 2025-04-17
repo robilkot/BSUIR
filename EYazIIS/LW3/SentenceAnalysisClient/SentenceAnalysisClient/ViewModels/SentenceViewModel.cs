@@ -1,30 +1,32 @@
-﻿using Avalonia.Controls.Shapes;
-using Avalonia.Media;
+﻿using Avalonia.Controls;
 using DynamicData.Binding;
+using Newtonsoft.Json;
 using ReactiveUI;
 using SentenceAnalysisClient.Model;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace SentenceAnalysisClient.ViewModels
 {
     public class SentenceViewModel : ViewModelBase
     {
-        private string _text;
+        private string _text = string.Empty;
+        [JsonProperty]
         public string Text
         {
             get => _text;
             set => this.RaiseAndSetIfChanged(ref _text, value);
         }
 
-        private List<SentenceTokenViewModel> _tokens;
+        private List<SentenceTokenViewModel> _tokens = [];
+        [JsonProperty]
         public List<SentenceTokenViewModel> Tokens
         {
             get => _tokens;
@@ -32,6 +34,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private bool _isMorphologyVisible;
+        [JsonProperty]
         public bool IsMorphologyVisible
         {
             get => _isMorphologyVisible;
@@ -39,6 +42,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private bool _isSyntaxVisible;
+        [JsonProperty]
         public bool IsSyntaxVisible
         {
             get => _isSyntaxVisible;
@@ -46,6 +50,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private bool _isSemanticsVisible;
+        [JsonProperty]
         public bool IsSemanticsVisible
         {
             get => _isSemanticsVisible;
@@ -71,7 +76,6 @@ namespace SentenceAnalysisClient.ViewModels
             ParseSemanticsCommand.CanExecute.Subscribe(canExecute => IsSemanticsVisible = !canExecute && Tokens != null);
         }
 
-        // todo
         private async Task ParseSemantics()
         {
             try
@@ -83,19 +87,20 @@ namespace SentenceAnalysisClient.ViewModels
 
                 var result = await response.Content.ReadFromJsonAsync<SemanticsResponse>();
 
-                //Dictionary<string, SentenceTokenViewModel> idToTokens = result.Tokens.Zip(Tokens).ToDictionary(pair => pair.First.id, pair => pair.Second); ;
+                foreach (var (First, Second) in Tokens.Zip(result!.tokens))
+                {
+                    var namedEntity = Second.named_entity_info == null ? null : new NamedEntityViewModel()
+                    {
+                        NerClass = Second.named_entity_info.ner_class,
+                        Text = Second.named_entity_info.text,
+                        NormalForm = Second.named_entity_info.normal_form,
+                    };
 
-                //foreach (var (syntaxToken, sentenceToken) in result.Tokens.Zip(Tokens).OrderBy(pair => pair.First.id))
-                //{
-                //    idToTokens.TryGetValue(syntaxToken.head_id, out var headToken);
-
-                //    sentenceToken.Syntax = new()
-                //    {
-                //        HeadToken = headToken,
-                //        Token = sentenceToken,
-                //        Relation = syntaxToken.relation,
-                //    };
-                //}
+                    First.Semantics = new()
+                    {
+                        NamedEntity = namedEntity
+                    };
+                }
 
                 this.RaisePropertyChanged(nameof(Tokens));
             }
@@ -116,9 +121,9 @@ namespace SentenceAnalysisClient.ViewModels
 
                 var result = await response.Content.ReadFromJsonAsync<SyntaxResponse>();
 
-                Dictionary<string, SentenceTokenViewModel> idToTokens = result.Tokens.Zip(Tokens).ToDictionary(pair => pair.First.id, pair => pair.Second); ;
+                Dictionary<string, SentenceTokenViewModel> idToTokens = result!.tokens.Zip(Tokens).ToDictionary(pair => pair.First.id, pair => pair.Second); ;
 
-                foreach(var (syntaxToken, sentenceToken) in result.Tokens.Zip(Tokens))
+                foreach (var (syntaxToken, sentenceToken) in result.tokens.Zip(Tokens))
                 {
                     idToTokens.TryGetValue(syntaxToken.head_id, out var headToken);
 
@@ -149,7 +154,7 @@ namespace SentenceAnalysisClient.ViewModels
 
                 var result = await response.Content.ReadFromJsonAsync<MorphologyResponse>();
 
-                foreach (var (First, Second) in Tokens.Zip(result.Tokens))
+                foreach (var (First, Second) in Tokens.Zip(result!.tokens))
                 {
                     First.Morphology = new()
                     {

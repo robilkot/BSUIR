@@ -14,7 +14,7 @@ namespace SentenceAnalysisClient.Converters
             { SyntaxRole.Nsubj, "Подлежащее" },
             { SyntaxRole.Obj, "Дополнение" },
             { SyntaxRole.Iobj, "Косвенное дополнение" },
-            { SyntaxRole.Ccomp, "Придаточное дополнительное" },
+            { SyntaxRole.Ccomp, "Сказуемое придаточного дополнительного предложения" },
             { SyntaxRole.Xcomp, "Дополнительный предикатив" },
             { SyntaxRole.Advmod, "Обстоятельство" },
             { SyntaxRole.Amod, "Определение" },
@@ -23,11 +23,11 @@ namespace SentenceAnalysisClient.Converters
             { SyntaxRole.Case, "Предлог" },
             { SyntaxRole.Obl, "Обстоятельственное дополнение" },
             { SyntaxRole.Appos, "Приложение" },
-            { SyntaxRole.Conj, "Сочиненное предложение" },
+            { SyntaxRole.Conj, "Сказуемое сочиненного предложения" },
             { SyntaxRole.Nummod, "Грамматическое числительное" },
             { SyntaxRole.Punct, "Знак препинания" },
             { SyntaxRole.Parataxis, "Парцелляция" },
-            { SyntaxRole.Acl, "Определительное придаточное" },
+            { SyntaxRole.Acl, "Сказуемое определительного придаточного предложения" },
             { SyntaxRole.Nmod, "Именное дополнение" }
         };
 

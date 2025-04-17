@@ -7,9 +7,6 @@
 	RequestedThemeVariant="Default">
 	<Application.Styles>
 		<FluentTheme />
-		<Style Selector="Border.highlightable:hover /template/ ContentPresenter">
-			<Setter Property="Background" Value="#FFD70080"/>
-		</Style>
 		<Style
 			Selector=":is(Control).fading">
 			<Style.Animations>
@@ -34,5 +31,6 @@
 		<converters:PartOfSpeechConverter x:Key="posConverter"/>
 		<converters:MorphInfoConverter x:Key="morphInfoConverter"/>
 		<converters:SyntaxRoleConverter x:Key="grammaticalRelationConverter"/>
+		<converters:NERClassConverter x:Key="nerClassConverter"/>
 	</Application.Resources>
 </Application>

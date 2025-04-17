@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+﻿using Newtonsoft.Json;
 using ReactiveUI;
 using SentenceAnalysisClient.Model;
 using System;
@@ -15,6 +15,7 @@ namespace SentenceAnalysisClient.ViewModels
     public class TextViewModel : ViewModelBase
     {
         private string _text = string.Empty;
+        [JsonProperty]
         public string Text
         {
             get => _text;
@@ -22,6 +23,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private List<SentenceViewModel>? _sentences = null;
+        [JsonProperty]
         public List<SentenceViewModel>? Sentences
         {
             get => _sentences;
@@ -45,16 +47,16 @@ namespace SentenceAnalysisClient.ViewModels
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("text-to-sentences", new { text = Text });
+                var response = await _httpClient.PostAsJsonAsync("text-to-sentences", new TextRequest(Text));
                 response.EnsureSuccessStatusCode();
 
                 var result = await response.Content.ReadFromJsonAsync<SentencesResponse>();
 
-                List<SentenceViewModel> newSentences = result.Sentences.Select(sentence =>
+                List<SentenceViewModel> newSentences = result!.sentences.Select(sentence =>
                     new SentenceViewModel
                     {
-                        Text = sentence.Text,
-                        Tokens = sentence.Tokens.Select(t => new SentenceTokenViewModel()
+                        Text = sentence.text,
+                        Tokens = sentence.tokens.Select(t => new SentenceTokenViewModel()
                         {
                             Text = Text[t.start_idx..t.end_idx],
                         })

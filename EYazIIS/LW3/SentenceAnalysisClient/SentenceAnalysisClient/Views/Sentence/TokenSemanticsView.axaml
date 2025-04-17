@@ -1,0 +1,63 @@
+<ContentControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
+	xmlns:vm="using:SentenceAnalysisClient.ViewModels"
+	xmlns:model="using:SentenceAnalysisClient.Model"
+	x:Class="SentenceAnalysisClient.Views.Sentence.TokenSemanticsView">
+
+	<Design.DataContext>
+		<vm:SentenceTokenViewModel/>
+	</Design.DataContext>
+
+	<Border
+		Classes.ner="{Binding Semantics.NamedEntity, Converter={x:Static ObjectConverters.IsNotNull}}"
+		ToolTip.ServiceEnabled="True"
+		ToolTip.ShowDelay="0"
+		ToolTip.Placement="BottomEdgeAlignedLeft"
+		ToolTip.VerticalOffset="2">
+		<Border.Styles>
+			<Style Selector="Border:pointerover">
+				<Style Selector="^.ner">
+					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
+				</Style>
+				<Style Selector="^:not(.ner)">
+					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+				</Style>
+			</Style>
+			<Style Selector="Border:not(:pointerover)">
+				<Style Selector="^.ner">
+					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+				</Style>
+				<Style Selector="^:not(.ner)">
+					<Setter Property="Background" Value="#50000000" />
+				</Style>
+			</Style>
+		</Border.Styles>
+
+		<ToolTip.Tip>
+			<Grid
+				RowDefinitions="auto,auto">
+				<StackPanel
+					Grid.Row="0"
+					Spacing="5"
+					IsVisible="{Binding Semantics.NamedEntity, Converter={x:Static ObjectConverters.IsNotNull}}">
+					<TextBlock FontSize="16" Text="{Binding Semantics.NamedEntity.Text}"/>
+					<TextBlock Classes="category" Text="{Binding Semantics.NamedEntity.NerClass, Converter={StaticResource nerClassConverter}, Mode=OneWay}"/>
+					<TextBlock
+						IsEnabled="{Binding Semantics.NamedEntity.NormalForm, Converter={x:Static ObjectConverters.IsNotNull}}">
+						<Run Text="начальная форма: " />
+						<Run Classes="category" Text="{Binding Semantics.NamedEntity.NormalForm}" />
+					</TextBlock>
+				</StackPanel>
+			</Grid>
+		</ToolTip.Tip>
+
+		<TextBlock
+			Text="{Binding Text}"
+			Margin="5 3">
+		</TextBlock>
+	</Border>
+</ContentControl>

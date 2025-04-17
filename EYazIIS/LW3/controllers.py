@@ -25,12 +25,13 @@ class SyntaxResponse(BaseModel):
 class MorphologyResponse(BaseModel):
     tokens: list[Morphology]
 
+class SemanticsResponse(BaseModel):
+    tokens: list[Semantics]
+
 # Response models
 class SentenceResponse(BaseModel):
     text: str
     tokens: List[SentenceToken]
-    syntax: Optional[SentenceSyntax] = None
-    semantics: Optional[SentenceSemantics] = None
 
 
 class SentencesResponse(BaseModel):
@@ -79,20 +80,14 @@ async def parse_sentence_syntax(request: SentenceRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# todo repair
-# @app.post("/parse-semantics", response_model=SentenceResponse)
-# async def parse_sentence_semantics(request: SentenceRequest):
-#     try:
-#         semantics_result = parse_semantics(request.text)
-#
-#         logger.info(str(sentence))
-#         return SentenceResponse(
-#             text=sentence.text,
-#             tokens=[token_to_dict(token) for token in sentence.tokens],
-#             semantics={"result": str(semantics_result)}
-#         )
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
+@app.post("/parse-semantics", response_model=SemanticsResponse)
+async def parse_sentence_semantics(request: SentenceRequest):
+    try:
+        semantics_result = parse_semantics(request.text)
+
+        return SemanticsResponse(tokens=semantics_result.tokens)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/health")

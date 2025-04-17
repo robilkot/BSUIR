@@ -141,7 +141,7 @@
 						</ItemsControl.ItemsPanel>
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<view:TokenMorphologyView
+								<view:TokenSemanticsView
 									Margin="2 0"
 									DataContext="{Binding}"/>
 							</DataTemplate>

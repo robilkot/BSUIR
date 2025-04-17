@@ -79,13 +79,13 @@ public partial class TokenSyntaxView : UserControl
 
     private static LineParams? GetLine(SyntaxRole relation) => relation switch
     {
-        SyntaxRole.Root or SyntaxRole.Xcomp => new(Brushes.White, 2, true), // Сказуемое
+        SyntaxRole.Root or SyntaxRole.Xcomp or SyntaxRole.Acl or SyntaxRole.Ccomp or SyntaxRole.Conj => new(Brushes.White, 2, true), // Сказуемое
 
         SyntaxRole.Nsubj => new(Brushes.White, 2, false), // Подлежащее
 
-        SyntaxRole.Obj or SyntaxRole.Iobj or SyntaxRole.Obl or SyntaxRole.Nmod or SyntaxRole.Det => new(Brushes.White, 2, false, [6, 1.5]), // Дополнение
+        SyntaxRole.Obj or SyntaxRole.Iobj or SyntaxRole.Obl or SyntaxRole.Nmod => new(Brushes.White, 2, false, [6, 1.5]), // Дополнение
 
-        SyntaxRole.Amod => new(Brushes.White, 2, true, [1.5, 1.5], [1.5, 1.5]), // Определение
+        SyntaxRole.Amod or SyntaxRole.Det => new(Brushes.White, 2, true, [1.5, 1.5], [1.5, 1.5]), // Определение
 
         SyntaxRole.Advmod => new(Brushes.White, 2, false, [6, 1.5, 1, 1.5]), // Обстоятельство
 

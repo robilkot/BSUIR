@@ -8,6 +8,7 @@ morph_vocab = MorphVocab()
 embedding = NewsEmbedding()
 morph_tagger = NewsMorphTagger(embedding)
 syntax_parser = NewsSyntaxParser(embedding)
+ner_tagger = NewsNERTagger(embedding)
 
 
 # noinspection SpellCheckingInspection
@@ -48,6 +49,13 @@ class PartOfSpeech(Enum):
     sym = auto() # "Символы"
     propn = auto() # "Имя собственное"
     x = auto() # "Неопределенная часть речи"
+    aux = auto() # "Вспомогательный глагол"
+
+class NERClass(Enum):
+    PER = auto()
+    LOC = auto()
+    ORG = auto()
+
 
 POS_MAPPING = {
     'NOUN': PartOfSpeech.noun,
@@ -66,6 +74,7 @@ POS_MAPPING = {
     'SYM': PartOfSpeech.sym,
     'PROPN': PartOfSpeech.propn,
     'X': PartOfSpeech.x,
+    'AUX': PartOfSpeech.aux,
 }
 
 SYNTAX_REL_MAPPING = {
@@ -93,8 +102,8 @@ SYNTAX_REL_MAPPING = {
 
 @dataclass
 class Syntax:
-    id: int
-    head_id: int
+    id: str
+    head_id: str
     relation: SyntaxRelation
 
 @dataclass
@@ -119,20 +128,33 @@ class SentenceMorphology:
     tokens: list[Morphology]
 
 @dataclass
-class SentenceSemantics:
-    entities: list[str]
-    core_predicate: str | None = None
+class NamedEntity:
+    text: str
+    ner_class: NERClass
+    normal_form: str | None = None
 
+@dataclass
+class ObjectDescription:
+    description: str
+    images_urls: list[str] | None = None
+
+@dataclass
+class Semantics:
+    named_entity_info: NamedEntity | None = None
+    object_description: ObjectDescription | None = None
+
+@dataclass
+class SentenceSemantics:
+    tokens: list[Semantics]
 
 @dataclass
 class Sentence:
     text: str
     tokens: list[SentenceToken]
-    syntax: SentenceSyntax | None = None
-    semantics: SentenceSemantics | None = None
 
     def __str__(self):
         return self.text
+
 
 def text_to_sentences(text: str) -> list[Sentence]:
     doc = Doc(text)
@@ -200,31 +222,55 @@ def parse_syntax(sentence: str) -> SentenceSyntax:
 
 
 def parse_semantics(sentence: str) -> SentenceSemantics:
-    from natasha import NewsNERTagger
-
     doc = Doc(sentence)
     doc.segment(segmenter)
-    doc.tag_ner(NewsNERTagger(embedding))
+    doc.tag_morph(morph_tagger)
+    doc.parse_syntax(syntax_parser)
+    doc.tag_ner(ner_tagger)
+
+    NERClassDict = {
+        'PER': NERClass.PER,
+        'LOC': NERClass.LOC,
+        'ORG': NERClass.ORG,
+    }
+
+    for span in doc.spans:
+        span.normalize(morph_vocab)
+
+    # Get spans from NER tagging
+    ner_spans = [(span.start, span.stop, span.type, span.normal)
+                 for span in doc.spans if span.type != '_']
 
     print(doc.spans)
-    print(doc.spans)
-    # entities = [span.text for span in doc.spans] if doc.spans else []
 
-    # core_predicate = None
-    # todo repair
-    # if sentence.syntax:
-    #     for syntax_token in sentence.syntax.tokens:
-    #         if syntax_token.relation == SyntaxRelation.root:
-    #             token = syntax_token.token
-    #             if token.pos == PartOfSpeech.verb:
-    #                 core_predicate = token.lemma or sentence.text[token.start_idx:token.end_idx]
-    #                 break
+    # Create semantics for each token
+    semantics_list = []
+    for token in doc.sents[0].tokens:
+        # Check if token is part of any named entity
+        named_entity = None
 
-    # return SentenceSemantics(entities=entities, core_predicate=core_predicate)
+        # Find matching NER span
+        for start, stop, ner_type, normal in ner_spans:
+            if start <= token.start < stop:
+                named_entity = NamedEntity(
+                    text=doc.text[start:stop],
+                    ner_class=NERClassDict[ner_type],
+                    normal_form=normal
+                )
+                break
+
+        semantics = Semantics(
+            named_entity_info=named_entity,
+            object_description=None
+        )
+
+        semantics_list.append(semantics)
+
+    return SentenceSemantics(tokens=semantics_list)
 
 
 if __name__ == '__main__':
-    text = 'Тимур, напоминаю о вреде наркотиков на военном факультете! Новости в Беларуси, новости в мире.'
+    text = 'Тимур Маркович, напоминаю о себе.'
     sentences = text_to_sentences(text)
 
     for i, sentence in enumerate(sentences):
@@ -235,4 +281,4 @@ if __name__ == '__main__':
 
         # print(sentence.tokens)
         # print(sentence.syntax)
-        # print(sentence.semantics)
+        print(sentence.semantics)

@@ -9,7 +9,7 @@
         Background="Transparent"
 		ExtendClientAreaToDecorationsHint="True"
         x:Class="SentenceAnalysisClient.Views.MainWindow"
-        Title="Разбор предложений"
+        Title="Анализ предложений"
         Width="1000" Height="700">
 
 	<Design.DataContext>
@@ -25,7 +25,7 @@
 					BackgroundSource="Digger"
 					TintColor="Black"
 					TintOpacity="1"
-					MaterialOpacity="0.5" />
+					MaterialOpacity="0.55" />
 			</ExperimentalAcrylicBorder.Material>
 		</ExperimentalAcrylicBorder>
 		<Grid.ColumnDefinitions>
@@ -117,13 +117,26 @@
 		<!-- Main content area -->
 		<Grid
 			Grid.Column="2"
-			RowDefinitions="32, *">
-			<TextBlock
+			RowDefinitions="auto, *">
+
+			<StackPanel
 				Grid.Row="0"
-				Margin="20 0"
-				IsHitTestVisible="False"
-				VerticalAlignment="Center"
-				Text="Анализ предложений"/>
+				Height="32"
+				Orientation="Horizontal"
+				Spacing="5">
+				<Menu>
+					<MenuItem Header="Файл">
+						<MenuItem Header="Сохранить" Command="{Binding SaveCommand}" InputGesture="Ctrl+S"/>
+						<MenuItem Header="Открыть" Command="{Binding OpenCommand}" InputGesture="Ctrl+O"/>
+					</MenuItem>
+				</Menu>
+				<TextBlock
+					Margin="10 0"
+					IsHitTestVisible="False"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center"
+					Text="Анализ предложений"/>
+			</StackPanel>
 			
 			<Border
 				Margin="0 10 0 0"

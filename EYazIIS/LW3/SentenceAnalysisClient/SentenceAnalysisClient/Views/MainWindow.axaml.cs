@@ -1,10 +1,11 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
+using SentenceAnalysisClient.ViewModels;
 
 namespace SentenceAnalysisClient.Views
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         public MainWindow()
         {

@@ -1,12 +1,15 @@
-﻿using ReactiveUI;
+﻿using Newtonsoft.Json;
+using ReactiveUI;
 
 namespace SentenceAnalysisClient.ViewModels
 {
     public class SentenceTokenViewModel : ViewModelBase
     {
+        [JsonProperty]
         public required string Text { get; set; }
 
         private MorphologyViewModel? _morphology;
+        [JsonProperty]
         public MorphologyViewModel? Morphology
         {
             get => _morphology;
@@ -14,6 +17,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private SyntaxViewModel? _syntax;
+        [JsonProperty]
         public SyntaxViewModel? Syntax
         {
             get => _syntax;
@@ -21,6 +25,7 @@ namespace SentenceAnalysisClient.ViewModels
         }
 
         private SemanticsViewModel? _semantics;
+        [JsonProperty]
         public SemanticsViewModel? Semantics
         {
             get => _semantics;

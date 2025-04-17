@@ -24,7 +24,8 @@ namespace SentenceAnalysisClient.Converters
             { PartOfSpeech.punct, "Знак препинания" },
             { PartOfSpeech.sym, "Символ" },
             { PartOfSpeech.propn, "Имя собственное" },
-            { PartOfSpeech.x, "Неопределенная часть речи" }
+            { PartOfSpeech.x, "Неопределенная часть речи" },
+            { PartOfSpeech.aux, "Вспомогательный глагол" }
         };
 
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
