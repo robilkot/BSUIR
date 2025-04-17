@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from natasha import Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc, NewsNERTagger
+import os
+import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 segmenter = Segmenter()
 morph_vocab = MorphVocab()
@@ -269,16 +273,43 @@ def parse_semantics(sentence: str) -> SentenceSemantics:
     return SentenceSemantics(tokens=semantics_list)
 
 
-if __name__ == '__main__':
-    text = 'Тимур Маркович, напоминаю о себе.'
-    sentences = text_to_sentences(text)
+if __name__ == "__main__":
+    files = os.listdir("./dataset/")
+    content = []
+    for filename in files:
+        with open(f'./dataset/{filename}', encoding='utf-8') as file:
+            content.append(file.read())
 
-    for i, sentence in enumerate(sentences):
-        print(sentence)
-        sentence.syntax = parse_syntax(sentence.text)
+    processing_times = []
+    num_sentences_list = []
 
-        sentence.semantics = parse_semantics(sentence.text)
+    for text in content:
+        sentences = text_to_sentences(text)
+        num_sentences = len(sentences)
+        num_sentences_list.append(num_sentences)
 
-        # print(sentence.tokens)
-        # print(sentence.syntax)
-        print(sentence.semantics)
+        start_time = time.time()
+        
+        for sentence in sentences:
+            parse_morphology(sentence.text)
+            sentence.syntax = parse_syntax(sentence.text)
+            sentence.semantics = parse_semantics(sentence.text)
+        
+        processing_time = time.time() - start_time
+        processing_times.append(processing_time)
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(num_sentences_list, processing_times, alpha=0.7, color='green')
+    
+    if len(num_sentences_list) > 1:
+        z = np.polyfit(num_sentences_list, processing_times, 1)
+        p = np.poly1d(z)
+        plt.plot(num_sentences_list, p(num_sentences_list), "r--", 
+                label=f'Trend: y = {z[0]:.4f}x + {z[1]:.2f}')
+        plt.legend()
+
+    plt.title('Зависимость времени обработки от количества предложений')
+    plt.xlabel('Число предложений в тексте')
+    plt.ylabel('Общее время обработки (секунды)')
+    plt.grid(True)
+    plt.show()
