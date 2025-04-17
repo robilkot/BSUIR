@@ -2,7 +2,7 @@
 using ReactiveUI;
 using SentenceAnalysisClient.Model;
 
-namespace SentenceAnalysisClient.ViewModels
+namespace SentenceAnalysisClient.ViewModels.Semantics
 {
     public class NamedEntityViewModel : ViewModelBase
     {

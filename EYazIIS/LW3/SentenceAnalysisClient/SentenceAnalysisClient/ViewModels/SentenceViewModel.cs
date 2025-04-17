@@ -1,8 +1,8 @@
-﻿using Avalonia.Controls;
-using DynamicData.Binding;
+﻿using DynamicData.Binding;
 using Newtonsoft.Json;
 using ReactiveUI;
 using SentenceAnalysisClient.Model;
+using SentenceAnalysisClient.ViewModels.Semantics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace SentenceAnalysisClient.ViewModels
@@ -96,9 +95,18 @@ namespace SentenceAnalysisClient.ViewModels
                         NormalForm = Second.named_entity_info.normal_form,
                     };
 
+                    var objectDescription = Second.object_description == null ? null : new ObjectDescriptionViewModel()
+                    {
+                        Text = Second.object_description.text,
+                        Emphasis = Second.object_description.emphasis,
+                        Description = Second.object_description.description,
+                        ImagesUrls = Second.object_description.images_urls,
+                    };
+
                     First.Semantics = new()
                     {
-                        NamedEntity = namedEntity
+                        NamedEntity = namedEntity,
+                        ObjectDescription = objectDescription,
                     };
                 }
 

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using ReactiveUI;
+using SentenceAnalysisClient.ViewModels.Semantics;
 
 namespace SentenceAnalysisClient.ViewModels
 {

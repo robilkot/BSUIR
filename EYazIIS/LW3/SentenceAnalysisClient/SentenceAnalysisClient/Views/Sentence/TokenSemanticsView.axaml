@@ -3,6 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
 	xmlns:vm="using:SentenceAnalysisClient.ViewModels"
 	xmlns:model="using:SentenceAnalysisClient.Model"
@@ -14,35 +15,32 @@
 
 	<Border
 		Classes.ner="{Binding Semantics.NamedEntity, Converter={x:Static ObjectConverters.IsNotNull}}"
-		ToolTip.ServiceEnabled="True"
 		ToolTip.ShowDelay="0"
-		ToolTip.Placement="BottomEdgeAlignedLeft"
-		ToolTip.VerticalOffset="2">
+		ToolTip.VerticalOffset="0"
+		ToolTip.Placement="BottomEdgeAlignedLeft">
 		<Border.Styles>
-			<Style Selector="Border:pointerover">
-				<Style Selector="^.ner">
-					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
-				</Style>
-				<Style Selector="^:not(.ner)">
-					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-				</Style>
+			<Style Selector="Border">
+				<Setter Property="Background" Value="#50000000" />
 			</Style>
-			<Style Selector="Border:not(:pointerover)">
-				<Style Selector="^.ner">
-					<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-				</Style>
-				<Style Selector="^:not(.ner)">
-					<Setter Property="Background" Value="#50000000" />
-				</Style>
+			<Style Selector="Border:pointerover">
+				<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
+			</Style>
+			<Style Selector="Border.ner">
+				<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+			</Style>
+			<Style Selector="Border.ner:pointerover">
+				<Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
 			</Style>
 		</Border.Styles>
 
 		<ToolTip.Tip>
 			<Grid
 				RowDefinitions="auto,auto">
+				<!-- Named entity -->
 				<StackPanel
 					Grid.Row="0"
 					Spacing="5"
+					Margin="0 0 0 5"
 					IsVisible="{Binding Semantics.NamedEntity, Converter={x:Static ObjectConverters.IsNotNull}}">
 					<TextBlock FontSize="16" Text="{Binding Semantics.NamedEntity.Text}"/>
 					<TextBlock Classes="category" Text="{Binding Semantics.NamedEntity.NerClass, Converter={StaticResource nerClassConverter}, Mode=OneWay}"/>
@@ -51,6 +49,31 @@
 						<Run Text="начальная форма: " />
 						<Run Classes="category" Text="{Binding Semantics.NamedEntity.NormalForm}" />
 					</TextBlock>
+				</StackPanel>
+				<!-- Object description -->
+				<StackPanel
+					Grid.Row="1"
+					Spacing="5"
+					IsVisible="{Binding Semantics.ObjectDescription, Converter={x:Static ObjectConverters.IsNotNull}}">
+					<TextBlock FontSize="16" Text="{Binding Semantics.ObjectDescription, Converter={StaticResource DescriptionToEmphasisedWordConverter}}"/>
+					<TextBlock Text="{Binding Semantics.ObjectDescription.Description}"/>
+
+					<Carousel 
+						Name="slides"
+						ItemsSource="{Binding Semantics.ObjectDescription.ImagesUrls}">
+						<Carousel.PageTransition >
+							<CompositePageTransition>
+								<PageSlide Duration="0:00:00.150" Orientation="Horizontal" />
+							</CompositePageTransition>
+						</Carousel.PageTransition>
+						<Carousel.ItemTemplate>
+							<DataTemplate>
+								<Image asyncImageLoader:ImageLoader.Source="{Binding}" />
+							</DataTemplate>
+						</Carousel.ItemTemplate>
+						<Carousel.Items>
+						</Carousel.Items>
+					</Carousel>
 				</StackPanel>
 			</Grid>
 		</ToolTip.Tip>
