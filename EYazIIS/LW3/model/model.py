@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-
+from html import unescape
 from natasha import Segmenter, MorphVocab, NewsEmbedding, NewsMorphTagger, NewsSyntaxParser, Doc, NewsNERTagger
 import os
 import time
+import requests
+from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 import numpy as np
+from urllib.parse import urljoin
 
 segmenter = Segmenter()
 morph_vocab = MorphVocab()
@@ -158,7 +161,12 @@ class Sentence:
 
     def __str__(self):
         return self.text
-
+    
+@dataclass
+class WordSemantics:
+    word: str
+    emph_info: int
+    description: str
 
 def text_to_sentences(text: str) -> list[Sentence]:
     doc = Doc(text)
@@ -272,44 +280,138 @@ def parse_semantics(sentence: str) -> SentenceSemantics:
 
     return SentenceSemantics(tokens=semantics_list)
 
+def lemmatize_word(word: str) -> str:
+    try:
+        doc = Doc(word)
+        doc.segment(segmenter)
+        doc.tag_morph(morph_tagger)
+        
+        if not doc.tokens:
+            return word
+            
+        doc.tokens[0].lemmatize(morph_vocab)
+        return doc.tokens[0].lemma.lower()
+    
+    except Exception:
+        return word
+
+def get_words_semantics(query):
+    query_lemma = lemmatize_word(query)
+    try:
+        base_url = "https://www.slovari.ru/search.aspx"
+        params = {"s": "0", "p": "3068"}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        with requests.Session() as s:
+            response = s.get(base_url, params=params, headers=headers)
+            response.encoding = 'utf-8'
+            
+            if response.status_code != 200:
+                return {"error": f"Initial request failed: {response.status_code}"}
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            viewstate = soup.find('input', {'id': '__VIEWSTATE'})['value']
+            viewstategenerator = soup.find('input', {'id': '__VIEWSTATEGENERATOR'})['value']
+
+            data = {
+                '__EVENTTARGET': 'ctl08',
+                '__EVENTARGUMENT': 'Search()',
+                '__VIEWSTATE': viewstate,
+                '__VIEWSTATEGENERATOR': viewstategenerator,
+                'query_textfield': 'поиск по сайту',
+                'ctl07':'vname',
+                'ctl07':'vojsh',
+                'ctl08_regime':'simple',
+                'ctl08':'query',
+                'ctl08_search_query': query_lemma,
+            }
+            response = s.post(base_url, 
+                            params=params,
+                            data=data, 
+                            headers=headers,
+                            allow_redirects=True)
+
+            response.raise_for_status()
+
+        result_soup = BeautifulSoup(response.text, 'html.parser')
+        results = result_soup.find('div', class_='searchResultsText')
+        
+        if not results:
+            return "Ничего не найдено"
+            
+        raw_text = results.get_text(strip=False, separator='\n')
+        cleaned_text = ' '.join(raw_text.split())
+
+        first_word = cleaned_text.split()[0] 
+        apostrophe_index = first_word.find("'")
+        
+        if apostrophe_index == -1:
+            return WordSemantics(
+                word=query_lemma,
+                emph_info=0,
+                description=cleaned_text
+            )
+
+        clean_word = first_word.replace("'", "")
+        emph_index = apostrophe_index - 1 
+
+        description = cleaned_text[len(first_word):].strip()
+
+        return WordSemantics(
+            word=clean_word,
+            emph_info=emph_index,
+            description=description
+        )
+
+    except requests.exceptions.RequestException as e:
+        return f"Ошибка сети: {str(e)}"
+    except Exception as e:
+        return f"Ошибка: {str(e)}"
+
 
 if __name__ == "__main__":
-    files = os.listdir("./dataset/")
-    content = []
-    for filename in files:
-        with open(f'./dataset/{filename}', encoding='utf-8') as file:
-            content.append(file.read())
+    word = "интересы"
+    print(get_words_semantics(word))
+    # files = os.listdir("./dataset/")
+    # content = []
+    # for filename in files:
+    #     with open(f'./dataset/{filename}', encoding='utf-8') as file:
+    #         content.append(file.read())
 
-    processing_times = []
-    num_sentences_list = []
+    # processing_times = []
+    # num_sentences_list = []
 
-    for text in content:
-        sentences = text_to_sentences(text)
-        num_sentences = len(sentences)
-        num_sentences_list.append(num_sentences)
+    # for text in content:
+    #     sentences = text_to_sentences(text)
+    #     num_sentences = len(sentences)
+    #     num_sentences_list.append(num_sentences)
 
-        start_time = time.time()
+    #     start_time = time.time()
         
-        for sentence in sentences:
-            parse_morphology(sentence.text)
-            sentence.syntax = parse_syntax(sentence.text)
-            sentence.semantics = parse_semantics(sentence.text)
+    #     for sentence in sentences:
+    #         parse_morphology(sentence.text)
+    #         sentence.syntax = parse_syntax(sentence.text)
+    #         sentence.semantics = parse_semantics(sentence.text)
         
-        processing_time = time.time() - start_time
-        processing_times.append(processing_time)
+    #     processing_time = time.time() - start_time
+    #     processing_times.append(processing_time)
 
-    plt.figure(figsize=(10, 6))
-    plt.scatter(num_sentences_list, processing_times, alpha=0.7, color='green')
+    # plt.figure(figsize=(10, 6))
+    # plt.scatter(num_sentences_list, processing_times, alpha=0.7, color='green')
     
-    if len(num_sentences_list) > 1:
-        z = np.polyfit(num_sentences_list, processing_times, 1)
-        p = np.poly1d(z)
-        plt.plot(num_sentences_list, p(num_sentences_list), "r--", 
-                label=f'Trend: y = {z[0]:.4f}x + {z[1]:.2f}')
-        plt.legend()
+    # if len(num_sentences_list) > 1:
+    #     z = np.polyfit(num_sentences_list, processing_times, 1)
+    #     p = np.poly1d(z)
+    #     plt.plot(num_sentences_list, p(num_sentences_list), "r--", 
+    #             label=f'Trend: y = {z[0]:.4f}x + {z[1]:.2f}')
+    #     plt.legend()
 
-    plt.title('Зависимость времени обработки от количества предложений')
-    plt.xlabel('Число предложений в тексте')
-    plt.ylabel('Общее время обработки (секунды)')
-    plt.grid(True)
-    plt.show()
+    # plt.title('Зависимость времени обработки от количества предложений')
+    # plt.xlabel('Число предложений в тексте')
+    # plt.ylabel('Общее время обработки (секунды)')
+    # plt.grid(True)
+    # plt.show()
