@@ -1,0 +1,98 @@
+<UserControl 
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="clr-namespace:LW5.ViewModels"
+	xmlns:views="clr-namespace:LW5.Views"
+    Design.Height="850"
+	Design.Width="400"
+    x:Class="LW5.Views.MainView"
+    x:DataType="vm:MainViewModel">
+	<Design.DataContext>
+		<vm:MainViewModel />
+	</Design.DataContext>
+
+	<UserControl.Styles>
+		<Style
+			Selector=":is(ContentControl).icon">
+			<Setter Property="Width" Value="40"/>
+			<Setter Property="Height" Value="40"/>
+			<Setter Property="Padding" Value="5"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid
+		RowDefinitions="auto,*,auto">
+		<!--top panel-->
+		<Panel
+			Height="50"
+			Grid.Row="0">
+			
+			<TextBlock
+				Text="Кинопомощник"
+				FontSize="16"
+				FontWeight="Medium"
+				VerticalAlignment="Center"
+				HorizontalAlignment="Center"/>
+
+			<Button
+				HorizontalAlignment="Left"
+				Classes="icon">
+				<Image
+					Source="{SvgImage /Assets/gear-svgrepo-com.svg}"/>
+			</Button>
+
+			<Button
+				HorizontalAlignment="Right"
+				Classes="icon">
+				<Image
+					Source="{SvgImage /Assets/bookmark-svgrepo-com.svg}"/>
+			</Button>
+		</Panel>
+		
+		<!--bottom panel-->
+		<Panel
+			MinHeight="50"
+			MaxHeight="250"
+			Grid.Row="2">
+			<Grid
+				ColumnDefinitions="*, auto">
+				
+				<TextBox
+					Margin="3"
+					BorderThickness="0"
+					FontSize="16"
+					VerticalContentAlignment="Center"
+					TextWrapping="Wrap"
+					Watermark="Введите запрос"/>
+				
+				<Button
+					Classes="icon"
+					Grid.Column="1">
+					<Image
+						Source="{SvgImage /Assets/send-alt-1-svgrepo-com.svg}"/>
+				</Button>
+			</Grid>
+		</Panel>
+
+		<!--main region-->
+		<ScrollViewer
+			Grid.Row="1">
+			<ItemsControl
+				Margin="5"
+				ItemsSource="{Binding Messages}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel
+							Orientation="Vertical"
+							Spacing="5"/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<views:MessageView/>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

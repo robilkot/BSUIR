@@ -1,0 +1,24 @@
+<UserControl 
+	xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:views="clr-namespace:LW5.Views"
+	xmlns:vm="clr-namespace:LW5.ViewModels;assembly=LW5"
+	xmlns:vm_msg="clr-namespace:LW5.ViewModels.Messages;assembly=LW5"
+    x:Class="LW5.Views.MessageView">
+	<UserControl.DataTemplates>
+		<DataTemplate DataType="vm_msg:ServiceMessageViewModel">
+			<Border
+				Background="Gray"
+				Padding="8"
+				CornerRadius="8">
+				<TextBlock Text="Service msg"/>
+			</Border>
+		</DataTemplate>
+		
+		<DataTemplate DataType="vm_msg:UserMessageViewModel">
+			<views:UserMessageView/>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+	
+	<ContentControl Content="{Binding .}"/>
+</UserControl>
