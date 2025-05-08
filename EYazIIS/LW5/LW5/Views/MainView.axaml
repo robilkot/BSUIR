@@ -14,9 +14,15 @@
 	<UserControl.Styles>
 		<Style
 			Selector=":is(ContentControl).icon">
-			<Setter Property="Width" Value="40"/>
-			<Setter Property="Height" Value="40"/>
+			<Setter Property="Width" Value="50"/>
+			<Setter Property="Height" Value="50"/>
 			<Setter Property="Padding" Value="5"/>
+			<Setter Property="CornerRadius" Value="0"/>
+			<Setter Property="BorderThickness" Value="0"/>
+		</Style>
+		<Style
+			Selector=":is(Button).nobg">
+			<Setter Property="Background" Value="#00000000"/>
 		</Style>
 	</UserControl.Styles>
 
@@ -36,16 +42,16 @@
 
 			<Button
 				HorizontalAlignment="Left"
-				Classes="icon">
-				<Image
-					Source="{SvgImage /Assets/gear-svgrepo-com.svg}"/>
+				Classes="nobg icon">
+				<PathIcon
+					Data="{StaticResource settings_regular}"/>
 			</Button>
 
 			<Button
 				HorizontalAlignment="Right"
-				Classes="icon">
-				<Image
-					Source="{SvgImage /Assets/bookmark-svgrepo-com.svg}"/>
+				Classes="nobg icon">
+				<PathIcon
+					Data="{StaticResource bookmark_regular}"/>
 			</Button>
 		</Panel>
 		
@@ -63,19 +69,20 @@
 					FontSize="16"
 					VerticalContentAlignment="Center"
 					TextWrapping="Wrap"
-					Watermark="Введите запрос"/>
+					Watermark="Введите запрос..."/>
 				
 				<Button
-					Classes="icon"
+					Classes="icon nobg"
 					Grid.Column="1">
-					<Image
-						Source="{SvgImage /Assets/send-alt-1-svgrepo-com.svg}"/>
+					<PathIcon
+						Data="{StaticResource arrow_up_regular}"/>
 				</Button>
 			</Grid>
 		</Panel>
 
 		<!--main region-->
 		<ScrollViewer
+			Background="#0e1621"
 			Grid.Row="1">
 			<ItemsControl
 				Margin="5"
@@ -89,7 +96,17 @@
 				</ItemsControl.ItemsPanel>
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<views:MessageView/>
+						<views:MessageView>
+							<views:MessageView.HorizontalAlignment>
+								<MultiBinding
+									Converter="{StaticResource MessageToAlignmentConverter}"
+									Mode="OneWay">
+									<Binding />
+									<Binding 
+										Path="$parent[ScrollViewer].((vm:MainViewModel)DataContext).User.Name"/>
+								</MultiBinding>
+							</views:MessageView.HorizontalAlignment>
+						</views:MessageView>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>

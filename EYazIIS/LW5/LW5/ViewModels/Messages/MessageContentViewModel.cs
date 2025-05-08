@@ -7,8 +7,8 @@ namespace LW5.ViewModels.Messages;
 
 public class MessageContentViewModel : ViewModelBase
 {
-    private ObservableCollection<Bitmap>? _images;
-    public ObservableCollection<Bitmap>? Images
+    private ObservableCollection<string>? _images;
+    public ObservableCollection<string>? Images
     {
         get => _images;
         set => this.RaiseAndSetIfChanged(ref _images, value);

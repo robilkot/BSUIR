@@ -4,7 +4,11 @@ namespace LW5.ViewModels.Messages;
 
 public class ServiceMessageViewModel : MessageViewModel
 {
-    private MessageContentViewModel _content;
+    private MessageContentViewModel _content = new()
+    {
+        Text = "Начало диалога"
+    };
+
     public MessageContentViewModel Content
     {
         get => _content;

@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+﻿using AsyncImageLoader;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 using System;
 
@@ -37,8 +38,8 @@ public class UserMessageViewModel : MessageViewModel
                 new("https://google.com/"),
                 ],
             Images = [
-                new("E:\\archive\\архив\\15653847220781.png"),
-                new("E:\\archive\\архив\\burger.png")
+                "https://i.pinimg.com/236x/c6/2e/47/c62e47ccce4e8e568c9c7e381032bde9.jpg",
+                "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
                 ],
         };
         Metadata = new()
