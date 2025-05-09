@@ -2,10 +2,25 @@
 	xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:vm="clr-namespace:LW5.ViewModels;assembly=LW5"
+	xmlns:models="clr-namespace:LW5.Models;assembly=LW5"
 	xmlns:vm_msg="clr-namespace:LW5.ViewModels.Messages;assembly=LW5"
+	xmlns:anim="clr-namespace:Avalonia.Animation.Easings;assembly=Avalonia.Base"
 	xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+	xmlns:converters="clr-namespace:LW5.Converters;assembly=LW5"
     x:Class="LW5.Views.UserMessageView"
 	x:DataType="vm_msg:UserMessageViewModel">
+
+	<UserControl.Resources>
+		<converters:BoolToValueConverter 
+			x:Key="BoolToGreenConverter"
+			FalseValue="#1ccc5b"
+			TrueValue="LightGray"/>
+		<converters:BoolToValueConverter
+			x:Key="BoolToRedConverter"
+			FalseValue="#e43d30"
+			TrueValue="LightGray"/>
+	</UserControl.Resources>
+	
 	<Design.DataContext>
 		<vm_msg:UserMessageViewModel/>
 	</Design.DataContext>
@@ -31,11 +46,12 @@
 	</UserControl.Styles>
 
 	<StackPanel
+		MaxWidth="350"
 		Orientation="Vertical"
-		Spacing="5">
+		Spacing="2">
 		<Border
-			Padding="8"
 			Background="#182533"
+			Padding="8"
 			CornerRadius="12">
 			<StackPanel
 				Orientation="Vertical"
@@ -52,7 +68,7 @@
 						Text="{Binding Sender.Name}"/>
 					<TextBlock
 						Grid.Column="2"
-						Opacity="0.5"
+						Foreground="Gray"
 						Text="{Binding Sent, StringFormat='HH:mm'}"/>
 				</Grid>
 				<!--content-->
@@ -62,7 +78,16 @@
 					ItemsSource="{Binding Content.Images}">
 					<Carousel.PageTransition >
 						<CompositePageTransition>
-							<PageSlide Duration="0:00:00.150" Orientation="Horizontal" />
+							<PageSlide
+								Duration="0:00:00.250"
+								Orientation="Horizontal">
+								<PageSlide.SlideInEasing>
+									<anim:QuadraticEaseInOut/>
+								</PageSlide.SlideInEasing>
+								<PageSlide.SlideOutEasing>
+									<anim:QuadraticEaseInOut/>
+								</PageSlide.SlideOutEasing>
+							</PageSlide>
 						</CompositePageTransition>
 					</Carousel.PageTransition>
 					<Carousel.ItemTemplate>
@@ -78,11 +103,15 @@
 					<Carousel.Items>
 					</Carousel.Items>
 				</Carousel>
-				
-				<TextBlock
-					Text="{Binding Content.Text}"/>
 
+				<!--text-->
+				<TextBlock
+					Text="{Binding Content.Text}"
+					TextWrapping="Wrap"/>
+
+				<!--links-->
 				<ItemsControl
+					IsVisible="{Binding Content.Links, Converter={StaticResource IsNotEmptyConverter}, Mode=OneTime}"
 					ItemsSource="{Binding Content.Links}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
@@ -116,26 +145,36 @@
 		</Border>
 		<!--reactions-->
 		<StackPanel
-			IsVisible="{Binding Reactions, Converter={x:Static ObjectConverters.IsNotNull}}"
+			x:DataType="vm_msg:MessageReactionsViewModel"
+			DataContext="{Binding Reactions}"
+			IsVisible="{Binding ., Converter={x:Static ObjectConverters.IsNotNull}}"
 			Margin="0 0 6 0"
 			HorizontalAlignment="Right"
 			Spacing="5"
 			Orientation="Horizontal">
 			<Button
-				Classes="emotion">
+				x:Name="dislike"
+				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"
+				Classes="emotion"
+				Command="{Binding SetRatingCommand}"
+				CommandParameter="{x:Static models:MessageRating.Negative}">
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					Data="{StaticResource thumb_dislike_regular}"
-					Foreground="LightGray"/>
+					Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
 			</Button>
 			<Button
-				Classes="emotion">
+				x:Name="like"
+				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Negative}}"
+				Classes="emotion"
+				Command="{Binding SetRatingCommand}"
+				CommandParameter="{x:Static models:MessageRating.Positive}">
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					Data="{StaticResource thumb_like_regular}"
-					Foreground="LightGray"/>
+					Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
 			</Button>
 		</StackPanel>
 	</StackPanel>

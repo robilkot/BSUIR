@@ -1,6 +1,4 @@
-﻿using AsyncImageLoader;
-using Avalonia.Media.Imaging;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System;
 
 namespace LW5.ViewModels.Messages;
@@ -32,26 +30,24 @@ public class UserMessageViewModel : MessageViewModel
     {
         Content = new()
         {
-            Text = "Text content",
+            Text = "Привет, я кинопомощник. Помогу найти фильм, дам ссылку на источники информации, покажу актуальные фото по теме.",
             Links = [
-                new("https://yandex.ru/"),
-                new("https://google.com/"),
-                ],
+                    new("https://example.com/"),
+                    new("https://google.com/"),
+                    ],
             Images = [
-                "https://i.pinimg.com/236x/c6/2e/47/c62e47ccce4e8e568c9c7e381032bde9.jpg",
-                "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
-                ],
+                    "https://i.pinimg.com/236x/c6/2e/47/c62e47ccce4e8e568c9c7e381032bde9.jpg",
+                    "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+                    ],
         };
         Metadata = new()
         {
             Sender = new()
             {
-                Name = "Sender name",
+                Name = "Кинопомощник"
             },
             Sent = DateTimeOffset.Now
         };
-        Reactions = new()
-        {
-        };
+        Reactions = new() { };
     }
 }

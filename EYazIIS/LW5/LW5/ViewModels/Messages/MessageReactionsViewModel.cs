@@ -8,23 +8,24 @@ namespace LW5.ViewModels.Messages;
 
 public class MessageReactionsViewModel : MessageViewModel
 {
-    private MessageRating _rating;
+    private MessageRating _rating = MessageRating.None;
     public MessageRating Rating
     {
         get => _rating;
         private set => this.RaiseAndSetIfChanged(ref _rating, value);
     }
 
-    public ReactiveCommand<MessageRating, Unit> SetRatingCommand;
+    public ReactiveCommand<MessageRating, Unit> SetRatingCommand { get; }
 
     public MessageReactionsViewModel()
     {
-        var canSetRating = this.WhenAny(
-            r => r.Rating,
-            rating => rating.Value == MessageRating.None
-            );
-
-        SetRatingCommand = ReactiveCommand.CreateFromTask<MessageRating>(SetRating, canSetRating);
+        SetRatingCommand = ReactiveCommand.CreateFromTask<MessageRating>(
+            SetRating,
+            this.WhenAny(
+                x => x.Rating,
+                rating => rating.Value == MessageRating.None
+            )
+        );
     }
 
     public Task SetRating(MessageRating rating)
@@ -33,6 +34,7 @@ public class MessageReactionsViewModel : MessageViewModel
             throw new NotSupportedException();
 
         // todo
+        Rating = rating;
 
         return Task.CompletedTask;
     }

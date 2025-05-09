@@ -1,15 +1,16 @@
 <UserControl 
 	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:model="clr-namespace:LW5.Models;assembly=LW5"
 	xmlns:vm="clr-namespace:LW5.ViewModels"
 	xmlns:views="clr-namespace:LW5.Views"
     Design.Height="850"
 	Design.Width="400"
-    x:Class="LW5.Views.MainView"
-    x:DataType="vm:MainViewModel">
+    x:DataType="vm:BookmarksViewModel"
+    x:Class="LW5.Views.BookmarksView">
+
 	<Design.DataContext>
-		<vm:MainViewModel />
+		<vm:BookmarksViewModel />
 	</Design.DataContext>
 
 	<Grid
@@ -18,9 +19,9 @@
 		<Panel
 			Height="50"
 			Grid.Row="0">
-			
+
 			<TextBlock
-				Text="Кинопомощник"
+				Text="Сохранённое"
 				FontSize="16"
 				FontWeight="Medium"
 				VerticalAlignment="Center"
@@ -30,51 +31,22 @@
 				HorizontalAlignment="Left"
 				Classes="nobg icon"
 				Command="{Binding $parent[views:MainWindow].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
-				CommandParameter="{x:Static model:AppPage.Settings}">
+				CommandParameter="{x:Static model:AppPage.Main}">
 				<PathIcon
-					Data="{StaticResource settings_regular}"/>
+					Data="{StaticResource arrow_up_regular}">
+					<PathIcon.RenderTransform>
+						<RotateTransform
+							Angle="-90"/>
+					</PathIcon.RenderTransform>
+				</PathIcon>
 			</Button>
-
-			<Button
-				HorizontalAlignment="Right"
-				Classes="nobg icon"
-				Command="{Binding $parent[views:MainWindow].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
-				CommandParameter="{x:Static model:AppPage.Bookmarks}">
-				<PathIcon
-					Data="{StaticResource bookmark_regular}"/>
-			</Button>
-		</Panel>
-		
-		<!--bottom panel-->
-		<Panel
-			MinHeight="50"
-			MaxHeight="250"
-			Grid.Row="2">
-			<Grid
-				ColumnDefinitions="*, auto">
-				
-				<TextBox
-					Margin="3"
-					BorderThickness="0"
-					FontSize="16"
-					VerticalContentAlignment="Center"
-					TextWrapping="Wrap"
-					Watermark="Введите запрос..."/>
-				
-				<Button
-					Classes="icon nobg"
-					Grid.Column="1">
-					<PathIcon
-						Data="{StaticResource arrow_up_regular}"/>
-				</Button>
-			</Grid>
 		</Panel>
 
 		<!--main region-->
 		<ScrollViewer
 			Background="#0e1621"
 			Grid.Row="1">
-			<ItemsControl
+			<!--<ItemsControl
 				Margin="5"
 				ItemsSource="{Binding Messages}">
 				<ItemsControl.ItemsPanel>
@@ -92,14 +64,14 @@
 									Converter="{StaticResource MessageToAlignmentConverter}"
 									Mode="OneWay">
 									<Binding />
-									<Binding 
+									<Binding
 										Path="$parent[ScrollViewer].((vm:MainViewModel)DataContext).User.Name"/>
 								</MultiBinding>
 							</views:MessageView.HorizontalAlignment>
 						</views:MessageView>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
-			</ItemsControl>
+			</ItemsControl>-->
 		</ScrollViewer>
 	</Grid>
 </UserControl>

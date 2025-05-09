@@ -1,5 +1,4 @@
-﻿using Avalonia.Media.Imaging;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 
@@ -7,8 +6,8 @@ namespace LW5.ViewModels.Messages;
 
 public class MessageContentViewModel : ViewModelBase
 {
-    private ObservableCollection<string>? _images;
-    public ObservableCollection<string>? Images
+    private ObservableCollection<string> _images = [];
+    public ObservableCollection<string> Images
     {
         get => _images;
         set => this.RaiseAndSetIfChanged(ref _images, value);
@@ -21,8 +20,8 @@ public class MessageContentViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _text, value);
     }
 
-    private ObservableCollection<Uri>? _links;
-    public ObservableCollection<Uri>? Links
+    private ObservableCollection<Uri> _links = [];
+    public ObservableCollection<Uri> Links
     {
         get => _links;
         set => this.RaiseAndSetIfChanged(ref _links, value);

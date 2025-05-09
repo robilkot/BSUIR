@@ -10,5 +10,12 @@ namespace LW5.ViewModels
             get => _name;
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
+
+        private string _about = "Mediocre user";
+        public string About
+        {
+            get => _about;
+            set => this.RaiseAndSetIfChanged(ref _about, value);
+        }
     }
 }
