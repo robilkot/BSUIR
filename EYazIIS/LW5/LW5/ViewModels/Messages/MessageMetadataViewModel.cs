@@ -12,8 +12,8 @@ public class MessageMetadataViewModel : MessageViewModel
         set => this.RaiseAndSetIfChanged(ref _sent, value);
     }
 
-    private MessageSenderViewModel _sender;
-    public MessageSenderViewModel Sender
+    private UserViewModel _sender;
+    public UserViewModel Sender
     {
         get => _sender;
         set => this.RaiseAndSetIfChanged(ref _sender, value);

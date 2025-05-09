@@ -6,9 +6,10 @@ namespace LW5.ViewModels
 {
     public class BookmarksViewModel : ViewModelBase
     {
-        private MessageSenderViewModel _helper_sender = new()
+        private UserViewModel _helper_sender = new()
         {
             Name = "Кинопомощник",
+            About = "Помогает искать информацию о фильмах"
         };
 
         public ObservableCollection<UserMessageViewModel> Saved => [
