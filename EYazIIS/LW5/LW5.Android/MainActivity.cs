@@ -14,6 +14,7 @@ namespace LW5.Android;
     Icon = "@drawable/icon",
     WindowSoftInputMode = SoftInput.AdjustResize,
     MainLauncher = true,
+    ScreenOrientation = ScreenOrientation.SensorPortrait,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity<App>
 {

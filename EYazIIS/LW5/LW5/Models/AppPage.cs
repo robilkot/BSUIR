@@ -2,7 +2,7 @@
 {
     public enum AppPage
     {
-        Main,
+        Dialog,
         Settings,
         Bookmarks,
     }

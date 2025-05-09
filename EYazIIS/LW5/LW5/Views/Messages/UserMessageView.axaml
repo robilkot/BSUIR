@@ -8,7 +8,8 @@
 	xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
 	xmlns:converters="clr-namespace:LW5.Converters;assembly=LW5"
     x:Class="LW5.Views.UserMessageView"
-	x:DataType="vm_msg:UserMessageViewModel">
+	x:DataType="vm_msg:UserMessageViewModel"
+	x:Name="root">
 
 	<UserControl.Resources>
 		<converters:BoolToValueConverter 
@@ -147,11 +148,19 @@
 		<StackPanel
 			x:DataType="vm_msg:MessageReactionsViewModel"
 			DataContext="{Binding Reactions}"
-			IsVisible="{Binding ., Converter={x:Static ObjectConverters.IsNotNull}}"
 			Margin="0 0 6 0"
 			HorizontalAlignment="Right"
 			Spacing="5"
 			Orientation="Horizontal">
+			<StackPanel.IsVisible>
+				<MultiBinding Converter="{StaticResource AllTrueConverter}">
+					<Binding
+						Path="."
+						Converter="{x:Static ObjectConverters.IsNotNull}"/>
+					<Binding 
+						Path="!#root.HideReactions"/>
+				</MultiBinding>
+			</StackPanel.IsVisible>
 			<Button
 				x:Name="dislike"
 				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"

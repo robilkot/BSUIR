@@ -13,6 +13,15 @@
 		<vm:SettingsViewModel />
 	</Design.DataContext>
 
+	<UserControl.Styles>
+		<Style
+			Selector="TextBlock.header">
+			<Setter
+				Property="FontSize"
+				Value="24"/>
+		</Style>
+	</UserControl.Styles>
+
 	<Grid
 		RowDefinitions="auto,*,auto">
 		<!--top panel-->
@@ -30,8 +39,8 @@
 			<Button
 				HorizontalAlignment="Left"
 				Classes="nobg icon"
-				Command="{Binding $parent[views:MainWindow].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
-				CommandParameter="{x:Static model:AppPage.Main}">
+				Command="{Binding $parent[views:MainView].((vm:MainViewModel)DataContext).NavigateCommand}"
+				CommandParameter="{x:Static model:AppPage.Dialog}">
 				<PathIcon
 					Data="{StaticResource arrow_up_regular}">
 					<PathIcon.RenderTransform>
@@ -44,34 +53,58 @@
 
 		<!--main region-->
 		<ScrollViewer
-			Background="#0e1621"
+			Background="{StaticResource ChatBackground}"
 			Grid.Row="1">
-			<!--<ItemsControl
-				Margin="5"
-				ItemsSource="{Binding Messages}">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<StackPanel
-							Orientation="Vertical"
-							Spacing="5"/>
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<views:MessageView>
-							<views:MessageView.HorizontalAlignment>
-								<MultiBinding
-									Converter="{StaticResource MessageToAlignmentConverter}"
-									Mode="OneWay">
-									<Binding />
-									<Binding
-										Path="$parent[ScrollViewer].((vm:MainViewModel)DataContext).User.Name"/>
-								</MultiBinding>
-							</views:MessageView.HorizontalAlignment>
-						</views:MessageView>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-			</ItemsControl>-->
+			<StackPanel
+				Margin="20 0"
+				Orientation="Vertical"
+				Spacing="5">
+
+				<StackPanel
+					Margin="0 35 0 5"
+					Orientation="Horizontal"
+					Spacing="10">
+					<PathIcon
+						Data="{StaticResource person_regular}"/>
+					<TextBlock
+						Classes="header"
+						Text="Пользователь"/>
+				</StackPanel>
+				
+				<TextBlock
+					Text="Имя"/>
+				<TextBox
+					Text="{Binding User.Name}"
+					Watermark="Введите имя"/>
+				<TextBlock
+					Text="О себе"/>
+				<TextBox
+					Text="{Binding User.About}"
+					Watermark="Напишите о себе, своих предпочтениях"/>
+
+				<StackPanel
+					Margin="0 35 0 5"
+					Orientation="Horizontal"
+					Spacing="10">
+					<PathIcon
+						Data="{StaticResource options_regular}"/>
+					<TextBlock
+						Classes="header"
+						Text="Система"/>
+				</StackPanel>
+				
+				<TextBlock
+					Text="IP адрес сервера"/>
+				<TextBox
+					Text="{Binding ServerIp}"
+					Watermark="Введите адрес"/>
+
+				<Button
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Center">
+					Сохранить настройки системы
+				</Button>
+			</StackPanel>
 		</ScrollViewer>
 	</Grid>
 </UserControl>

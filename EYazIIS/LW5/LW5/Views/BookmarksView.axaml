@@ -30,8 +30,8 @@
 			<Button
 				HorizontalAlignment="Left"
 				Classes="nobg icon"
-				Command="{Binding $parent[views:MainWindow].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
-				CommandParameter="{x:Static model:AppPage.Main}">
+				Command="{Binding $parent[views:MainView].((vm:MainViewModel)DataContext).NavigateCommand}"
+				CommandParameter="{x:Static model:AppPage.Dialog}">
 				<PathIcon
 					Data="{StaticResource arrow_up_regular}">
 					<PathIcon.RenderTransform>
@@ -44,11 +44,11 @@
 
 		<!--main region-->
 		<ScrollViewer
-			Background="#0e1621"
+			Background="{StaticResource ChatBackground}"
 			Grid.Row="1">
-			<!--<ItemsControl
+			<ItemsControl
 				Margin="5"
-				ItemsSource="{Binding Messages}">
+				ItemsSource="{Binding Saved}">
 				<ItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
 						<StackPanel
@@ -58,20 +58,11 @@
 				</ItemsControl.ItemsPanel>
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<views:MessageView>
-							<views:MessageView.HorizontalAlignment>
-								<MultiBinding
-									Converter="{StaticResource MessageToAlignmentConverter}"
-									Mode="OneWay">
-									<Binding />
-									<Binding
-										Path="$parent[ScrollViewer].((vm:MainViewModel)DataContext).User.Name"/>
-								</MultiBinding>
-							</views:MessageView.HorizontalAlignment>
-						</views:MessageView>
+						<views:UserMessageView 
+							HideReactions="True"/>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
-			</ItemsControl>-->
+			</ItemsControl>
 		</ScrollViewer>
 	</Grid>
 </UserControl>

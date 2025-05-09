@@ -2,11 +2,21 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using System.Threading.Tasks;
 using System.Threading;
+using Avalonia;
 
 namespace LW5.Views;
 
 public partial class UserMessageView : UserControl
 {
+    public static readonly StyledProperty<bool> HideReactionsProperty =
+        AvaloniaProperty.Register<UserMessageView, bool>(nameof(HideReactions));
+
+    public bool HideReactions
+    {
+        get => GetValue(HideReactionsProperty);
+        set => SetValue(HideReactionsProperty, value);
+    }
+
     private bool _carouselRotationDirection = true;
     private CancellationTokenSource _cts = new();
 

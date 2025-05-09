@@ -1,78 +1,59 @@
-﻿using LW5.ViewModels.Messages;
+﻿using Avalonia.Controls;
+using LW5.Models;
+using LW5.Views;
 using ReactiveUI;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Reactive;
 
 namespace LW5.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    private UserViewModel _user = new();
-    public UserViewModel User
+    private UserControl _currentPage;
+    public UserControl CurrentPage
     {
-        get => _user;
-        set => this.RaiseAndSetIfChanged(ref _user, value);
+        get => _currentPage;
+        set => this.RaiseAndSetIfChanged(ref _currentPage, value);
     }
 
-    private MessageSenderViewModel _helper_sender = new()
+    private Dictionary<AppPage, UserControl> _pages = [];
+
+    private Dictionary<AppPage, Type> _pageTypes = new()
     {
-        Name = "Кинопомощник",
-    };
-    private MessageSenderViewModel _user_sender = new()
-    {
-        Name = "User",
+        { AppPage.Dialog, typeof(DialogView) },
+        { AppPage.Settings, typeof(SettingsView) },
+        { AppPage.Bookmarks, typeof(BookmarksView) },
     };
 
-    public ObservableCollection<MessageViewModel> Messages => [
-        new ServiceMessageViewModel(),
-        new UserMessageViewModel()
+    private Dictionary<Type, ViewModelBase> _viewModels = new()
+    {
+        { typeof(DialogView), new DialogViewModel() },
+        { typeof(SettingsView), new SettingsViewModel() },
+        { typeof(BookmarksView), new BookmarksViewModel() },
+    };
+
+    public ReactiveCommand<AppPage, Unit> NavigateCommand { get; }
+
+    public MainViewModel()
+    {
+        NavigateCommand = ReactiveCommand.Create<AppPage>(Navigate);
+
+        Navigate(AppPage.Dialog);
+    }
+
+    private void Navigate(AppPage page)
+    {
+        if (!_pages.TryGetValue(page, out UserControl? control))
         {
-            Content = new()
-            {
-                Text = "Привет, я кинопомощник. Помогу найти фильм, дам ссылку на источники информации, покажу актуальные фото по теме.",
-                Links = [
-                    new("https://example.com/"),
-                    new("https://google.com/"),
-                    ],
-                Images = [
-                    "https://i.pinimg.com/236x/c6/2e/47/c62e47ccce4e8e568c9c7e381032bde9.jpg",
-                    "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
-                    ],
-            },
-            Metadata = new()
-            {
-                Sender = _helper_sender,
-                Sent = DateTimeOffset.Now
-            },
-            Reactions = new() { },
-        },
-        new UserMessageViewModel() {
-            Content = new()
-            {
-                Text = "Какой же ты классный. Надеюсь, у нас получится хороший диалог.",
-                Links = [],
-                Images = [],
-            },
-            Metadata = new()
-            {
-                Sender = _user_sender,
-                Sent = DateTimeOffset.Now
-            },
-            Reactions = null,
-        },
-        new UserMessageViewModel() {
-            Content = new()
-            {
-                Text = "Я тоже на это надеюсь",
-                Links = [],
-                Images = [],
-            },
-            Metadata = new()
-            {
-                Sender = _helper_sender,
-                Sent = DateTimeOffset.Now
-            },
-            Reactions = new() { },
+            var inst = Activator.CreateInstance(_pageTypes[page])!;
+            control = (UserControl)inst;
+            _pages.Add(page, control);
         }
-        ];
+
+        var vm = _viewModels[control.GetType()];
+
+        control.DataContext = vm;
+        CurrentPage = control;
+    }
 }
