@@ -15,11 +15,11 @@
 		<converters:BoolToValueConverter 
 			x:Key="BoolToGreenConverter"
 			FalseValue="#1ccc5b"
-			TrueValue="LightGray"/>
+			TrueValue="Gray"/>
 		<converters:BoolToValueConverter
 			x:Key="BoolToRedConverter"
-			FalseValue="#e43d30"
-			TrueValue="LightGray"/>
+			FalseValue="#ff5f35"
+			TrueValue="Gray"/>
 	</UserControl.Resources>
 	
 	<Design.DataContext>
@@ -29,10 +29,10 @@
 	<UserControl.Styles>
 		<Style
 			Selector=":is(ContentControl).emotion">
-			<Setter Property="Width" Value="30"/>
-			<Setter Property="Height" Value="30"/>
+			<Setter Property="Width" Value="34"/>
+			<Setter Property="Height" Value="34"/>
 			<Setter Property="Padding" Value="1"/>
-			<Setter Property="CornerRadius" Value="15"/>
+			<Setter Property="CornerRadius" Value="17"/>
 		</Style>
 		<Style
 			Selector="TextBlock">
@@ -53,7 +53,7 @@
 		<Border
 			Background="#182533"
 			Padding="8"
-			CornerRadius="12">
+			CornerRadius="17">
 			<StackPanel
 				Orientation="Vertical"
 				Spacing="8">
@@ -150,7 +150,7 @@
 			DataContext="{Binding Reactions}"
 			Margin="0 0 6 0"
 			HorizontalAlignment="Right"
-			Spacing="5"
+			Spacing="2"
 			Orientation="Horizontal">
 			<StackPanel.IsVisible>
 				<MultiBinding Converter="{StaticResource AllTrueConverter}">
@@ -170,7 +170,7 @@
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					Data="{StaticResource thumb_dislike_regular}"
+					Data="{StaticResource emoji_sad_regular}"
 					Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
 			</Button>
 			<Button
@@ -182,7 +182,7 @@
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					Data="{StaticResource thumb_like_regular}"
+					Data="{StaticResource emoji_regular}"
 					Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
 			</Button>
 		</StackPanel>

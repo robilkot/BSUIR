@@ -18,12 +18,18 @@
 			Height="50"
 			Grid.Row="0">
 
-			<TextBlock
-				Text="Кинопомощник"
-				FontSize="16"
-				FontWeight="Medium"
+			<StackPanel
 				VerticalAlignment="Center"
-				HorizontalAlignment="Center"/>
+				HorizontalAlignment="Center"
+				Orientation="Horizontal"
+				Spacing="5">
+				<TextBlock
+					Text="Кинопомощник"
+					FontSize="16"
+					FontWeight="Medium"/>
+				<PathIcon
+					Data="{StaticResource movies_and_tv_regular}"/>
+			</StackPanel>
 
 			<Button
 				HorizontalAlignment="Left"
