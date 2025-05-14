@@ -24,7 +24,7 @@ class MessageMetadata(BaseModel):
     sender: User
 
 class MessageReactions(BaseModel):
-    rating: str
+    rating: int
 
 class Message(BaseModel):
     content: MessageContent
@@ -33,7 +33,7 @@ class Message(BaseModel):
 
 class RateMessageRequest(BaseModel):
     message: Message
-    rating: str
+    rating: int
 
 
 class ChatRequest(BaseModel):

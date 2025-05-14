@@ -59,6 +59,7 @@
 				ColumnDefinitions="*, auto">
 
 				<TextBox
+					x:Name="inputTextBox"
 					Margin="3"
 					BorderThickness="0"
 					FontSize="16"
@@ -67,6 +68,8 @@
 					Watermark="Введите запрос..."/>
 
 				<Button
+					Command="{Binding SendMessageCommand}"
+					CommandParameter="{Binding #inputTextBox.Text}"
 					Classes="icon nobg"
 					Grid.Column="1">
 					<PathIcon

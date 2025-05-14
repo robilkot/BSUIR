@@ -20,6 +20,10 @@
 			x:Key="BoolToRedConverter"
 			FalseValue="#ff5f35"
 			TrueValue="Gray"/>
+		<converters:MessageStatusToColorConverter
+			x:Key="MessageStatusToColorConverter"
+			OkColor="#182533"
+			ErrorColor="#C11414"/>
 	</UserControl.Resources>
 	
 	<Design.DataContext>
@@ -51,7 +55,7 @@
 		Orientation="Vertical"
 		Spacing="2">
 		<Border
-			Background="#182533"
+			Background="{Binding Status, Converter={StaticResource MessageStatusToColorConverter}}"
 			Padding="8"
 			CornerRadius="17">
 			<StackPanel
@@ -142,6 +146,25 @@
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
+
+				<Grid
+					IsVisible="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:MessageStatus.Error}}"
+					ColumnDefinitions="*, auto">
+					<TextBlock
+						Grid.Column="0"
+						TextWrapping="Wrap"
+						VerticalAlignment="Center">
+						<Run
+							Text="Ошибка отправки: "/>
+						<Run
+							Text="{Binding ErrorMsg}"/>
+					</TextBlock>
+					<Button
+						Command="{Binding ResendCommand}"
+						Grid.Column="1">
+						Переотправить
+					</Button>
+				</Grid>
 			</StackPanel>
 		</Border>
 		<!--reactions-->

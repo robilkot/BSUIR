@@ -69,6 +69,7 @@ def send_message(request: ChatRequest):
         "chat_history": chat_history
     })['answer']
 
+    logger.debug(answer)
     # markdown stuff
     summary_str = answer
     summary_str = str.replace(summary_str, '```json', '')
@@ -99,7 +100,7 @@ def send_message(request: ChatRequest):
             )
         ),
         reactions=MessageReactions(
-            rating='None'
+            rating=0
         )
     )
 
