@@ -13,15 +13,39 @@ namespace LW5.Services
     public class DialogService
     {
         private Guid? _sessionId;
+        private HttpClient? _client;
+
+        private string _baseUrl;
+        public string BaseUrl
+        {
+            get => _baseUrl;
+            set
+            {
+                _baseUrl = value;
+                try
+                {
+                    _client = new HttpClient()
+                    {
+                        BaseAddress = new(value)
+                    };
+                }
+                catch {
+                    _client = null;
+                }
+            }
+        }
 
         public async Task<Message?> Send(UserMessageViewModel msg)
         {
-            _sessionId ??= Guid.NewGuid();
-
-            var httpClient = new HttpClient()
+            if (_client == null)
             {
-                BaseAddress = new("http://localhost:8000/")
-            };
+                msg.Status = MessageStatus.Error;
+                msg.ErrorMsg = "HTTP Client is null. Check server URL.";
+
+                return null;
+            }
+
+            _sessionId ??= Guid.NewGuid();
 
             try
             {
@@ -34,7 +58,7 @@ namespace LW5.Services
                 Debug.WriteLine($"Sending msg: {json}");
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await httpClient.PostAsync($"/chat", content);
+                var response = await _client.PostAsync($"/chat", content);
                 var body = await response.Content.ReadAsStringAsync();
 
                 response.EnsureSuccessStatusCode();

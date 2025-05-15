@@ -98,12 +98,6 @@
 				<TextBox
 					Text="{Binding ServerIp}"
 					Watermark="Введите адрес"/>
-
-				<Button
-					HorizontalAlignment="Stretch"
-					HorizontalContentAlignment="Center">
-					Сохранить настройки системы
-				</Button>
 			</StackPanel>
 		</ScrollViewer>
 	</Grid>

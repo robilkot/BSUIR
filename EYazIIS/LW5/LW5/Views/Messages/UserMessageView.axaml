@@ -23,6 +23,7 @@
 		<converters:MessageStatusToColorConverter
 			x:Key="MessageStatusToColorConverter"
 			OkColor="#182533"
+			SentColor="#2e4966"
 			ErrorColor="#C11414"/>
 	</UserControl.Resources>
 	
@@ -42,11 +43,15 @@
 			Selector="TextBlock">
 			<Setter
 				Property="Foreground" Value="White"/>
+			<Setter
+				Property="FontWeight" Value="SemiLight"/>
 		</Style>
 		<Style
 			Selector="HyperlinkButton">
 			<Setter
 				Property="Foreground" Value="#83caff"/>
+			<Setter
+				Property="FontWeight" Value="SemiLight"/>
 		</Style>
 	</UserControl.Styles>
 

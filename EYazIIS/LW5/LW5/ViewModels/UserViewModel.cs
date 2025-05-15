@@ -1,17 +1,20 @@
-﻿using ReactiveUI;
+﻿using Newtonsoft.Json;
+using ReactiveUI;
 
 namespace LW5.ViewModels
 {
     public class UserViewModel : ViewModelBase
     {
-        private string _name = "User";
+        private string _name = "Тимур";
+        [JsonProperty]
         public string Name
         {
             get => _name;
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
-        private string _about = "Mediocre user";
+        private string _about = "Люблю Sci-Fi";
+        [JsonProperty]
         public string About
         {
             get => _about;

@@ -1,53 +1,13 @@
 ﻿using LW5.ViewModels.Messages;
-using System;
 using System.Collections.ObjectModel;
+using System.Runtime.Serialization;
 
 namespace LW5.ViewModels
 {
+    [DataContract]
     public class BookmarksViewModel : ViewModelBase
     {
-        private UserViewModel _helper_sender = new()
-        {
-            Name = "Кинопомощник",
-            About = "Помогает искать информацию о фильмах"
-        };
-
-        public ObservableCollection<UserMessageViewModel> Saved => [
-                new ()
-                {
-                    Content = new()
-                    {
-                        Text = "Очень важное сохраненное сообщение со ссылками и фотографиями.",
-                        Links = [
-                            new("https://example.com/"),
-                            new("https://google.com/"),
-                            ],
-                        Images = [
-                            "https://i.pinimg.com/236x/c6/2e/47/c62e47ccce4e8e568c9c7e381032bde9.jpg",
-                            "https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
-                            ],
-                    },
-                    Metadata = new()
-                    {
-                        Sender = _helper_sender,
-                        Sent = DateTimeOffset.Now
-                    },
-                    Reactions = new() { },
-                },
-                new () {
-                    Content = new()
-                    {
-                        Text = "Ещё одно сообщение, но уже без вложений.",
-                        Links = [],
-                        Images = [],
-                    },
-                    Metadata = new()
-                    {
-                        Sender = _helper_sender,
-                        Sent = DateTimeOffset.Now
-                    },
-                    Reactions = new() { },
-                }
-            ];
+        [DataMember]
+        public ObservableCollection<UserMessageViewModel> Saved { get; set; } = [];
     }
 }

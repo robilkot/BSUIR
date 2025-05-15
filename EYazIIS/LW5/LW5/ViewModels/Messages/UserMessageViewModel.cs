@@ -5,18 +5,22 @@ using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.Serialization;
 
 namespace LW5.ViewModels.Messages;
 
+[DataContract]
 public class UserMessageViewModel : MessageViewModel
 {
     private MessageStatus _status;
+    [DataMember]
     public MessageStatus Status
     {
         get => _status;
         set => this.RaiseAndSetIfChanged(ref _status, value);
     }
     private string? _errorMsg;
+    [DataMember]
     public string? ErrorMsg
     {
         get => _errorMsg;
@@ -24,6 +28,7 @@ public class UserMessageViewModel : MessageViewModel
     }
 
     private MessageContentViewModel _content;
+    [DataMember]
     public MessageContentViewModel Content
     {
         get => _content;
@@ -31,6 +36,7 @@ public class UserMessageViewModel : MessageViewModel
     }
 
     private MessageMetadataViewModel _metadata = new();
+    [DataMember]
     public MessageMetadataViewModel Metadata
     {
         get => _metadata;
@@ -38,6 +44,7 @@ public class UserMessageViewModel : MessageViewModel
     }
 
     private MessageReactionsViewModel? _reactions;
+    [DataMember]
     public MessageReactionsViewModel? Reactions
     {
         get => _reactions;
@@ -45,11 +52,14 @@ public class UserMessageViewModel : MessageViewModel
     }
 
     private ReactiveCommand<UserMessageViewModel, Unit>? _resendCommand;
+    [IgnoreDataMember]
     public ReactiveCommand<UserMessageViewModel, Unit>? ResendCommandInternal
     {
         get => _resendCommand;
         set => this.RaiseAndSetIfChanged(ref _resendCommand, value);
     }
+
+    [IgnoreDataMember]
     public ReactiveCommand<Unit, Unit> ResendCommand { get; }
 
     public UserMessageViewModel()

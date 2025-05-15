@@ -61,48 +61,76 @@ def send_message(request: ChatRequest):
 
     chat_history = get_chat_history(session_id)
     rag_chain = get_analysis_rag_chain()
-    answer = rag_chain.invoke({
-        "input": request.message.content.text,
-        "user_name": request.message.metadata.sender.name,
-        "user_about": request.message.metadata.sender.about,
-        "time": request.message.metadata.sent,
-        "chat_history": chat_history
-    })['answer']
 
-    logger.debug(answer)
-    # markdown stuff
-    summary_str = answer
-    summary_str = str.replace(summary_str, '```json', '')
-    summary_str = str.replace(summary_str, '```', '')
-    summary = json.loads(summary_str)
+    max_retry_count = 1
+    retry_count = 0
+    while retry_count < max_retry_count:
+        try:
+            answer = rag_chain.invoke({
+                "input": request.message.content.text,
+                "user_name": request.message.metadata.sender.name,
+                "user_about": request.message.metadata.sender.about,
+                "time": request.message.metadata.sent,
+                "chat_history": chat_history
+            })['answer']
 
-    # generate links and urls
-    film_names = summary['film_names']
-    people = summary['people']
-    related_image_url = get_image_url_by_query(film_names[0]) if len(film_names) > 0 else None
+            logger.debug(answer)
+            # markdown stuff
+            summary_str = answer
+            summary_str = str.replace(summary_str, '```json', '')
+            summary_str = str.replace(summary_str, '```', '')
+            summary = json.loads(summary_str)
 
-    links = [get_search_result_url(query) for query in (people + film_names)[:3]]
+            # generate links and urls
+            film_names = summary['film_names']
+            people = summary['people']
+            text = summary['text']
+            break
+        except Exception as e:
+            logger.error(f'{e}')
+            logger.warning("error formatting llm response, retrying")
+            logger.warning(summary_str)
+            retry_count += 1
 
-    if related_image_url is None:
-        related_image_url = get_image_url_by_query(people[0]) if len(people) > 0 else None
-
-    msg = Message(
-        content=MessageContent(
-            images=[related_image_url] if related_image_url else [],
-            links=links,
-            text=summary['text'],
-        ),
-        metadata=MessageMetadata(
-            sent=datetime.now(),
-            sender=User(
-                name='Кинопомощник',
-                about='Помогаю познать мир кино'
+    metadata = MessageMetadata(
+                sent=datetime.now(),
+                sender=User(
+                    name='Кинопомощник',
+                    about='Помогаю познать мир кино'
+                )
             )
-        ),
-        reactions=MessageReactions(
-            rating=0
+    reactions = MessageReactions(
+                rating=0
+            )
+    msg: Message
+
+    if retry_count >= max_retry_count:
+        msg = Message(
+            content=MessageContent(
+                images=[],
+                links=[],
+                text=summary_str,
+            ),
+            metadata=metadata,
+            reactions=reactions
         )
-    )
+    else:
+        related_image_url = get_image_url_by_query(film_names[0]) if len(film_names) > 0 else None
+
+        links = [get_search_result_url(query) for query in (people + film_names)[:3]]
+
+        if related_image_url is None:
+            related_image_url = get_image_url_by_query(people[0]) if len(people) > 0 else None
+
+        msg = Message(
+            content=MessageContent(
+                images=[related_image_url] if related_image_url else [],
+                links=links,
+                text=text,
+            ),
+            metadata=metadata,
+            reactions=reactions
+        )
 
     insert_application_logs(session_id, request.message.content.text, answer)
     return ChatResponse(message=msg, session_id=session_id)

@@ -3,40 +3,50 @@ using LW5.ViewModels.Messages;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace LW5.ViewModels;
 
+[DataContract]
 public class DialogViewModel : ViewModelBase
 {
-    private readonly DialogService _dialogService = new();
+    [IgnoreDataMember]
+    public DialogService DialogService { get; set; }
 
-    private UserViewModel _user = new();
-    public UserViewModel User
-    {
-        get => _user;
-        set => this.RaiseAndSetIfChanged(ref _user, value);
-    }
+    [IgnoreDataMember]
+    public SettingsViewModel Settings { get; set; }
+
 
     private UserViewModel _helper_sender = new()
     {
         Name = "Кинопомощник",
         About = "Помогает искать информацию о фильмах"
     };
-    private UserViewModel _user_sender = new()
-    {
-        Name = "User",
-        About = "Пользователь приложения"
-    };
 
+    [IgnoreDataMember]
     public ReactiveCommand<string, Unit> SendMessageCommand { get; }
 
-    public ObservableCollection<MessageViewModel> Messages { get; set; }
+    private ObservableCollection<MessageViewModel> _messages = [];
+    [DataMember]
+    public ObservableCollection<MessageViewModel> Messages
+    {
+        get => _messages;
+        set => this.RaiseAndSetIfChanged(ref _messages, value);
+    }
 
     public DialogViewModel()
     {
-        Messages = [
+        SendMessageCommand = ReactiveCommand.CreateFromTask<string>(SendMessage);
+    }
+
+    public void Init()
+    {
+        if(Messages.Count == 0)
+        {
+            Messages = [
             new ServiceMessageViewModel(),
             new UserMessageViewModel()
             {
@@ -60,8 +70,10 @@ public class DialogViewModel : ViewModelBase
                 Reactions = null,
             }
         ];
+        }
 
-        SendMessageCommand = ReactiveCommand.CreateFromTask<string>(SendMessage);
+        Messages = [..Messages.
+            Where(m => m is not UserMessageViewModel uvm || uvm.Status != Models.MessageStatus.Error)];
     }
 
     private void DeleteMessage(MessageViewModel msg)
@@ -89,16 +101,19 @@ public class DialogViewModel : ViewModelBase
     {
         msg.Status = Models.MessageStatus.Sent;
         msg.Metadata.Sent = DateTimeOffset.Now;
-        msg.Metadata.Sender = _user_sender;
+        msg.Metadata.Sender = Settings.User;
         msg.Reactions = null;
 
         Messages.Add(msg);
 
-        var response = await _dialogService.Send(msg);
+        var response = await DialogService.Send(msg);
 
         if (response != null)
         {
-            var newVM = new UserMessageViewModel(response);
+            var newVM = new UserMessageViewModel(response)
+            {
+                Status = Models.MessageStatus.Delivered
+            };
             Messages.Add(newVM);
         }
     }

@@ -9,6 +9,7 @@ namespace LW5.Converters
     public class MessageStatusToColorConverter : IValueConverter
     {
         public ImmutableSolidColorBrush? OkColor { get; set; }
+        public ImmutableSolidColorBrush? SentColor { get; set; }
         public ImmutableSolidColorBrush? ErrorColor { get; set; }
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
@@ -17,6 +18,7 @@ namespace LW5.Converters
                 return status switch
                 {
                     MessageStatus.Error => ErrorColor,
+                    MessageStatus.Sent => SentColor,
                     _ => OkColor
                 };
             }
