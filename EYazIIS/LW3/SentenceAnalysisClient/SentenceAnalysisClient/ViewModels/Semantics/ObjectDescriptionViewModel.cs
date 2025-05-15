@@ -14,9 +14,9 @@ namespace SentenceAnalysisClient.ViewModels.Semantics
             set => this.RaiseAndSetIfChanged(ref _text, value);
         }
 
-        private int? _emphasis;
+        private int _emphasis;
         [JsonProperty]
-        public int? Emphasis
+        public int Emphasis
         {
             get => _emphasis;
             set => this.RaiseAndSetIfChanged(ref _emphasis, value);

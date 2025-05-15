@@ -1,7 +1,7 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Threading;
-using System.Linq;
+using SentenceAnalysisClient.ViewModels;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +18,16 @@ public partial class TokenSemanticsView : UserControl
 
         slides.AttachedToVisualTree += Slides_AttachedToVisualTree;
         slides.DetachedFromVisualTree += Slides_DetachedFromVisualTree;
+
+        tooltip.Loaded += TooltipShown;
+    }
+
+    private void TooltipShown(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not SentenceTokenViewModel vm)
+            return;
+
+        vm.ParseSemanticsObjectInfoCommand.Execute();
     }
 
     private void Slides_DetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -44,15 +54,15 @@ public partial class TokenSemanticsView : UserControl
 
                     if (_carouselRotationDirection)
                     {
-                        Dispatcher.UIThread.Post(() => slides.Next());
+                        Dispatcher.UIThread.Post(slides.Next);
                     }
                     else
                     {
-                        Dispatcher.UIThread.Post(() => slides.Previous());
+                        Dispatcher.UIThread.Post(slides.Previous);
                     }
                 }
             }, _cts.Token);
         }
-        catch(TaskCanceledException) { }
+        catch (TaskCanceledException) { }
     }
 }

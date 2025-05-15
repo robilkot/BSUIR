@@ -35,6 +35,7 @@
 
 		<ToolTip.Tip>
 			<Grid
+				x:Name="tooltip"
 				RowDefinitions="auto,auto">
 				<!-- Named entity -->
 				<StackPanel
@@ -51,10 +52,16 @@
 					</TextBlock>
 				</StackPanel>
 				<!-- Object description -->
+				<TextBlock
+					Grid.Row="1"
+					IsVisible="{Binding Semantics.ObjectDescription, Converter={x:Static ObjectConverters.IsNull}}"
+					Text="Получение определения..."/>
+				
 				<StackPanel
 					Grid.Row="1"
 					Spacing="5"
 					IsVisible="{Binding Semantics.ObjectDescription, Converter={x:Static ObjectConverters.IsNotNull}}">
+
 					<TextBlock FontSize="16" Text="{Binding Semantics.ObjectDescription, Converter={StaticResource DescriptionToEmphasisedWordConverter}}"/>
 					<TextBlock Text="{Binding Semantics.ObjectDescription.Description}"/>
 

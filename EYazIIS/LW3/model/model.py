@@ -142,6 +142,8 @@ class NamedEntity:
 
 @dataclass
 class ObjectDescription:
+    text: str
+    emphasis: int
     description: str
     images_urls: list[str] | None = None
 
@@ -161,12 +163,7 @@ class Sentence:
 
     def __str__(self):
         return self.text
-    
-@dataclass
-class WordSemantics:
-    word: str
-    emph_info: int
-    description: str
+
 
 def text_to_sentences(text: str) -> list[Sentence]:
     doc = Doc(text)
@@ -297,85 +294,80 @@ def lemmatize_word(word: str) -> str:
 
 def get_words_semantics(query):
     query_lemma = lemmatize_word(query)
-    try:
-        base_url = "https://www.slovari.ru/search.aspx"
-        params = {"s": "0", "p": "3068"}
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Content-Type': 'application/x-www-form-urlencoded'
+
+    base_url = "https://www.slovari.ru/search.aspx"
+    params = {"s": "0", "p": "3068"}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    with requests.Session() as s:
+        response = s.get(base_url, params=params, headers=headers)
+        response.encoding = 'utf-8'
+
+        if response.status_code != 200:
+            return {"error": f"Initial request failed: {response.status_code}"}
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        viewstate = soup.find('input', {'id': '__VIEWSTATE'})['value']
+        viewstategenerator = soup.find('input', {'id': '__VIEWSTATEGENERATOR'})['value']
+
+        data = {
+            '__EVENTTARGET': 'ctl08',
+            '__EVENTARGUMENT': 'Search()',
+            '__VIEWSTATE': viewstate,
+            '__VIEWSTATEGENERATOR': viewstategenerator,
+            'query_textfield': 'поиск по сайту',
+            'ctl07':'vname',
+            'ctl07':'vojsh',
+            'ctl08_regime':'simple',
+            'ctl08':'query',
+            'ctl08_search_query': query_lemma,
         }
+        response = s.post(base_url,
+                        params=params,
+                        data=data,
+                        headers=headers,
+                        allow_redirects=True)
 
-        with requests.Session() as s:
-            response = s.get(base_url, params=params, headers=headers)
-            response.encoding = 'utf-8'
-            
-            if response.status_code != 200:
-                return {"error": f"Initial request failed: {response.status_code}"}
+        response.raise_for_status()
 
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            viewstate = soup.find('input', {'id': '__VIEWSTATE'})['value']
-            viewstategenerator = soup.find('input', {'id': '__VIEWSTATEGENERATOR'})['value']
+    result_soup = BeautifulSoup(response.text, 'html.parser')
+    results = result_soup.find('div', class_='searchResultsText')
 
-            data = {
-                '__EVENTTARGET': 'ctl08',
-                '__EVENTARGUMENT': 'Search()',
-                '__VIEWSTATE': viewstate,
-                '__VIEWSTATEGENERATOR': viewstategenerator,
-                'query_textfield': 'поиск по сайту',
-                'ctl07':'vname',
-                'ctl07':'vojsh',
-                'ctl08_regime':'simple',
-                'ctl08':'query',
-                'ctl08_search_query': query_lemma,
-            }
-            response = s.post(base_url, 
-                            params=params,
-                            data=data, 
-                            headers=headers,
-                            allow_redirects=True)
+    if not results:
+        return ObjectDescription(text=query_lemma, description='описание не найдено', emphasis=-1)
 
-            response.raise_for_status()
+    raw_text = results.get_text(strip=False, separator='\n')
+    cleaned_text = ' '.join(raw_text.split())
 
-        result_soup = BeautifulSoup(response.text, 'html.parser')
-        results = result_soup.find('div', class_='searchResultsText')
-        
-        if not results:
-            return "Ничего не найдено"
-            
-        raw_text = results.get_text(strip=False, separator='\n')
-        cleaned_text = ' '.join(raw_text.split())
+    first_word = cleaned_text.split()[0]
+    apostrophe_index = first_word.find("'")
 
-        first_word = cleaned_text.split()[0] 
-        apostrophe_index = first_word.find("'")
-        
-        if apostrophe_index == -1:
-            return WordSemantics(
-                word=query_lemma,
-                emph_info=0,
-                description=cleaned_text
-            )
-
-        clean_word = first_word.replace("'", "")
-        emph_index = apostrophe_index - 1 
-
-        description = cleaned_text[len(first_word):].strip()
-
-        return WordSemantics(
-            word=clean_word,
-            emph_info=emph_index,
-            description=description
+    if apostrophe_index == -1:
+        return ObjectDescription(
+            text=query_lemma,
+            emphasis=-1,
+            description=cleaned_text
         )
 
-    except requests.exceptions.RequestException as e:
-        return f"Ошибка сети: {str(e)}"
-    except Exception as e:
-        return f"Ошибка: {str(e)}"
+    clean_word = first_word.replace("'", "")
+    emph_index = apostrophe_index - 1
+
+    description = cleaned_text[len(first_word):].strip()
+
+    return ObjectDescription(
+        text=clean_word,
+        emphasis=emph_index,
+        description=description
+    )
 
 
 if __name__ == "__main__":
-    word = "интересы"
-    print(get_words_semantics(word))
+    text = "интересы"
+    print(get_words_semantics(text))
     # files = os.listdir("./dataset/")
     # content = []
     # for filename in files:

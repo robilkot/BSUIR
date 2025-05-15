@@ -90,6 +90,18 @@ async def parse_sentence_semantics(request: SentenceRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/get-word-semantics", response_model=ObjectDescription)
+async def parse_sentence_syntax(request: SentenceRequest):
+    try:
+        logger.info(str(request))
+
+        result = get_words_semantics(request.text)
+
+        return result
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.get("/health")
 async def get_health():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}

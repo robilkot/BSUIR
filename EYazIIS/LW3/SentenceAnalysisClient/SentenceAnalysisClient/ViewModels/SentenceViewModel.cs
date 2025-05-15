@@ -56,6 +56,9 @@ namespace SentenceAnalysisClient.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isSemanticsVisible, value);
         }
 
+        public List<NamedEntityViewModel> NamedEntities
+            => Tokens.Where(t => t.Semantics is not null).Select(t => t.Semantics.NamedEntity).Where(info => info is not null).Distinct().ToList();
+
         public ReactiveCommand<Unit, Unit> ParseSyntaxCommand { get; }
         public ReactiveCommand<Unit, Unit> ParseMorphologyCommand { get; }
         public ReactiveCommand<Unit, Unit> ParseSemanticsCommand { get; }
@@ -86,14 +89,30 @@ namespace SentenceAnalysisClient.ViewModels
 
                 var result = await response.Content.ReadFromJsonAsync<SemanticsResponse>();
 
+                Dictionary<string, NamedEntityViewModel> NREVms = [];
+
                 foreach (var (First, Second) in Tokens.Zip(result!.tokens))
                 {
-                    var namedEntity = Second.named_entity_info == null ? null : new NamedEntityViewModel()
+                    NamedEntityViewModel? vm = null;
+
+                    if(Second.named_entity_info != null)
                     {
-                        NerClass = Second.named_entity_info.ner_class,
-                        Text = Second.named_entity_info.text,
-                        NormalForm = Second.named_entity_info.normal_form,
-                    };
+                        if(!NREVms.ContainsKey(Second.named_entity_info.text))
+                        {
+                            vm = Second.named_entity_info == null ? null : new NamedEntityViewModel()
+                            {
+                                NerClass = Second.named_entity_info.ner_class,
+                                Text = Second.named_entity_info.text,
+                                NormalForm = Second.named_entity_info.normal_form,
+                            };
+
+                            NREVms.Add(Second.named_entity_info!.text, vm);
+                        }
+                        else
+                        {
+                            vm = NREVms[Second.named_entity_info.text];
+                        }
+                    }
 
                     var objectDescription = Second.object_description == null ? null : new ObjectDescriptionViewModel()
                     {
@@ -105,11 +124,12 @@ namespace SentenceAnalysisClient.ViewModels
 
                     First.Semantics = new()
                     {
-                        NamedEntity = namedEntity,
+                        NamedEntity = vm,
                         ObjectDescription = objectDescription,
                     };
                 }
 
+                this.RaisePropertyChanged(nameof(NamedEntities));
                 this.RaisePropertyChanged(nameof(Tokens));
             }
             catch (Exception ex)

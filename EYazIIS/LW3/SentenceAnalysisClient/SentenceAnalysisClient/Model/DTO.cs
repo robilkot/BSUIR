@@ -21,13 +21,11 @@ namespace SentenceAnalysisClient.Model
 
     public record SemanticsDto(NamedEntityDto? named_entity_info, ObjectDescriptionDto? object_description);
     public record NamedEntityDto(string text, NERClass ner_class, string? normal_form);
-    public record ObjectDescriptionDto(string text, int? emphasis, string description, List<string>? images_urls);
+    public record ObjectDescriptionDto(string text, int emphasis, string description, List<string>? images_urls);
     public record SemanticsResponse(List<SemanticsDto> tokens);
 
     public static class DtoExtensions
     {
-        public static IEnumerable<NamedEntityDto> GetNamedEntities(this SemanticsResponse response)
-            => response.tokens.Select(t => t.named_entity_info).Where(info => info is not null)!;
     }
 #pragma warning restore IDE1006 // Naming Styles
 }
