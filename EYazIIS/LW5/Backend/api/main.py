@@ -50,13 +50,37 @@ app.openapi = custom_openapi
 if __name__ == "__main__":
     port = int(os.getenv("API_PORT", "8000"))
     logger.info(f"Documentation available at http://127.0.0.1:{port}/docs")
-    uvicorn.run("main:app", host="127.0.0.1", port=port)
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
 
 
 
 @app.post("/chat",
           response_model=ChatResponse)
 def send_message(request: ChatRequest):
+    metadata = MessageMetadata(
+        sent=datetime.now(),
+        sender=User(
+            name='Кинопомощник',
+            about='Помогаю познать мир кино'
+        )
+    )
+    reactions = MessageReactions(
+        rating=0
+    )
+    msg: Message
+
+    if request.message.content.text == 'test':
+        msg = Message(
+            content=MessageContent(
+                images=[],
+                links=[],
+                text='test response',
+            ),
+            metadata=metadata,
+            reactions=reactions
+        )
+        return ChatResponse(message=msg, session_id=request.session_id)
+
     session_id = request.session_id or str(uuid.uuid4())
 
     chat_history = get_chat_history(session_id)
@@ -91,18 +115,6 @@ def send_message(request: ChatRequest):
             logger.warning("error formatting llm response, retrying")
             logger.warning(summary_str)
             retry_count += 1
-
-    metadata = MessageMetadata(
-                sent=datetime.now(),
-                sender=User(
-                    name='Кинопомощник',
-                    about='Помогаю познать мир кино'
-                )
-            )
-    reactions = MessageReactions(
-                rating=0
-            )
-    msg: Message
 
     if retry_count >= max_retry_count:
         msg = Message(

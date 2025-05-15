@@ -69,9 +69,11 @@ public class MainViewModel : ViewModelBase
     {
         var dialogService = new DialogService();
 
+        Settings.Dialog = Dialog;
         Settings.DialogService = dialogService;
         Dialog.DialogService = dialogService;
         Dialog.Settings = Settings;
+        Dialog.Bookmarks = Bookmarks;
 
         Dialog.Init();
         Navigate(AppPage.Dialog);

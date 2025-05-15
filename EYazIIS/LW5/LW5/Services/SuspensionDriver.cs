@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -12,6 +13,7 @@ namespace LW5.Services
         private readonly string _file;
         private readonly JsonSerializerSettings _settings = new JsonSerializerSettings
         {
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects,
             TypeNameHandling = TypeNameHandling.All
         };
 
@@ -30,11 +32,12 @@ namespace LW5.Services
             try
             {
                 var state = JsonConvert.DeserializeObject<object>(lines, _settings);
-                return Observable.Return(state);
+                return Observable.Return(state!);
             }
             catch (Exception ex)
             {
-                return null;
+                Debug.WriteLine(ex.Message);
+                return null!;
             }
         }
 

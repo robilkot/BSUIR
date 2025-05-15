@@ -35,6 +35,11 @@ namespace LW5.Services
             }
         }
 
+        public void ClearSession()
+        {
+            _sessionId = null;
+        }
+
         public async Task<Message?> Send(UserMessageViewModel msg)
         {
             if (_client == null)

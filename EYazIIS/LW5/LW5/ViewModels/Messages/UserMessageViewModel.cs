@@ -1,7 +1,9 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Threading;
 using LW5.Models;
 using ReactiveUI;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -19,6 +21,15 @@ public class UserMessageViewModel : MessageViewModel
         get => _status;
         set => this.RaiseAndSetIfChanged(ref _status, value);
     }
+
+    private bool _saved;
+    [DataMember]
+    public bool Saved
+    {
+        get => _saved;
+        set => this.RaiseAndSetIfChanged(ref _saved, value);
+    }
+
     private string? _errorMsg;
     [DataMember]
     public string? ErrorMsg
@@ -51,16 +62,12 @@ public class UserMessageViewModel : MessageViewModel
         set => this.RaiseAndSetIfChanged(ref _reactions, value);
     }
 
-    private ReactiveCommand<UserMessageViewModel, Unit>? _resendCommand;
-    [IgnoreDataMember]
-    public ReactiveCommand<UserMessageViewModel, Unit>? ResendCommandInternal
-    {
-        get => _resendCommand;
-        set => this.RaiseAndSetIfChanged(ref _resendCommand, value);
-    }
 
     [IgnoreDataMember]
     public ReactiveCommand<Unit, Unit> ResendCommand { get; }
+
+    [IgnoreDataMember]
+    public ReactiveCommand<bool, Unit> SaveCommand { get; }
 
     public UserMessageViewModel()
     {
@@ -91,9 +98,10 @@ public class UserMessageViewModel : MessageViewModel
         }
 
         ResendCommand = ReactiveCommand.Create(Resend);
+        SaveCommand = ReactiveCommand.Create<bool>(Save);
     }
 
-    public UserMessageViewModel(Message msg)
+    public UserMessageViewModel(Message msg) : this()
     {
         Content = new()
         {
@@ -115,7 +123,19 @@ public class UserMessageViewModel : MessageViewModel
 
     private void Resend()
     {
-        ResendCommandInternal?.Execute(this);
+        Dialog?.ResendMessageCommand.Execute(this);
+    }
+
+    private void Save(bool save)
+    {
+        if(save)
+        {
+            Dialog?.SaveMessageCommand.Execute(this);
+        }
+        else
+        {
+            Dialog?.UnsaveMessageCommand.Execute(this);
+        }
     }
 
     public Message ToModel()

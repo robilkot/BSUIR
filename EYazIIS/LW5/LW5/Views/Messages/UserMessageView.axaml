@@ -20,6 +20,10 @@
 			x:Key="BoolToRedConverter"
 			FalseValue="#ff5f35"
 			TrueValue="Gray"/>
+		<converters:BoolToValueConverter
+			x:Key="BoolToWhiteConverter"
+			FalseValue="Gray"
+			TrueValue="White"/>
 		<converters:MessageStatusToColorConverter
 			x:Key="MessageStatusToColorConverter"
 			OkColor="#182533"
@@ -115,7 +119,7 @@
 				</Carousel>
 
 				<!--text-->
-				<TextBlock
+				<SelectableTextBlock
 					Text="{Binding Content.Text}"
 					TextWrapping="Wrap"/>
 
@@ -172,47 +176,65 @@
 				</Grid>
 			</StackPanel>
 		</Border>
-		<!--reactions-->
 		<StackPanel
-			x:DataType="vm_msg:MessageReactionsViewModel"
-			DataContext="{Binding Reactions}"
-			Margin="0 0 6 0"
+			Orientation="Horizontal"
 			HorizontalAlignment="Right"
 			Spacing="2"
-			Orientation="Horizontal">
-			<StackPanel.IsVisible>
-				<MultiBinding Converter="{StaticResource AllTrueConverter}">
-					<Binding
-						Path="."
-						Converter="{x:Static ObjectConverters.IsNotNull}"/>
-					<Binding 
-						Path="!#root.HideReactions"/>
-				</MultiBinding>
-			</StackPanel.IsVisible>
+			Margin="0 0 6 0">
+			<!--save button-->
 			<Button
-				x:Name="dislike"
-				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"
+				IsVisible="{Binding Dialog, Converter={x:Static ObjectConverters.IsNotNull}}"
 				Classes="emotion"
-				Command="{Binding SetRatingCommand}"
-				CommandParameter="{x:Static models:MessageRating.Negative}">
+				Command="{Binding SaveCommand}"
+				CommandParameter="{Binding !Saved}">
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					Data="{StaticResource emoji_sad_regular}"
-					Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
+					Data="{StaticResource bookmark_regular}"
+					Foreground="{Binding Saved, Converter={StaticResource BoolToWhiteConverter}}"/>
 			</Button>
-			<Button
-				x:Name="like"
-				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Negative}}"
-				Classes="emotion"
-				Command="{Binding SetRatingCommand}"
-				CommandParameter="{x:Static models:MessageRating.Positive}">
-				<PathIcon
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"
-					Data="{StaticResource emoji_regular}"
-					Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
-			</Button>
+
+			<!--reactions-->
+			<StackPanel
+				x:DataType="vm_msg:MessageReactionsViewModel"
+				DataContext="{Binding Reactions}"
+				HorizontalAlignment="Right"
+				Spacing="2"
+				Orientation="Horizontal">
+				<StackPanel.IsVisible>
+					<MultiBinding Converter="{StaticResource AllTrueConverter}">
+						<Binding
+							Path="."
+							Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding 
+							Path="!#root.HideReactions"/>
+					</MultiBinding>
+				</StackPanel.IsVisible>
+				<Button
+					x:Name="dislike"
+					IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"
+					Classes="emotion"
+					Command="{Binding SetRatingCommand}"
+					CommandParameter="{x:Static models:MessageRating.Negative}">
+					<PathIcon
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Data="{StaticResource emoji_sad_regular}"
+						Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
+				</Button>
+				<Button
+					x:Name="like"
+					IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Negative}}"
+					Classes="emotion"
+					Command="{Binding SetRatingCommand}"
+					CommandParameter="{x:Static models:MessageRating.Positive}">
+					<PathIcon
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Data="{StaticResource emoji_regular}"
+						Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
+				</Button>
+			</StackPanel>
 		</StackPanel>
 	</StackPanel>
 </UserControl>

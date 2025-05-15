@@ -18,29 +18,35 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // Create the AutoSuspendHelper.
-        var suspension = new AutoSuspendHelper(ApplicationLifetime);
-        RxApp.SuspensionHost.CreateNewAppState = () => new MainViewModel();
-        RxApp.SuspensionHost.SetupDefaultSuspendResume(new NewtonsoftJsonSuspensionDriver("appstate.json"));
-        suspension.OnFrameworkInitializationCompleted();
-
-        var state = RxApp.SuspensionHost.GetAppState<MainViewModel>();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Create the AutoSuspendHelper.
+            var suspension = new AutoSuspendHelper(ApplicationLifetime);
+            RxApp.SuspensionHost.CreateNewAppState = () => new MainViewModel();
+            RxApp.SuspensionHost.SetupDefaultSuspendResume(new NewtonsoftJsonSuspensionDriver("appstate.json"));
+            suspension.OnFrameworkInitializationCompleted();
+
+            var state = RxApp.SuspensionHost.GetAppState<MainViewModel>();
+
             desktop.MainWindow = new MainWindow
             {
                 DataContext = state
             };
+
+            state.Init();
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
+            var state = new MainViewModel();
+
             singleViewPlatform.MainView = new MainView
             {
                 DataContext = state
             };
+
+            state.Init();
         }
 
-        state.Init();
 
         base.OnFrameworkInitializationCompleted();
     }

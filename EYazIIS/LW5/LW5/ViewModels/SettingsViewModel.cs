@@ -25,6 +25,9 @@ namespace LW5.ViewModels
             }
         }
 
+        [IgnoreDataMember]
+        public DialogViewModel Dialog { get; set; }
+
         private UserViewModel _user = new();
         [DataMember]
         public UserViewModel User
@@ -33,7 +36,7 @@ namespace LW5.ViewModels
             set => this.RaiseAndSetIfChanged(ref _user, value);
         }
 
-        private string _serverIp = "http://127.0.0.1:8000";
+        private string _serverIp = "http://192.168.1.32:8000";
         [DataMember]
         public string ServerIp
         {
@@ -41,7 +44,8 @@ namespace LW5.ViewModels
             set => this.RaiseAndSetIfChanged(ref _serverIp, value);
         }
         private ReactiveCommand<string, Unit> UpdateIpCommand { get; }
-        private ReactiveCommand<DialogService, Unit> InitServiceCommand { get; }
+        private ReactiveCommand<Unit, Unit> ClearHistoryCommand { get; }
+
 
         public SettingsViewModel()
         {
@@ -57,6 +61,15 @@ namespace LW5.ViewModels
                 .Skip(1)
                 .ObserveOn(Scheduler.Default)
                 .InvokeCommand(UpdateIpCommand);
+
+            ClearHistoryCommand = ReactiveCommand.Create(ClearHistory);
+        }
+
+        private void ClearHistory()
+        {
+            DialogService?.ClearSession();
+            Dialog.Messages.Clear();
+            Dialog.Init();
         }
 
         private void InitService(DialogService service)

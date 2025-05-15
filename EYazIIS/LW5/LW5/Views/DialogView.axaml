@@ -60,6 +60,7 @@
 
 				<TextBox
 					x:Name="inputTextBox"
+					Text="{Binding Input}"
 					Margin="3"
 					BorderThickness="0"
 					FontSize="16"

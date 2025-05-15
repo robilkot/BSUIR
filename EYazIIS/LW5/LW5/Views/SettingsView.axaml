@@ -98,6 +98,15 @@
 				<TextBox
 					Text="{Binding ServerIp}"
 					Watermark="Введите адрес"/>
+
+				<Button
+					Margin="0 35 0 5"
+					HorizontalAlignment="Stretch"
+					Background="#C11414"
+					Command="{Binding ClearHistoryCommand}"
+					HorizontalContentAlignment="Center">
+					Очистить переписку
+				</Button>
 			</StackPanel>
 		</ScrollViewer>
 	</Grid>

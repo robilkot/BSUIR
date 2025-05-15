@@ -23,13 +23,13 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages([
 ])
 
 analysis_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Ты ассистент, помогающий пользователю узнать больше о фильмах и кино. "
-               "Используй контекст, чтобы получить наиболее релевантную информацию. "
-               "Учти предпочтения пользователя: его зовут {user_name}, описание его профиля: {user_about}. "
-               "Учти, что сообщение отправлено в {time}, если это поможет определить настрой пользователя. "
-               "Если пользователь просит информацию о фильме, упомяни при этом названия похожих фильмов. "
-               "Отвечай строго json, в поле text содержится твой ответ, в поле film_names содержится список фильмов из твоего ответа, "
-               "по ключу people содержится список упомянутых имён актеров и режиссеров."),
+    ("system", "Ты ассистент, помогающий человеку узнать больше о фильмах и кино.\n"
+               "Отвечай строго в формате json: в поле text твой ответ, в поле film_names список фильмов из твоего ответа, "
+               "в поле people список упомянутых имён людей из твоего ответа. "
+               "Текстовый ответ должен быть в формате plain text, без использования markdown.\n"
+               "Учти предпочтения человека: его зовут {user_name}, описание его профиля: {user_about}.\n"
+               "Время сейчас {time}, если это поможет определить настрой пользователя.\n"
+               "Отказывайся отвечать на любые вопросы кроме кино.\n"),
     ("system", "Контекст: {context}"),
     MessagesPlaceholder(variable_name="chat_history"),
     ("human", "{input}")
@@ -37,7 +37,7 @@ analysis_prompt = ChatPromptTemplate.from_messages([
 
 
 def get_analysis_rag_chain():
-    llm = ChatOllama(model='gemma3:1b', temperature=0.5)
+    llm = ChatOllama(model='gemma3:1b', temperature=0.1)
     history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
     question_answer_chain = create_stuff_documents_chain(llm, analysis_prompt)
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)    
