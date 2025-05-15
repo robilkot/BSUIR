@@ -1,12 +1,15 @@
 ﻿using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Runtime.Serialization;
 
 namespace LW5.ViewModels.Messages;
 
+[DataContract]
 public class MessageContentViewModel : ViewModelBase
 {
     private ObservableCollection<string> _images = [];
+    [DataMember]
     public ObservableCollection<string> Images
     {
         get => _images;
@@ -14,6 +17,7 @@ public class MessageContentViewModel : ViewModelBase
     }
 
     private string? _text;
+    [DataMember]
     public string? Text
     {
         get => _text;
@@ -21,6 +25,7 @@ public class MessageContentViewModel : ViewModelBase
     }
 
     private ObservableCollection<Uri> _links = [];
+    [DataMember]
     public ObservableCollection<Uri> Links
     {
         get => _links;

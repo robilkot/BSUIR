@@ -18,12 +18,18 @@
 			Height="50"
 			Grid.Row="0">
 
-			<TextBlock
-				Text="Кинопомощник"
-				FontSize="16"
-				FontWeight="Medium"
+			<StackPanel
 				VerticalAlignment="Center"
-				HorizontalAlignment="Center"/>
+				HorizontalAlignment="Center"
+				Orientation="Horizontal"
+				Spacing="5">
+				<TextBlock
+					Text="Кинопомощник"
+					FontSize="16"
+					FontWeight="Medium"/>
+				<PathIcon
+					Data="{StaticResource movies_and_tv_regular}"/>
+			</StackPanel>
 
 			<Button
 				HorizontalAlignment="Left"
@@ -53,6 +59,8 @@
 				ColumnDefinitions="*, auto">
 
 				<TextBox
+					x:Name="inputTextBox"
+					Text="{Binding Input}"
 					Margin="3"
 					BorderThickness="0"
 					FontSize="16"
@@ -61,6 +69,8 @@
 					Watermark="Введите запрос..."/>
 
 				<Button
+					Command="{Binding SendMessageCommand}"
+					CommandParameter="{Binding #inputTextBox.Text}"
 					Classes="icon nobg"
 					Grid.Column="1">
 					<PathIcon
@@ -71,9 +81,11 @@
 
 		<!--main region-->
 		<ScrollViewer
+			x:Name="scroller"
 			Background="{StaticResource ChatBackground}"
 			Grid.Row="1">
 			<ItemsControl
+				x:Name="messages"
 				Margin="5"
 				ItemsSource="{Binding Messages}">
 				<ItemsControl.ItemsPanel>
@@ -92,7 +104,7 @@
 									Mode="OneWay">
 									<Binding />
 									<Binding
-										Path="$parent[ScrollViewer].((vm:DialogViewModel)DataContext).User.Name"/>
+										Path="$parent[ScrollViewer].((vm:DialogViewModel)DataContext).Settings.User"/>
 								</MultiBinding>
 							</views:MessageView.HorizontalAlignment>
 						</views:MessageView>

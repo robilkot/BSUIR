@@ -3,30 +3,40 @@ using System.Collections.Generic;
 
 namespace LW5.Models
 {
+    public record ChatRequest(
+        string? session_id,
+        Message message
+        );
+
+    public record ChatResponse(
+        string session_id,
+        Message message
+        );
+
     public record Message(
-        MessageContent Content,
-        MessageMetadata Metadata,
-        MessageReactions? Reactions
+        MessageContent content,
+        MessageMetadata metadata,
+        MessageReactions? reactions
         );
 
     public record MessageContent(
-        List<string> Images,
-        List<string> Links,
-        string? Text
+        List<string> images,
+        List<string> links,
+        string? text
         );
 
     public record MessageMetadata(
-        DateTimeOffset Sent,
-        User Sender
+        DateTimeOffset sent,
+        User sender
         );
 
     public record MessageReactions(
-        MessageRating Rating
+        MessageRating rating
         );
 
     public record User(
-        string Name,
-        string About
+        string name,
+        string about
         );
 
     public record RateMessageRequest(

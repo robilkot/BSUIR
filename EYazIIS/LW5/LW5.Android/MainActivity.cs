@@ -5,6 +5,7 @@ using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
 using Avalonia.ReactiveUI;
+using System;
 
 namespace LW5.Android;
 
@@ -20,6 +21,8 @@ public class MainActivity : AvaloniaMainActivity<App>
 {
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
+        AppContext.SetSwitch("System.Reflection.NullabilityInfoContext.IsSupported", true);
+
         return base.CustomizeAppBuilder(builder)
             .WithInterFont()
             .UseReactiveUI();

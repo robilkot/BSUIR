@@ -1,5 +1,6 @@
 ﻿using Avalonia.Data.Converters;
 using Avalonia.Layout;
+using LW5.ViewModels;
 using LW5.ViewModels.Messages;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace LW5.Converters
         {
             HorizontalAlignment alignment = values[0] switch
             {
-                UserMessageViewModel uvm when values[1] is string username && uvm.Metadata.Sender.Name == username => HorizontalAlignment.Right,
+                UserMessageViewModel uvm when values[1] is UserViewModel user && uvm.Metadata.Sender.Name == user.Name => HorizontalAlignment.Right,
                 UserMessageViewModel => HorizontalAlignment.Left,
                 ServiceMessageViewModel => HorizontalAlignment.Center,
                 _ => HorizontalAlignment.Stretch,

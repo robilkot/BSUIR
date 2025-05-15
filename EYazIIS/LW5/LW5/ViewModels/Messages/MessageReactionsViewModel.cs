@@ -2,19 +2,23 @@
 using ReactiveUI;
 using System;
 using System.Reactive;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace LW5.ViewModels.Messages;
 
+[DataContract]
 public class MessageReactionsViewModel : MessageViewModel
 {
     private MessageRating _rating = MessageRating.None;
+    [DataMember]
     public MessageRating Rating
     {
         get => _rating;
         private set => this.RaiseAndSetIfChanged(ref _rating, value);
     }
 
+    [IgnoreDataMember]
     public ReactiveCommand<MessageRating, Unit> SetRatingCommand { get; }
 
     public MessageReactionsViewModel()

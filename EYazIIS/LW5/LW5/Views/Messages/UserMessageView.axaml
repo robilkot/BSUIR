@@ -15,11 +15,20 @@
 		<converters:BoolToValueConverter 
 			x:Key="BoolToGreenConverter"
 			FalseValue="#1ccc5b"
-			TrueValue="LightGray"/>
+			TrueValue="Gray"/>
 		<converters:BoolToValueConverter
 			x:Key="BoolToRedConverter"
-			FalseValue="#e43d30"
-			TrueValue="LightGray"/>
+			FalseValue="#ff5f35"
+			TrueValue="Gray"/>
+		<converters:BoolToValueConverter
+			x:Key="BoolToWhiteConverter"
+			FalseValue="Gray"
+			TrueValue="White"/>
+		<converters:MessageStatusToColorConverter
+			x:Key="MessageStatusToColorConverter"
+			OkColor="#182533"
+			SentColor="#2e4966"
+			ErrorColor="#C11414"/>
 	</UserControl.Resources>
 	
 	<Design.DataContext>
@@ -29,20 +38,24 @@
 	<UserControl.Styles>
 		<Style
 			Selector=":is(ContentControl).emotion">
-			<Setter Property="Width" Value="30"/>
-			<Setter Property="Height" Value="30"/>
+			<Setter Property="Width" Value="34"/>
+			<Setter Property="Height" Value="34"/>
 			<Setter Property="Padding" Value="1"/>
-			<Setter Property="CornerRadius" Value="15"/>
+			<Setter Property="CornerRadius" Value="17"/>
 		</Style>
 		<Style
 			Selector="TextBlock">
 			<Setter
 				Property="Foreground" Value="White"/>
+			<Setter
+				Property="FontWeight" Value="SemiLight"/>
 		</Style>
 		<Style
 			Selector="HyperlinkButton">
 			<Setter
 				Property="Foreground" Value="#83caff"/>
+			<Setter
+				Property="FontWeight" Value="SemiLight"/>
 		</Style>
 	</UserControl.Styles>
 
@@ -51,9 +64,9 @@
 		Orientation="Vertical"
 		Spacing="2">
 		<Border
-			Background="#182533"
+			Background="{Binding Status, Converter={StaticResource MessageStatusToColorConverter}}"
 			Padding="8"
-			CornerRadius="12">
+			CornerRadius="17">
 			<StackPanel
 				Orientation="Vertical"
 				Spacing="8">
@@ -106,7 +119,7 @@
 				</Carousel>
 
 				<!--text-->
-				<TextBlock
+				<SelectableTextBlock
 					Text="{Binding Content.Text}"
 					TextWrapping="Wrap"/>
 
@@ -142,49 +155,86 @@
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
+
+				<Grid
+					IsVisible="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static models:MessageStatus.Error}}"
+					ColumnDefinitions="*, auto">
+					<TextBlock
+						Grid.Column="0"
+						TextWrapping="Wrap"
+						VerticalAlignment="Center">
+						<Run
+							Text="Ошибка отправки: "/>
+						<Run
+							Text="{Binding ErrorMsg}"/>
+					</TextBlock>
+					<Button
+						Command="{Binding ResendCommand}"
+						Grid.Column="1">
+						Переотправить
+					</Button>
+				</Grid>
 			</StackPanel>
 		</Border>
-		<!--reactions-->
 		<StackPanel
-			x:DataType="vm_msg:MessageReactionsViewModel"
-			DataContext="{Binding Reactions}"
-			Margin="0 0 6 0"
+			Orientation="Horizontal"
 			HorizontalAlignment="Right"
-			Spacing="5"
-			Orientation="Horizontal">
-			<StackPanel.IsVisible>
-				<MultiBinding Converter="{StaticResource AllTrueConverter}">
-					<Binding
-						Path="."
-						Converter="{x:Static ObjectConverters.IsNotNull}"/>
-					<Binding 
-						Path="!#root.HideReactions"/>
-				</MultiBinding>
-			</StackPanel.IsVisible>
+			Spacing="2"
+			Margin="0 0 6 0">
+			<!--save button-->
 			<Button
-				x:Name="dislike"
-				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"
+				IsVisible="{Binding Dialog, Converter={x:Static ObjectConverters.IsNotNull}}"
 				Classes="emotion"
-				Command="{Binding SetRatingCommand}"
-				CommandParameter="{x:Static models:MessageRating.Negative}">
+				Command="{Binding SaveCommand}"
+				CommandParameter="{Binding !Saved}">
 				<PathIcon
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
-					Data="{StaticResource thumb_dislike_regular}"
-					Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
+					Data="{StaticResource bookmark_regular}"
+					Foreground="{Binding Saved, Converter={StaticResource BoolToWhiteConverter}}"/>
 			</Button>
-			<Button
-				x:Name="like"
-				IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Negative}}"
-				Classes="emotion"
-				Command="{Binding SetRatingCommand}"
-				CommandParameter="{x:Static models:MessageRating.Positive}">
-				<PathIcon
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"
-					Data="{StaticResource thumb_like_regular}"
-					Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
-			</Button>
+
+			<!--reactions-->
+			<StackPanel
+				x:DataType="vm_msg:MessageReactionsViewModel"
+				DataContext="{Binding Reactions}"
+				HorizontalAlignment="Right"
+				Spacing="2"
+				Orientation="Horizontal">
+				<StackPanel.IsVisible>
+					<MultiBinding Converter="{StaticResource AllTrueConverter}">
+						<Binding
+							Path="."
+							Converter="{x:Static ObjectConverters.IsNotNull}"/>
+						<Binding 
+							Path="!#root.HideReactions"/>
+					</MultiBinding>
+				</StackPanel.IsVisible>
+				<Button
+					x:Name="dislike"
+					IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Positive}}"
+					Classes="emotion"
+					Command="{Binding SetRatingCommand}"
+					CommandParameter="{x:Static models:MessageRating.Negative}">
+					<PathIcon
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Data="{StaticResource emoji_sad_regular}"
+						Foreground="{Binding #like.IsVisible, Converter={StaticResource BoolToRedConverter}}"/>
+				</Button>
+				<Button
+					x:Name="like"
+					IsVisible="{Binding Rating, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={x:Static models:MessageRating.Negative}}"
+					Classes="emotion"
+					Command="{Binding SetRatingCommand}"
+					CommandParameter="{x:Static models:MessageRating.Positive}">
+					<PathIcon
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
+						Data="{StaticResource emoji_regular}"
+						Foreground="{Binding #dislike.IsVisible, Converter={StaticResource BoolToGreenConverter}}"/>
+				</Button>
+			</StackPanel>
 		</StackPanel>
 	</StackPanel>
 </UserControl>
