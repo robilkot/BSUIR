@@ -1,4 +1,4 @@
-﻿namespace backend.Model
+﻿namespace backend.DatetimeProviders
 {
     public interface IDatetimeProvider
     {

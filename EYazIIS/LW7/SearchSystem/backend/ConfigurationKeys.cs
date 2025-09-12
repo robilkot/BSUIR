@@ -1,4 +1,4 @@
-﻿namespace backend.Model
+﻿namespace backend
 {
     public static class ConfigurationKeys
     {

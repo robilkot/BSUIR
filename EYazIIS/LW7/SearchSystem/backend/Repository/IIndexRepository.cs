@@ -1,6 +1,6 @@
 ﻿using CommonLib.Models;
 
-namespace backend.Model
+namespace backend.Repository
 {
     public interface IIndexRepository
     {

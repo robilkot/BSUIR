@@ -1,24 +1,23 @@
-﻿using CommonLib.Models;
-using System.Security.Cryptography;
-using System.Text;
+﻿using backend.DatetimeProviders;
+using CommonLib.Models;
 
 namespace backend.Model
 {
+    public delegate double DocumentFilter(Document document);
+    
     public static class SearchExtensions
     {
-        public delegate double DocumentFilter(Document document);
-
         // AI NLP STUFF BEGIN
 
         // todo ranks document based on logical function on document metadata. use natasha for NER and keywords extraction
-        public static DocumentFilter ToQueryFilter(this SearchQuery document)
+        public async static Task<DocumentFilter> ToQueryFilter(this SearchQuery document)
         {
             return doc => 0d;
         }
 
         public async static Task<DocumentMetadata> ToMetadataAsync(this Uri uri, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return new([], [], []);
         }
 
         // AI NLP STUFF END
@@ -41,21 +40,5 @@ namespace backend.Model
                 yield return await doc.ToSearchResult();
             }
         }
-    }
-
-    public static class DocumentExtensions
-    {
-        public static Guid ToGuid(this Uri input)
-        {
-            byte[] inputBytes = Encoding.UTF8.GetBytes(input.AbsoluteUri);
-            byte[] hashBytes = MD5.HashData(inputBytes);
-            return new Guid(hashBytes);
-        }
-
-        public static string ToTitle(this Document doc)
-            => Path.GetFileName(doc.Uri.LocalPath);
-
-        public async static Task<string> ToSnippet(this Document doc)
-            => (string)(await File.ReadAllTextAsync(doc.Uri.LocalPath)).Take(100);
     }
 }

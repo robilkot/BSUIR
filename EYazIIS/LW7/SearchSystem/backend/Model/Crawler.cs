@@ -1,4 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using backend.DatetimeProviders;
+using backend.Repository;
+using CommonLib.Models;
+using System.Collections.Immutable;
 
 namespace backend.Model
 {
@@ -12,10 +15,6 @@ namespace backend.Model
             StringComparer.OrdinalIgnoreCase,
             ".txt", ".html", ".htm", ".json", ".md"
         );
-        private static string FileFilterPattern
-            => string.Join("|",
-                [.. AllowedExtensions.Select(ext => $"*{ext}")]
-            );
 
         public Crawler(IConfiguration configuration, IIndexRepository repository, IDatetimeProvider datetimeProvider)
         {
@@ -78,7 +77,16 @@ namespace backend.Model
             => await _indexRepository.DeleteAsync(path.ToGuid(), cancellationToken);
 
         private async Task UpdateInIndexAsync(Uri path, CancellationToken cancellationToken = default)
-            => await _indexRepository.UpdateAsync(await path.ToDocumentAsync(_datetimeProvider, cancellationToken), cancellationToken);
+        {
+            var id = path.ToGuid();
+            var doc = await _indexRepository.GetByIdAsync(id) ?? throw new InvalidOperationException("why?");
+
+            var newDocument = await path.ToDocumentAsync(_datetimeProvider, cancellationToken);
+            doc.IndexedAt = newDocument.IndexedAt;
+            doc.Metadata = newDocument.Metadata;
+
+            await _indexRepository.UpdateAsync(doc, cancellationToken);
+        }
 
         private async Task RenameInIndexAsync(Uri oldPath, Uri newPath, CancellationToken cancellationToken = default)
         {
@@ -87,10 +95,12 @@ namespace backend.Model
             var document = await _indexRepository.GetByIdAsync(oldId, cancellationToken)
                 ?? throw new InvalidOperationException("Why?");
 
-            document = document with
+            document = new Document()
             {
                 Id = newPath.ToGuid(),
-                Uri = newPath
+                Uri = newPath,
+                Metadata = document.Metadata,
+                IndexedAt = _datetimeProvider.Now,
             };
 
             await _indexRepository.DeleteAsync(oldId, cancellationToken);
@@ -105,7 +115,7 @@ namespace backend.Model
                 Path = path,
                 IncludeSubdirectories = true,
                 NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
-                Filter = FileFilterPattern
+                Filter = "*.*"
             };
 
             watcher.Changed += new FileSystemEventHandler(OnChanged);
@@ -118,6 +128,10 @@ namespace backend.Model
 
         private async void OnChanged(object source, FileSystemEventArgs e)
         {
+            var extension = Path.GetExtension(e.FullPath);
+            if (!AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                return;
+
             try
             {
                 switch (e.ChangeType)
@@ -143,6 +157,13 @@ namespace backend.Model
 
         private async void OnRenamed(object source, RenamedEventArgs e)
         {
+            var oldExtension = Path.GetExtension(e.OldFullPath);
+            var newExtension = Path.GetExtension(e.FullPath);
+
+            if (!AllowedExtensions.Contains(oldExtension, StringComparer.OrdinalIgnoreCase) &&
+                !AllowedExtensions.Contains(newExtension, StringComparer.OrdinalIgnoreCase))
+                return;
+
             try
             {
                 await RenameInIndexAsync(new(e.OldFullPath), new(e.FullPath));

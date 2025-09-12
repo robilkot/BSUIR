@@ -1,8 +1,8 @@
-﻿using CommonLib.Models;
+﻿using backend.Model;
+using CommonLib.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
-namespace backend.Model
+namespace backend.Repository
 {
     public class IndexRepository : IIndexRepository
     {
@@ -15,12 +15,10 @@ namespace backend.Model
 
         public async Task<Document?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => await _context.Documents
-            .Include(d => d.Metadata)
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
 
         public async Task<IEnumerable<Document>> GetAllAsync(CancellationToken cancellationToken = default)
             => await _context.Documents
-            .Include(d => d.Metadata)
             .ToListAsync(cancellationToken);
 
         public async Task AddAsync(Document document, CancellationToken cancellationToken = default)
@@ -45,15 +43,9 @@ namespace backend.Model
             }
         }
 
-        public async Task<IEnumerable<Document>> FindAsync(Expression<Func<Document, bool>> predicate, CancellationToken cancellationToken = default)
-            => await _context.Documents
-            .Include(d => d.Metadata)
-            .Where(predicate)
-            .ToListAsync(cancellationToken);
-
         public async Task<IEnumerable<Document>> SearchAsync(SearchQuery query, CancellationToken cancellationToken = default)
         {
-            var filter = query.ToQueryFilter();
+            var filter = await query.ToQueryFilter();
 
             var documents = _context.Documents
                 .Filter(filter)
