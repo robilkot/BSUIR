@@ -1,0 +1,133 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:frontend.ViewModels"
+        x:Class="frontend.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="File Search" 
+        Width="800" 
+        Height="600"
+        MinWidth="600"
+        MinHeight="400"
+        RequestedThemeVariant="Light">
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+  <Grid
+    VerticalAlignment="Center"
+    Margin="150, 0"
+    RowDefinitions="auto, *">
+    
+    <StackPanel
+      Grid.Row="0"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Stretch">
+      <!-- Search Box -->
+      <Grid
+        ColumnDefinitions="*, auto">
+        <TextBox 
+          Grid.Column="0"
+          Text="{Binding SearchQuery}"
+          Watermark="Что вы хотите найти?"
+          FontSize="16"
+          KeyDown="OnSearchKeyDown"/>
+
+        <Button 
+          Grid.Column="1"
+          Content="Найти"
+          Command="{Binding SearchCommand}"
+          Background="#4285F4"
+          Foreground="White"/>
+      </Grid>
+
+      <!-- Date Range Filter -->
+      <StackPanel 
+        Orientation="Horizontal" 
+        HorizontalAlignment="Left" 
+        Spacing="10">
+        <TextBlock Text="За период" VerticalAlignment="Center"/>
+        <DatePicker
+          SelectedDate="{Binding StartDate}"
+          Width="120"/>
+        <DatePicker
+          SelectedDate="{Binding EndDate}"
+          Width="120"/>
+      </StackPanel>
+    </StackPanel>
+
+    <Grid
+      IsVisible="{Binding HasResults}"
+      RowDefinitions="*, auto"
+      Grid.Row="1">
+      <!-- Results -->
+      <ScrollViewer>
+        <Grid
+          RowDefinitions="*, auto">
+          <ItemsControl
+            ItemsSource="{Binding SearchResults}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Padding="15" Margin="0,0,0,10" Background="#F8F9FA" CornerRadius="5">
+                  <StackPanel Spacing="5">
+                    <TextBlock Text="{Binding Title}"
+                              FontWeight="Bold"
+                              FontSize="16"
+                              TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Snippet}"
+                              TextWrapping="Wrap"
+                              Foreground="#5F6368"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <TextBlock Text="{Binding IndexedAt, StringFormat='Indexed: {0:yyyy-MM-dd}'}"
+                                FontSize="12"
+                                Foreground="#70757A"/>
+                      <TextBlock Text="{Binding Relevance, StringFormat='Relevance: {0:P0}'}"
+                                FontSize="12"
+                                Foreground="#70757A"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          
+          <!-- Pagination -->
+          <StackPanel
+            Grid.Row="1"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Spacing="10"
+            IsVisible="{Binding HasResults}">
+            <Button Content="Previous"
+                    Command="{Binding PreviousPageCommand}"
+                    IsEnabled="{Binding HasPreviousPage}"/>
+            <TextBlock Text="{Binding CurrentPage, StringFormat='Page {0}'}"
+                      VerticalAlignment="Center"/>
+            <Button Content="Next"
+                    Command="{Binding NextPageCommand}"
+                    IsEnabled="{Binding HasNextPage}"/>
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+      
+      <!-- Loading Indicator -->
+      <ProgressBar
+        Grid.RowSpan="2"
+        IsIndeterminate="True"
+        IsVisible="{Binding IsLoading}"
+        Height="4"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"/>
+
+      <!-- No Results Message -->
+      <TextBlock 
+        Grid.RowSpan="2"
+        Text="No results found"
+        IsVisible="{Binding HasNoResults}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontSize="18"
+        Foreground="#70757A"/>
+    </Grid>
+  </Grid>
+</Window>
