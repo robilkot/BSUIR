@@ -109,6 +109,9 @@ def send_message(request: ChatRequest):
             film_names = summary['film_names']
             people = summary['people']
             text = summary['text']
+
+            text = str.replace(text, '**', '')
+            text = str.replace(text, '*', '-')
             break
         except Exception as e:
             logger.error(f'{e}')
