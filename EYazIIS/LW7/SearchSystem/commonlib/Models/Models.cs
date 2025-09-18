@@ -3,7 +3,7 @@
 namespace CommonLib.Models;
 
 // Not tracked by EF Core, can remain a record
-public record SearchResult(Guid DocumentId, string Title, string Snippet, DateTimeOffset IndexedAt, double Relevance);
+public record SearchResult(Guid DocumentId, Uri Uri, string Title, string Snippet, DateTimeOffset IndexedAt, double Relevance);
 
 // Polymorphic base for NER
 public abstract record NamedEntity;

@@ -15,51 +15,108 @@
     </Window.DataContext>
 
   <Grid
+    Margin="8 16 8 8"
     VerticalAlignment="Center"
-    Margin="150, 0"
-    RowDefinitions="auto, *">
+    RowDefinitions="auto, *"
+    RowSpacing="8">
     
+    <!-- Search controls -->
     <StackPanel
       Grid.Row="0"
-      VerticalAlignment="Center"
-      HorizontalAlignment="Stretch">
-      <!-- Search Box -->
-      <Grid
-        ColumnDefinitions="*, auto">
-        <TextBox 
-          Grid.Column="0"
-          Text="{Binding SearchQuery}"
-          Watermark="Что вы хотите найти?"
-          FontSize="16"
-          KeyDown="OnSearchKeyDown"/>
+      Orientation="Vertical"
+      Spacing="8">
+    
+      <StackPanel
+        HorizontalAlignment="Center"
+        Orientation="Horizontal">
+        <Grid>
+          <TextBox
+            Width="450"
+            Name="SearchTextBox"
+            Padding="12 0"
+            CornerRadius="20 0 0 20"
+            VerticalAlignment="Stretch"
+            VerticalContentAlignment="Center"
+            Watermark="Что вы хотите найти?"
+            FontSize="16"
+            KeyDown="OnSearchKeyDown"
+            Text="{Binding SearchQuery}">
+          </TextBox>
+          <Button
+            Margin="1"
+            Width="35"
+            CornerRadius="0"
+            Command="{Binding ClearSearchCommand}"
+            HorizontalAlignment="Right">
+            <PathIcon
+              Height="16"
+              Data="{StaticResource dismiss_circle_regular}"/>
+          </Button>
+        </Grid>
 
-        <Button 
-          Grid.Column="1"
-          Content="Найти"
-          Command="{Binding SearchCommand}"
-          Background="#4285F4"
-          Foreground="White"/>
-      </Grid>
-
+        <Border
+          Name="SearchOptionsBorder"
+          BorderBrush="LightGray"
+          CornerRadius="0 20 20 0"
+          BorderThickness="0 1 1 1">
+          <StackPanel
+            Orientation="Horizontal">
+            <Button
+              Width="35"
+              Command="{Binding VoiceInputCommand}"
+              CornerRadius="0">
+              <PathIcon
+                Height="16"
+                Data="{StaticResource mic_on_regular}"/>
+            </Button>
+            <ToggleButton
+              IsChecked="True"
+              MinHeight="20"
+              Name="OptionsToggle"
+              Width="35"
+              CornerRadius="0">
+              <PathIcon
+                Height="12"
+                Data="{StaticResource options_regular}"/>
+            </ToggleButton>
+            <Button
+              Padding="25 5"
+              Margin="-1"
+              Command="{Binding SearchCommand}"
+              CornerRadius="{Binding #SearchOptionsBorder.CornerRadius}"
+              Background="#4285F4">
+              <PathIcon
+                Height="16"
+                Foreground="White"
+                Data="{StaticResource search_regular}"/>
+            </Button>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      
       <!-- Date Range Filter -->
       <StackPanel 
-        Orientation="Horizontal" 
-        HorizontalAlignment="Left" 
-        Spacing="10">
-        <TextBlock Text="За период" VerticalAlignment="Center"/>
-        <DatePicker
-          SelectedDate="{Binding StartDate}"
-          Width="120"/>
-        <DatePicker
-          SelectedDate="{Binding EndDate}"
-          Width="120"/>
+        IsVisible="{Binding #OptionsToggle.IsChecked}"
+        Orientation="Horizontal"
+        HorizontalAlignment="Center"
+        Spacing="8">
+        <TextBlock 
+          Text="За период" 
+          VerticalAlignment="Center"/>
+        <CalendarDatePicker
+          Watermark="от"
+          SelectedDate="{Binding StartDate}"/>
+        <CalendarDatePicker
+          Watermark="до"
+          SelectedDate="{Binding EndDate}"/>
       </StackPanel>
+
     </StackPanel>
 
     <Grid
+      Grid.Row="1"
       IsVisible="{Binding HasResults}"
-      RowDefinitions="*, auto"
-      Grid.Row="1">
+      RowDefinitions="*, auto">
       <!-- Results -->
       <ScrollViewer>
         <Grid
@@ -69,22 +126,32 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <Border Padding="15" Margin="0,0,0,10" Background="#F8F9FA" CornerRadius="5">
-                  <StackPanel Spacing="5">
-                    <TextBlock Text="{Binding Title}"
-                              FontWeight="Bold"
-                              FontSize="16"
-                              TextWrapping="Wrap"/>
-                    <TextBlock Text="{Binding Snippet}"
-                              TextWrapping="Wrap"
-                              Foreground="#5F6368"/>
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                      <TextBlock Text="{Binding IndexedAt, StringFormat='Indexed: {0:yyyy-MM-dd}'}"
-                                FontSize="12"
-                                Foreground="#70757A"/>
-                      <TextBlock Text="{Binding Relevance, StringFormat='Relevance: {0:P0}'}"
-                                FontSize="12"
-                                Foreground="#70757A"/>
+                  <StackPanel Spacing="4">
+                    <StackPanel
+                      Orientation="Horizontal"
+                      Spacing="8">
+                      <HyperlinkButton
+                        NavigateUri="{Binding Uri}"
+                        FontWeight="Bold"
+                        Padding="0"
+                        FontSize="16">
+                        <TextBlock Text="{Binding Title}" TextDecorations="{x:Null}"/>
+                      </HyperlinkButton>
+                      <TextBlock 
+                        VerticalAlignment="Center"
+                        Text="{Binding Relevance, StringFormat='{}{0:P0} relevance'}"
+                        FontSize="12"
+                        Foreground="#70757A"/>
+                      <TextBlock 
+                        VerticalAlignment="Center"
+                        Text="{Binding IndexedAt, StringFormat='{}{0:dd/MM/yyyy}'}"
+                        FontSize="12"
+                        Foreground="#70757A"/>
                     </StackPanel>
+                    <TextBlock 
+                      Text="{Binding Snippet}"
+                      TextWrapping="Wrap"
+                      Foreground="#5F6368"/>
                   </StackPanel>
                 </Border>
               </DataTemplate>
@@ -98,11 +165,6 @@
             HorizontalAlignment="Center"
             Spacing="10"
             IsVisible="{Binding HasResults}">
-            <Button Content="Previous"
-                    Command="{Binding PreviousPageCommand}"
-                    IsEnabled="{Binding HasPreviousPage}"/>
-            <TextBlock Text="{Binding CurrentPage, StringFormat='Page {0}'}"
-                      VerticalAlignment="Center"/>
             <Button Content="Next"
                     Command="{Binding NextPageCommand}"
                     IsEnabled="{Binding HasNextPage}"/>

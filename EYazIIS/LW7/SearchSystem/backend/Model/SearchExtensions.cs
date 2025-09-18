@@ -12,11 +12,19 @@ namespace backend.Model
         // todo ranks document based on logical function on document metadata. use natasha for NER and keywords extraction
         public async static Task<DocumentFilter> ToQueryFilter(this SearchQuery document)
         {
+            // extract keywords
+            // account for TF-IDF
+            // extract NER
+
             return doc => 0d;
         }
 
         public async static Task<DocumentMetadata> ToMetadataAsync(this Uri uri, CancellationToken cancellationToken = default)
         {
+            // extract keywords (1.6 formula)
+            // extract NER (natasha service)
+            // tags = empty
+
             return new([], [], []);
         }
 

@@ -29,7 +29,7 @@ namespace backend
             var crawler = new Crawler(app.Configuration, indexRepository, datetimeProvider);
 
             // todo not await, but bg stuff
-            crawler.IndexAll();           
+            crawler.IndexAll();
 
             app.Run();
             
