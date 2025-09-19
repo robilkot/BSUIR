@@ -16,7 +16,7 @@ public partial class MainWindow : Window
         {
             if (DataContext is ViewModels.MainViewModel viewModel)
             {
-                viewModel.SearchCommand.Execute(null);
+                viewModel.SearchCommand.Execute();
             }
             e.Handled = true;
         }

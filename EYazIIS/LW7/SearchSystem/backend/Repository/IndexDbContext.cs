@@ -1,4 +1,5 @@
-﻿using CommonLib.Models;
+﻿using backend.Model;
+using CommonLib.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Collections.Immutable;
@@ -12,13 +13,21 @@ public class IndexDbContext : DbContext
     {
     }
 
+    public DbSet<LexemeMetadata> Lexemes { get; set; }
     public DbSet<Document> Documents { get; set; }
 
     private static ValueComparer<ImmutableList<T>> GetEqualityComparer<T>()
-        => new((c1, c2) => c1.SequenceEqual(c2), c => c.GetHashCode(), c => c);
+        => new((c1, c2) => c1!.SequenceEqual(c2!), c => c.GetHashCode(), c => c);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<LexemeMetadata>(entity =>
+        {
+            entity.HasKey(l => l.Text);
+
+            entity.Property(l => l.ContainingDocuments);
+        });
+
         modelBuilder.Entity<Document>(entity =>
         {
             entity.HasKey(d => d.Id);
@@ -27,30 +36,16 @@ public class IndexDbContext : DbContext
             {
                 property.Property(m => m.Keywords)
                     .HasConversion(
-                        v => string.Join(";", v),
-                        v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableList(),
-                        GetEqualityComparer<string>());
-
-                property.Property(m => m.Tags)
-                    .HasConversion(
-                        v => string.Join(";", v),
-                        v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableList(),
-                        GetEqualityComparer<string>());
+                        v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
+                        v => JsonSerializer.Deserialize<ImmutableList<KeywordMetadata>>(v, JsonSerializerOptions.Default)!,
+                        GetEqualityComparer<KeywordMetadata>());
 
                 property.Property(m => m.NamedEntities)
                     .HasConversion(
-                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                        v => JsonSerializer.Deserialize<ImmutableList<NamedEntity>>(v, (JsonSerializerOptions)null),
+                        v => JsonSerializer.Serialize(v, JsonSerializerOptions.Default),
+                        v => JsonSerializer.Deserialize<ImmutableList<NamedEntity>>(v, JsonSerializerOptions.Default)!,
                         GetEqualityComparer<NamedEntity>());
             });
-
-            // todo: Indexes for substring search
-            //entity.HasIndex(m => m.Metadata.Keywords)
-            //    .HasDatabaseName("IX_DocumentMetadata_Keywords");
-            //entity.HasIndex(m => m.Metadata.Tags)
-            //    .HasDatabaseName("IX_DocumentMetadata_Tags");
-            //entity.HasIndex(m => m.Metadata.NamedEntities)
-            //    .HasDatabaseName("IX_DocumentMetadata_NamedEntities");
         });
     }
 }

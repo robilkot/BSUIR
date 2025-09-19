@@ -1,6 +1,7 @@
 using backend.DatetimeProviders;
 using backend.Model;
 using backend.Repository;
+using backend.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend
@@ -16,29 +17,32 @@ namespace backend
             builder.Services.AddDbContext<IndexDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddScoped<IIndexRepository, IndexRepository>();
+            builder.Services.AddScoped<IndexRepository>();
+            builder.Services.AddScoped<NLPService>();
             builder.Services.AddTransient<IDatetimeProvider, DatetimeProvider>();
+            builder.Services.AddHostedService<Crawler>();
+
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+            builder.Services.AddHttpClient<NLPService>(client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:8000/");
+                client.Timeout = TimeSpan.FromSeconds(10);
+            });
 
             var app = builder.Build();
 
-            using var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;                
-            var indexRepository = services.GetRequiredService<IIndexRepository>();
-            var datetimeProvider = services.GetRequiredService<IDatetimeProvider>();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-            var crawler = new Crawler(app.Configuration, indexRepository, datetimeProvider);
-
-            // todo not await, but bg stuff
-            crawler.IndexAll();
-
-            app.Run();
             
-            // Configure the HTTP request pipeline.
-
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

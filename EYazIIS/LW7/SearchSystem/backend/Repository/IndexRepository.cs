@@ -1,17 +1,23 @@
 ﻿using backend.Model;
+using backend.Services;
 using CommonLib.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repository
 {
-    public class IndexRepository : IIndexRepository
+    public class IndexRepository
     {
         private readonly IndexDbContext _context;
+        private readonly NLPService _nlpService;
 
-        public IndexRepository(IndexDbContext context)
+        public IndexRepository(IndexDbContext context, NLPService nlpService)
         {
             _context = context;
+            _nlpService = nlpService;
         }
+
+        public async Task<LexemeMetadata?> GetByTextAsync(string text, CancellationToken cancellationToken = default)
+            => await _context.Lexemes.FirstOrDefaultAsync(l => l.Text == text, cancellationToken);
 
         public async Task<Document?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => await _context.Documents
@@ -43,21 +49,26 @@ namespace backend.Repository
             }
         }
 
-        public async Task<IEnumerable<Document>> SearchAsync(SearchQuery query, CancellationToken cancellationToken = default)
+        public async Task<List<(double relevance, Document doc)>> SearchAsync(SearchQuery query, CancellationToken cancellationToken = default)
         {
-            var filter = await query.ToQueryFilter();
+            var filter = await query.ToQueryFilter(this, _nlpService, cancellationToken);
 
-            var documents = _context.Documents
-                .Filter(filter)
-                .Skip(0) // todo
-                .Take(query.PageSize)
-                .AsQueryable();
+            // todo optimize
+            var documents = await _context.Documents.ToListAsync();
 
-            var filteredDocuments = documents
-                .OrderByDescending(pair => pair.relevance)
-                .Select(pair => pair.document);
+            var results = documents
+                .Select(doc => (filter(doc), doc))
+                .Where(pair => pair.Item1 > 0)
+                .OrderByDescending(pair => pair.Item1)
+                .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+                .ToList();
 
-            return await filteredDocuments.ToListAsync(cancellationToken);
+            return results;
+        }
+
+        public async Task<int> GetDocumentsCount(CancellationToken cancellationToken)
+        {
+            return await _context.Documents.CountAsync(cancellationToken);
         }
     }
 }

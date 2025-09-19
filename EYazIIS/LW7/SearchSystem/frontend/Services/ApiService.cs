@@ -10,12 +10,14 @@ namespace frontend.Services;
 public class ApiService
 {
     private readonly HttpClient _httpClient;
-    private const string BaseUrl = "http://localhost:5000/api/search"; // todo config
+    private const string BaseUrl = "http://localhost:5054/api/search";
 
     public ApiService()
     {
-        _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
     }
 
     public async Task<IEnumerable<SearchResult>> SearchAsync(SearchQuery request)
@@ -27,7 +29,7 @@ public class ApiService
             queryString["pageSize"] = request.PageSize.ToString();
 
             if (!string.IsNullOrEmpty(request.Text))
-                queryString["query"] = request.Text;
+                queryString["text"] = request.Text;
 
             if (request.StartDate.HasValue)
                 queryString["startDate"] = request.StartDate.Value.ToString("yyyy-MM-dd");

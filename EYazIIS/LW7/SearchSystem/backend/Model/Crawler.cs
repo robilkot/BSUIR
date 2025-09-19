@@ -1,25 +1,40 @@
 ﻿using backend.DatetimeProviders;
 using backend.Repository;
+using backend.Services;
 using CommonLib.Models;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 
 namespace backend.Model
 {
-    public class Crawler
+    public enum FileEventType
+    {
+        Created,
+        Changed,
+        Deleted,
+        Renamed,
+    }
+    public record FileEvent(FileEventType Type, string[] Args);
+
+    public class Crawler : IHostedService, IDisposable
     {
         private readonly Uri _rootIndexingUri;
-        private readonly IIndexRepository _indexRepository;
-        private readonly IDatetimeProvider _datetimeProvider;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<Crawler> _logger;
+
+        private Timer? _timer = null;
+
+        private ConcurrentQueue<FileEvent> _eventsQueue = new();
 
         private static readonly ImmutableHashSet<string> AllowedExtensions = ImmutableHashSet.Create(
             StringComparer.OrdinalIgnoreCase,
             ".txt", ".html", ".htm", ".json", ".md"
         );
 
-        public Crawler(IConfiguration configuration, IIndexRepository repository, IDatetimeProvider datetimeProvider)
+        public Crawler(IConfiguration configuration, IServiceScopeFactory scopeFactory, ILogger<Crawler> logger)
         {
-            _datetimeProvider = datetimeProvider;
-            _indexRepository = repository;
+            _logger = logger;
+            _scopeFactory = scopeFactory;
 
             var uriString = configuration
                 .GetRequiredSection(ConfigurationKeys.Search)
@@ -31,7 +46,11 @@ namespace backend.Model
             CreateFileWatcher(_rootIndexingUri.LocalPath);
         }
 
-        public async Task IndexAll(CancellationToken cancellationToken = default)
+        public async Task IndexAll(
+            IndexRepository _indexRepository,
+            NLPService _nlpService,
+            IDatetimeProvider _datetimeProvider,
+            CancellationToken cancellationToken = default)
         {
             if (!Directory.Exists(_rootIndexingUri.LocalPath))
             {
@@ -40,7 +59,7 @@ namespace backend.Model
 
             var allFiles = Directory.EnumerateFiles(
                 _rootIndexingUri.LocalPath,
-                "*.*", // todo why
+                "*.*",
                 SearchOption.AllDirectories
             );
 
@@ -55,11 +74,15 @@ namespace backend.Model
                     break;
                 }
 
-                await AddToIndexAsync(fileUri, cancellationToken);                
+                await AddToIndexAsync(fileUri, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);                
             }
         }
 
-        private async Task AddToIndexAsync(Uri path, CancellationToken cancellationToken = default)
+        private async Task AddToIndexAsync(Uri path, 
+            IndexRepository _indexRepository, 
+            NLPService _nlpService, 
+            IDatetimeProvider _datetimeProvider,
+            CancellationToken cancellationToken = default)
         {
             var documentId = path.ToGuid();
 
@@ -68,44 +91,66 @@ namespace backend.Model
                 return;
             }
 
-            var document = await path.ToDocumentAsync(_datetimeProvider, cancellationToken);
+            var document = await path.ToDocumentAsync(_datetimeProvider, _nlpService, cancellationToken);
 
             await _indexRepository.AddAsync(document, cancellationToken);
         }
 
-        private async Task DeleteFromIndexAsync(Uri path, CancellationToken cancellationToken = default)
+        private async Task DeleteFromIndexAsync(Uri path, IndexRepository _indexRepository, CancellationToken cancellationToken = default)
             => await _indexRepository.DeleteAsync(path.ToGuid(), cancellationToken);
 
-        private async Task UpdateInIndexAsync(Uri path, CancellationToken cancellationToken = default)
+        private async Task UpdateInIndexAsync(Uri path, 
+            IndexRepository _indexRepository, 
+            IDatetimeProvider _datetimeProvider, 
+            NLPService _nlpService, 
+            CancellationToken cancellationToken = default)
         {
             var id = path.ToGuid();
-            var doc = await _indexRepository.GetByIdAsync(id) ?? throw new InvalidOperationException("why?");
+            var doc = await _indexRepository.GetByIdAsync(id, cancellationToken);
 
-            var newDocument = await path.ToDocumentAsync(_datetimeProvider, cancellationToken);
-            doc.IndexedAt = newDocument.IndexedAt;
-            doc.Metadata = newDocument.Metadata;
+            if (doc is null)
+            {
+                await AddToIndexAsync(path, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
+            }
+            else
+            {
+                var newDocument = await path.ToDocumentAsync(_datetimeProvider, _nlpService, cancellationToken);
 
-            await _indexRepository.UpdateAsync(doc, cancellationToken);
+                doc.IndexedAt = newDocument.IndexedAt;
+                doc.Metadata = newDocument.Metadata;
+
+                await _indexRepository.UpdateAsync(doc, cancellationToken);
+            }
         }
 
-        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath, CancellationToken cancellationToken = default)
+        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath, 
+            IndexRepository _indexRepository,
+            NLPService _nlpService,
+            IDatetimeProvider _datetimeProvider,
+            CancellationToken cancellationToken = default)
         {
             var oldId = oldPath.ToGuid();
 
-            var document = await _indexRepository.GetByIdAsync(oldId, cancellationToken)
-                ?? throw new InvalidOperationException("Why?");
+            var document = await _indexRepository.GetByIdAsync(oldId, cancellationToken);
 
-            document = new Document()
+            if (document is null)
             {
-                Id = newPath.ToGuid(),
-                Uri = newPath,
-                Metadata = document.Metadata,
-                IndexedAt = _datetimeProvider.Now,
-            };
+                await AddToIndexAsync(newPath, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
+            } 
+            else
+            {
+                document = new Document()
+                {
+                    Id = newPath.ToGuid(),
+                    Uri = newPath,
+                    Metadata = document.Metadata,
+                    IndexedAt = _datetimeProvider.Now,
+                };
 
-            await _indexRepository.DeleteAsync(oldId, cancellationToken);
+                await _indexRepository.DeleteAsync(oldId, cancellationToken);
 
-            await _indexRepository.AddAsync(document, cancellationToken);
+                await _indexRepository.AddAsync(document, cancellationToken);
+            }
         }
 
         private void CreateFileWatcher(string path)
@@ -126,36 +171,24 @@ namespace backend.Model
             watcher.EnableRaisingEvents = true;
         }
 
-        private async void OnChanged(object source, FileSystemEventArgs e)
+        private void OnChanged(object source, FileSystemEventArgs e)
         {
             var extension = Path.GetExtension(e.FullPath);
             if (!AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 return;
 
-            try
+            var type = e.ChangeType switch
             {
-                switch (e.ChangeType)
-                {
-                    case WatcherChangeTypes.Created:
-                        await AddToIndexAsync(new(e.FullPath)); break;
-                    case WatcherChangeTypes.Deleted:
-                        await DeleteFromIndexAsync(new(e.FullPath)); break;
-                    case WatcherChangeTypes.Changed:
-                        await UpdateInIndexAsync(new(e.FullPath)); break;
-                    case WatcherChangeTypes.Renamed:
-                        break;
-                    case WatcherChangeTypes.All:
-                        throw new NotImplementedException("WatcherChangeTypes.All");
-                }
-            }
-            catch (Exception ex)
-            {
-                // todo
-                throw;
-            }
+                WatcherChangeTypes.Changed => FileEventType.Changed,
+                WatcherChangeTypes.Deleted => FileEventType.Deleted,
+                WatcherChangeTypes.Created => FileEventType.Created,
+                _ => throw new ArgumentException("why")
+            };
+
+            _eventsQueue.Enqueue(new(type, [e.FullPath]));
         }
 
-        private async void OnRenamed(object source, RenamedEventArgs e)
+        private void OnRenamed(object source, RenamedEventArgs e)
         {
             var oldExtension = Path.GetExtension(e.OldFullPath);
             var newExtension = Path.GetExtension(e.FullPath);
@@ -164,15 +197,70 @@ namespace backend.Model
                 !AllowedExtensions.Contains(newExtension, StringComparer.OrdinalIgnoreCase))
                 return;
 
-            try
+            _eventsQueue.Enqueue(new(FileEventType.Renamed, [e.OldFullPath, e.FullPath]));
+        }
+
+        private async void HandleEvents()
+        {
+            _timer?.Change(Timeout.Infinite, 0);
+
+            using var scope = _scopeFactory.CreateAsyncScope();
+            var nlpService = scope.ServiceProvider.GetRequiredService<NLPService>();
+            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDatetimeProvider>();
+            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
+
+            while (_eventsQueue.TryDequeue(out var e))
             {
-                await RenameInIndexAsync(new(e.OldFullPath), new(e.FullPath));
+                Console.WriteLine($"{e.Type} {string.Join(", ", e.Args)}");
+                try
+                {
+                    switch (e.Type)
+                    {
+                        case FileEventType.Created:
+                            await AddToIndexAsync(new(e.Args[0]), indexRepository, nlpService, dateTimeProvider); break;
+                        case FileEventType.Deleted:
+                            await DeleteFromIndexAsync(new(e.Args[0]), indexRepository); break;
+                        case FileEventType.Changed:
+                            await UpdateInIndexAsync(new(e.Args[0]), indexRepository, dateTimeProvider, nlpService); break;
+                        case FileEventType.Renamed:
+                            await RenameInIndexAsync(new(e.Args[0]), new(e.Args[1]), indexRepository, nlpService, dateTimeProvider); break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                // todo
-                throw;
-            }
+
+            _timer?.Change(TimeSpan.FromSeconds(3), TimeSpan.Zero);
+        }
+
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Crawler started indexing");
+
+            _timer = new Timer(new TimerCallback((state) => HandleEvents()), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
+
+            using var scope = _scopeFactory.CreateAsyncScope();
+            var nlpService = scope.ServiceProvider.GetRequiredService<NLPService>();
+            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDatetimeProvider>();
+            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
+
+            await IndexAll(indexRepository, nlpService, dateTimeProvider, cancellationToken);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Crawler stopped indexing");
+
+            _timer?.Change(Timeout.Infinite, 0);
+
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

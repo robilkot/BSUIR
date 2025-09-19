@@ -2,19 +2,25 @@
 
 namespace CommonLib.Models;
 
-// Not tracked by EF Core, can remain a record
 public record SearchResult(Guid DocumentId, Uri Uri, string Title, string Snippet, DateTimeOffset IndexedAt, double Relevance);
 
-// Polymorphic base for NER
-public abstract record NamedEntity;
-public sealed record Name(string Text) : NamedEntity;
-public sealed record Location(string Text) : NamedEntity;
-public sealed record Organization(string Text) : NamedEntity;
+public enum NamedEntityType
+{
+    PERSON = 1,
+    LOCATION = 2,
+    ORGANISATION = 3,
+};
 
-public record DocumentMetadata(ImmutableList<string> Keywords, ImmutableList<NamedEntity> NamedEntities, ImmutableList<string> Tags);
+public record NamedEntity(string Text, NamedEntityType Type, string NormalizedText);
+
+public record KeywordMetadata(string Text, double Frequency);
+public record DocumentMetadata(ImmutableList<KeywordMetadata> Keywords, ImmutableList<NamedEntity> NamedEntities);
+
 public class Document
 {
+#pragma warning disable CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Рассмотрите возможность добавления модификатора "required" или объявления значения, допускающего значение NULL.
     public Document()
+#pragma warning restore CS8618 // Поле, не допускающее значения NULL, должно содержать значение, отличное от NULL, при выходе из конструктора. Рассмотрите возможность добавления модификатора "required" или объявления значения, допускающего значение NULL.
     {
         
     }
