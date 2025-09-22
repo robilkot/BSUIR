@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace backend.Model
 {
-    public delegate double DocumentFilter(Document document);
+    public delegate Task<double> DocumentFilter(Document document);
 
     public class NamedEntityComparer : IEqualityComparer<NamedEntity>
     {
@@ -26,33 +26,42 @@ namespace backend.Model
 
     public static class SearchExtensions
     {   
-        public async static Task<DocumentFilter> ToQueryFilter(this SearchQuery query, IndexRepository repository, NLPService nlp, CancellationToken cancellationToken = default)
+        public async static Task<DocumentFilter?> ToQueryFilter(this SearchQuery query, IndexRepository repository, NLPService nlp, CancellationToken cancellationToken = default)
         {
             var queryMetadata = await nlp.GetTextMetadataAsync(query.Text);
-            // todo handle errors;
+
+            if (queryMetadata is null)
+            {
+                return null;
+            }
 
             var documentsCount = await repository.GetDocumentsCount(cancellationToken);
 
-
-            List<LexemeMetadata> queryKeywordsMetadata = [];
-
-            foreach(var k in queryMetadata.Keywords)
+            
+            async Task<double> filter(Document doc)
             {
-                var lexeme = await repository.GetByTextAsync(k.Text, cancellationToken);
+                // account for TF-IDF
+                var documentTfIdf = new Dictionary<string, double>();
 
-                if(lexeme is not null)
+                foreach (var keyword in doc.Metadata.Keywords)
                 {
-                    queryKeywordsMetadata.Add(lexeme);
+                    var lexeme = await repository.GetByTextAsync(keyword.Text, cancellationToken);
+
+                    var tf = keyword.Frequency;
+                    var idf = Math.Log(documentsCount / lexeme!.ContainingDocuments);
+                    var tfidf = tf * idf;
+
+                    documentTfIdf.Add(lexeme.Text, tfidf);
                 }
-            }
-
-
-
-
-            double filter(Document doc)
-            {
-                // todo
                 double keywordsScore = 0;
+
+                foreach(var keyword in queryMetadata.Keywords)
+                {
+                    if(documentTfIdf.TryGetValue(keyword.Text, out double tfidf))
+                    {
+                        keywordsScore = tfidf;
+                    }
+                }
 
                 double totalScore = 0;
 
@@ -62,6 +71,7 @@ namespace backend.Model
                 }
                 else
                 {
+                    // account for named entities
                     var foundNerCount = doc.Metadata.NamedEntities
                         .Intersect(queryMetadata.Entities, NamedEntityComparer.Instance)
                         .Count();
@@ -73,8 +83,6 @@ namespace backend.Model
 
                 return totalScore;
             }
-
-            // todo account for TF-IDF
 
             return filter;
         }
@@ -99,7 +107,7 @@ namespace backend.Model
             => new(uri.ToGuid(), uri, await uri.ToMetadataAsync(nlp, cancellationToken), datetimeProvider.Now);
 
         public static async Task<SearchResult> ToSearchResult(this (double relevance, Document doc) pair, CancellationToken cancellationToken = default)
-            => new(pair.doc.Id, pair.doc.Uri, pair.doc.ToTitle(), await pair.doc.ToSnippetAsync(cancellationToken), pair.doc.IndexedAt, pair.relevance);
+            => new(pair.doc.Id, pair.doc.Uri, pair.doc.ToTitle(), await pair.doc.ToSnippetAsync(cancellationToken) ?? "Ошибка чтения документа", pair.doc.IndexedAt, pair.relevance);
 
         public async static Task<List<SearchResult>> ToSearchResultsAsync(this IEnumerable<(double, Document)> documents, CancellationToken cancellationToken = default)
         {

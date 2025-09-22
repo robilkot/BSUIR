@@ -4,6 +4,8 @@ using backend.Services;
 using CommonLib.Models;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace backend.Model
 {
@@ -22,9 +24,9 @@ namespace backend.Model
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<Crawler> _logger;
 
-        private Timer? _timer = null;
+        private readonly ConcurrentQueue<FileEvent> _eventsQueue = new();
 
-        private ConcurrentQueue<FileEvent> _eventsQueue = new();
+        private Timer? _timer = null;
 
         private static readonly ImmutableHashSet<string> AllowedExtensions = ImmutableHashSet.Create(
             StringComparer.OrdinalIgnoreCase,
@@ -52,21 +54,13 @@ namespace backend.Model
             IDatetimeProvider _datetimeProvider,
             CancellationToken cancellationToken = default)
         {
-            if (!Directory.Exists(_rootIndexingUri.LocalPath))
-            {
-                throw new DirectoryNotFoundException($"Directory not found: {_rootIndexingUri.LocalPath}");
-            }
-
-            var allFiles = Directory.EnumerateFiles(
-                _rootIndexingUri.LocalPath,
-                "*.*",
-                SearchOption.AllDirectories
-            );
+            var allFiles = Directory.EnumerateFiles(_rootIndexingUri.LocalPath, "*.*", SearchOption.AllDirectories);
 
             var filteredFiles = allFiles
                 .Where(file => AllowedExtensions.Contains(Path.GetExtension(file)))
                 .Select(file => new Uri(file));
 
+            // todo task whenAll
             foreach (var fileUri in filteredFiles)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -93,11 +87,63 @@ namespace backend.Model
 
             var document = await path.ToDocumentAsync(_datetimeProvider, _nlpService, cancellationToken);
 
+            // Update lexeme frequencies
+            foreach(KeywordMetadata keyword in document.Metadata.Keywords)
+            {
+                var lexeme = await _indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
+
+                if(lexeme is null)
+                {
+                    await _indexRepository.AddAsync(new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 1 }, cancellationToken);
+                }
+                else
+                {
+                    lexeme.ContainingDocuments += 1;
+                    await _indexRepository.UpdateAsync(lexeme, cancellationToken);
+                }
+            }
+
             await _indexRepository.AddAsync(document, cancellationToken);
         }
 
         private async Task DeleteFromIndexAsync(Uri path, IndexRepository _indexRepository, CancellationToken cancellationToken = default)
-            => await _indexRepository.DeleteAsync(path.ToGuid(), cancellationToken);
+        {
+            var documentId = path.ToGuid();
+            var document = await _indexRepository.GetByIdAsync(documentId, cancellationToken);
+
+            if (document is null)
+            {
+                return;
+            } 
+            else
+            {
+                await _indexRepository.DeleteAsync(documentId, cancellationToken);
+            }
+
+            // Update lexeme frequencies
+            foreach (KeywordMetadata keyword in document.Metadata.Keywords)
+            {
+                var lexeme = await _indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
+
+                if (lexeme is null)
+                {
+                    await _indexRepository.AddAsync(new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 0 }, cancellationToken);
+                }
+                else
+                {
+                    lexeme.ContainingDocuments -= 1;
+
+                    if (lexeme.ContainingDocuments <= 0)
+                    {
+                        await _indexRepository.DeleteAsync(lexeme, cancellationToken);
+                    }
+                    else
+                    {
+                        await _indexRepository.UpdateAsync(lexeme, cancellationToken);
+                    }
+                }
+            }
+        }
 
         private async Task UpdateInIndexAsync(Uri path, 
             IndexRepository _indexRepository, 
@@ -105,52 +151,18 @@ namespace backend.Model
             NLPService _nlpService, 
             CancellationToken cancellationToken = default)
         {
-            var id = path.ToGuid();
-            var doc = await _indexRepository.GetByIdAsync(id, cancellationToken);
-
-            if (doc is null)
-            {
-                await AddToIndexAsync(path, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
-            }
-            else
-            {
-                var newDocument = await path.ToDocumentAsync(_datetimeProvider, _nlpService, cancellationToken);
-
-                doc.IndexedAt = newDocument.IndexedAt;
-                doc.Metadata = newDocument.Metadata;
-
-                await _indexRepository.UpdateAsync(doc, cancellationToken);
-            }
+            await DeleteFromIndexAsync(path, _indexRepository, cancellationToken);
+            await AddToIndexAsync(path, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
         }
 
-        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath, 
+        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath,
             IndexRepository _indexRepository,
             NLPService _nlpService,
             IDatetimeProvider _datetimeProvider,
             CancellationToken cancellationToken = default)
         {
-            var oldId = oldPath.ToGuid();
-
-            var document = await _indexRepository.GetByIdAsync(oldId, cancellationToken);
-
-            if (document is null)
-            {
-                await AddToIndexAsync(newPath, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
-            } 
-            else
-            {
-                document = new Document()
-                {
-                    Id = newPath.ToGuid(),
-                    Uri = newPath,
-                    Metadata = document.Metadata,
-                    IndexedAt = _datetimeProvider.Now,
-                };
-
-                await _indexRepository.DeleteAsync(oldId, cancellationToken);
-
-                await _indexRepository.AddAsync(document, cancellationToken);
-            }
+            await DeleteFromIndexAsync(oldPath, _indexRepository, cancellationToken);
+            await AddToIndexAsync(newPath, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
         }
 
         private void CreateFileWatcher(string path)
@@ -182,7 +194,7 @@ namespace backend.Model
                 WatcherChangeTypes.Changed => FileEventType.Changed,
                 WatcherChangeTypes.Deleted => FileEventType.Deleted,
                 WatcherChangeTypes.Created => FileEventType.Created,
-                _ => throw new ArgumentException("why")
+                _ => FileEventType.Changed // todo not good
             };
 
             _eventsQueue.Enqueue(new(type, [e.FullPath]));
@@ -211,7 +223,7 @@ namespace backend.Model
 
             while (_eventsQueue.TryDequeue(out var e))
             {
-                Console.WriteLine($"{e.Type} {string.Join(", ", e.Args)}");
+                _logger.LogInformation($"{e.Type} {string.Join(", ", e.Args)}");
                 try
                 {
                     switch (e.Type)
@@ -237,7 +249,12 @@ namespace backend.Model
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Crawler started indexing");
+            if (!Directory.Exists(_rootIndexingUri.LocalPath))
+            {
+                throw new DirectoryNotFoundException($"Directory not found: {_rootIndexingUri.LocalPath}");
+            }
+
+            _logger.LogInformation("Crawler started");
 
             _timer = new Timer(new TimerCallback((state) => HandleEvents()), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
 
@@ -251,9 +268,9 @@ namespace backend.Model
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Crawler stopped indexing");
-
             _timer?.Change(Timeout.Infinite, 0);
+
+            _logger.LogInformation("Crawler stopped");
 
             return Task.CompletedTask;
         }

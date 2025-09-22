@@ -1,33 +1,28 @@
 using backend.Model;
 using backend.Repository;
+using backend.Services;
 using CommonLib.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 [ApiController]
 [Route("api/[controller]")]
 public class SearchController : ControllerBase
 {
     private readonly IndexRepository _indexRepository;
+    private readonly NLPService _nlpService;
 
-    public SearchController(IndexRepository repo)
+    public SearchController(IndexRepository repo, NLPService nlpService)
     {
+        _nlpService = nlpService;
         _indexRepository = repo;
     }
 
-    /// <summary>
-    /// Searches through indexed documents based on the specified criteria
-    /// </summary>
-    /// <param name="text">Search text to look for</param>
-    /// <param name="startDate">Optional start date filter</param>
-    /// <param name="endDate">Optional end date filter</param>
-    /// <param name="pageSize">Number of items per page (default: 10)</param>
-    /// <param name="page">Page number (default: 1)</param>
-    /// <param name="cancellationToken">Cancellation token for the operation</param>
-    /// <returns>An asynchronous stream of search results</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<List<SearchResult>> Get(
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Get(
         [FromQuery] string text,
         [FromQuery] DateTimeOffset? startDate,
         [FromQuery] DateTimeOffset? endDate,
@@ -37,21 +32,35 @@ public class SearchController : ControllerBase
     {
         SearchQuery query = new(text, startDate, endDate, page ?? 1, pageSize ?? 10);
 
-        var documents = await _indexRepository.SearchAsync(query, cancellationToken);
+        var documents = await _indexRepository.GetAllAsync(cancellationToken);
 
-        return await documents.ToSearchResultsAsync(cancellationToken);
+        var filter = await query.ToQueryFilter(_indexRepository, _nlpService, cancellationToken);
+
+        if(filter is null)
+        {
+            return StatusCode(500, "NLP service did not respond");
+        }
+
+        List<(double, Document)> filteredDocs = [];
+
+        foreach (var document in documents)
+        {
+            filteredDocs.Add((await filter(document), document));
+        }
+
+        var results = filteredDocs
+            .Where(pair => pair.Item1 > 0)
+            .OrderByDescending(pair => pair.Item1)
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .ToList();
+
+        return Ok(await results.ToSearchResultsAsync(cancellationToken));
     }
 
-    /// <summary>
-    /// Gets the current health status of the search endpoint
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for the operation</param>
-    /// <returns>Health status response</returns>
     [HttpGet("health")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult GetHealth()
     {
-        // Add health check logic here
         return Ok(new
         {
             status = "healthy",
