@@ -20,40 +20,32 @@ public class ApiService
         };
     }
 
-    public async Task<IEnumerable<SearchResult>> SearchAsync(SearchQuery request)
+    public async Task<List<SearchResult>> SearchAsync(SearchQuery request)
     {
-        try
-        {
-            var queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
-            queryString["page"] = request.Page.ToString();
-            queryString["pageSize"] = request.PageSize.ToString();
+        var queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
+        queryString["page"] = request.Page.ToString();
+        queryString["pageSize"] = request.PageSize.ToString();
 
-            if (!string.IsNullOrEmpty(request.Text))
-                queryString["text"] = request.Text;
+        if (!string.IsNullOrEmpty(request.Text))
+            queryString["text"] = request.Text;
 
-            if (request.StartDate.HasValue)
-                queryString["startDate"] = request.StartDate.Value.ToString("yyyy-MM-dd");
+        if (request.StartDate.HasValue)
+            queryString["startDate"] = request.StartDate.Value.ToString("yyyy-MM-dd");
 
-            if (request.EndDate.HasValue)
-                queryString["endDate"] = request.EndDate.Value.ToString("yyyy-MM-dd");
+        if (request.EndDate.HasValue)
+            queryString["endDate"] = request.EndDate.Value.ToString("yyyy-MM-dd");
 
-            var url = $"{BaseUrl}?{queryString}";
+        var url = $"{BaseUrl}?{queryString}";
 
-            var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+        var response = await _httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
-            var results = JsonSerializer.Deserialize<IEnumerable<SearchResult>>(
-                content,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-            );
+        var content = await response.Content.ReadAsStringAsync();
+        var results = JsonSerializer.Deserialize<List<SearchResult>>(
+            content,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        );
 
-            return results ?? [];
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"API Error: {ex.Message}");
-            return [];
-        }
+        return results ?? [];
     }
 }

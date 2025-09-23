@@ -35,12 +35,8 @@ public class SearchController : ControllerBase
     {
         SearchQuery query = new(text, startDate, endDate, page ?? 1, pageSize ?? 10);
 
-        List<Document> documents = [];
-        DocumentFilter? filter = null;
-
-        var documentsTask = Task.Run(async () => documents = await _indexRepository.GetAllAsync(cancellationToken), cancellationToken);
-        var filterTask = Task.Run(async () => filter = await query.ToQueryFilter(_indexRepository, _nlpService, cancellationToken), cancellationToken);
-        await Task.WhenAll([documentsTask, filterTask]);
+        var documents = await _indexRepository.GetAllAsync(cancellationToken);
+        var filter = await query.ToQueryFilter(_indexRepository, _nlpService, cancellationToken);
 
         if (filter is null)
         {

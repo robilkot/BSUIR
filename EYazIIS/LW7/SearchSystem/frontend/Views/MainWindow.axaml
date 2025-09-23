@@ -13,6 +13,7 @@
 
 	<Window.Resources>
 		<svc:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter"/>
+		<svc:IsNotNullAndIsEmptyConverter x:Key="IsNotNullAndIsEmptyConverter"/>
 	</Window.Resources>
     
     <Window.DataContext>
@@ -68,6 +69,7 @@
           <StackPanel
             Orientation="Horizontal">
             <Button
+				IsVisible="False"
               Width="35"
               Command="{Binding VoiceInputCommand}"
               CornerRadius="0">
@@ -85,16 +87,29 @@
                 Height="12"
                 Data="{StaticResource options_regular}"/>
             </ToggleButton>
-            <Button
-              Padding="25 5"
-              Margin="-1"
-              Command="{Binding SearchCommand}"
-              CornerRadius="{Binding #SearchOptionsBorder.CornerRadius}"
-              Background="#4285F4">
-              <PathIcon
-                Height="16"
-                Foreground="White"
-                Data="{StaticResource search_regular}"/>
+			  <Button
+				IsEnabled="{Binding !IsLoading}"
+				Margin="-1"
+                Command="{Binding SearchCommand}"
+                CornerRadius="{Binding #SearchOptionsBorder.CornerRadius}"
+                Background="#4285F4">
+				<Grid>
+			        <!-- Loading Indicator -->
+			        <ProgressBar
+						IsVisible="{Binding IsLoading}"
+					    IsHitTestVisible="False"
+					    MinWidth="0"
+					    MinHeight="0"
+						Height="35"
+					    HorizontalAlignment="Stretch"
+					    VerticalAlignment="Stretch"
+					    IsIndeterminate="True"/>
+					<PathIcon
+					    Margin="25 5"
+					    Height="16"
+                        Foreground="White"
+                        Data="{StaticResource search_regular}"/>
+				</Grid>
             </Button>
           </StackPanel>
         </Border>
@@ -119,83 +134,70 @@
 
     </StackPanel>
 
-    <Grid
-      Grid.Row="1"
-      IsVisible="{Binding HasResults}"
-      RowDefinitions="*, auto">
+	<Grid
+		Grid.Row="1">
       <!-- Results -->
       <ScrollViewer>
-        <Grid
-          RowDefinitions="*, auto">
-          <ItemsControl
-            ItemsSource="{Binding SearchResults}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Border Padding="15" Margin="0,0,0,10" Background="#F8F9FA" CornerRadius="5">
-                  <StackPanel Spacing="4">
-                    <StackPanel
-                      Orientation="Horizontal"
-                      Spacing="8">
-                      <HyperlinkButton
-                        NavigateUri="{Binding Uri}"
-                        FontWeight="Bold"
-                        Padding="0"
-                        FontSize="16">
-                        <TextBlock Text="{Binding Title}" TextDecorations="{x:Null}"/>
-                      </HyperlinkButton>
-                      <TextBlock 
-                        VerticalAlignment="Center"
-                        Text="{Binding Relevance, StringFormat='{}{0:P0} relevance'}"
-                        FontSize="12"
-                        Foreground="#70757A"/>
-                      <TextBlock 
-                        VerticalAlignment="Center"
-                        Text="{Binding IndexedAt, StringFormat='{}{0:dd/MM/yyyy}'}"
-                        FontSize="12"
-                        Foreground="#70757A"/>
-                    </StackPanel>
-                    <TextBlock 
-                      Text="{Binding Snippet}"
-                      TextWrapping="Wrap"
-                      Foreground="#5F6368"/>
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          
-          <!-- Pagination -->
-          <StackPanel
-            Grid.Row="1"
-            Orientation="Horizontal"
-            HorizontalAlignment="Center"
-            Spacing="10"
-            IsVisible="{Binding HasResults}">
-            <Button Content="Next"
-                    Command="{Binding NextPageCommand}"
-                    IsEnabled="{Binding HasNextPage}"/>
-          </StackPanel>
-        </Grid>
+		<ItemsControl
+			ItemsSource="{Binding SearchResults}">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<Border 
+						Padding="15" 
+						Margin="0,0,0,10" 
+						Background="#F8F9FA"
+						MaxWidth="600"
+						CornerRadius="8">
+						<StackPanel Spacing="4">
+							<StackPanel
+								Orientation="Horizontal"
+								Spacing="8">
+								<HyperlinkButton
+									NavigateUri="{Binding Uri}"
+									FontWeight="Bold"
+									Padding="0"
+									FontSize="16">
+									<TextBlock Text="{Binding Title}" TextDecorations="{x:Null}"/>
+								</HyperlinkButton>
+								<TextBlock
+									VerticalAlignment="Center"
+									Text="{Binding Relevance, StringFormat='{}{0:P0} relevance'}"
+									FontSize="12"
+									Foreground="#70757A"/>
+								<TextBlock
+									VerticalAlignment="Center"
+									Text="{Binding IndexedAt, StringFormat='{}{0:dd/MM/yyyy}'}"
+									FontSize="12"
+									Foreground="#70757A"/>
+							</StackPanel>
+							<TextBlock
+								Text="{Binding Snippet}"
+								TextWrapping="Wrap"/>
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
       </ScrollViewer>
-      
-      <!-- Loading Indicator -->
-      <ProgressBar
-        Grid.RowSpan="2"
-        IsIndeterminate="True"
-        IsVisible="{Binding IsLoading}"
-        Height="4"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"/>
 
       <!-- No Results Message -->
-      <TextBlock 
-        Grid.RowSpan="2"
-        Text="No results found"
-        IsVisible="{Binding HasNoResults}"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        FontSize="18"
-        Foreground="#70757A"/>
+		<StackPanel
+			HorizontalAlignment="Center"
+		      Margin="0 16"
+			Spacing="8">
+			<TextBlock
+				IsVisible="{Binding SearchResults, Converter={StaticResource IsNotNullAndIsEmptyConverter}}"
+				HorizontalAlignment="Center"
+				Text="Поиск не дал результатов"
+				FontSize="18"/>
+			<TextBlock
+				Foreground="DarkRed"
+			    HorizontalAlignment="Center"
+				IsVisible="{Binding !!ErrorMessage}"
+			    Text="{Binding ErrorMessage}"
+				TextWrapping="Wrap"
+			    FontSize="12"/>
+		</StackPanel>
     </Grid>
   </Grid>
 </Window>
