@@ -29,7 +29,7 @@ namespace backend.Repository
         public async Task DeleteAsync(LexemeMetadata lexeme, CancellationToken cancellationToken = default)
         {
             _context.Lexemes.Remove(lexeme);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<Document?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

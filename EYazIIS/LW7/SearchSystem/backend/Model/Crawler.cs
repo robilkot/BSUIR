@@ -4,8 +4,6 @@ using backend.Services;
 using CommonLib.Models;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
-using System.IO;
-using System.Security.Cryptography;
 
 namespace backend.Model
 {
@@ -20,6 +18,7 @@ namespace backend.Model
 
     public class Crawler : IHostedService, IDisposable
     {
+        private static DatetimeProvider s_datetimeProvider = new();
         private readonly Uri _rootIndexingUri;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<Crawler> _logger;
@@ -48,11 +47,7 @@ namespace backend.Model
             CreateFileWatcher(_rootIndexingUri.LocalPath);
         }
 
-        public async Task IndexAll(
-            IndexRepository _indexRepository,
-            NLPService _nlpService,
-            IDatetimeProvider _datetimeProvider,
-            CancellationToken cancellationToken = default)
+        public async Task IndexAll(IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
         {
             var allFiles = Directory.EnumerateFiles(_rootIndexingUri.LocalPath, "*.*", SearchOption.AllDirectories);
 
@@ -60,56 +55,60 @@ namespace backend.Model
                 .Where(file => AllowedExtensions.Contains(Path.GetExtension(file)))
                 .Select(file => new Uri(file));
 
-            // todo task whenAll
+            List<Task> indexingTasks = [];
+
             foreach (var fileUri in filteredFiles)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
+                await AddToIndexAsync(fileUri, serviceScopeFactory, cancellationToken);
 
-                await AddToIndexAsync(fileUri, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);                
+                //indexingTasks.Add(task);
             }
+
+            //await Task.WhenAll(indexingTasks);
         }
 
-        private async Task AddToIndexAsync(Uri path, 
-            IndexRepository _indexRepository, 
-            NLPService _nlpService, 
-            IDatetimeProvider _datetimeProvider,
-            CancellationToken cancellationToken = default)
+        private async Task AddToIndexAsync(Uri path, IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
         {
+            var scope = serviceScopeFactory.CreateAsyncScope();
+            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
+            var nlpService = scope.ServiceProvider.GetRequiredService<NLPService>();
+
             var documentId = path.ToGuid();
 
-            if (await _indexRepository.GetByIdAsync(documentId, cancellationToken) is not null)
+            if (await indexRepository.GetByIdAsync(documentId, cancellationToken) is not null)
             {
                 return;
             }
 
-            var document = await path.ToDocumentAsync(_datetimeProvider, _nlpService, cancellationToken);
+            var document = await path.ToDocumentAsync(s_datetimeProvider, nlpService, cancellationToken);
 
             // Update lexeme frequencies
             foreach(KeywordMetadata keyword in document.Metadata.Keywords)
             {
-                var lexeme = await _indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
+                var lexeme = await indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
 
                 if(lexeme is null)
                 {
-                    await _indexRepository.AddAsync(new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 1 }, cancellationToken);
+                    var newLexeme = new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 1 };    
+                    await indexRepository.AddAsync(newLexeme, cancellationToken);
                 }
                 else
                 {
                     lexeme.ContainingDocuments += 1;
-                    await _indexRepository.UpdateAsync(lexeme, cancellationToken);
+                    await indexRepository.UpdateAsync(lexeme, cancellationToken);
                 }
             }
 
-            await _indexRepository.AddAsync(document, cancellationToken);
+            await indexRepository.AddAsync(document, cancellationToken);
         }
 
-        private async Task DeleteFromIndexAsync(Uri path, IndexRepository _indexRepository, CancellationToken cancellationToken = default)
+        private async Task DeleteFromIndexAsync(Uri path, IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
         {
+            var scope = serviceScopeFactory.CreateAsyncScope();
+            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
+
             var documentId = path.ToGuid();
-            var document = await _indexRepository.GetByIdAsync(documentId, cancellationToken);
+            var document = await indexRepository.GetByIdAsync(documentId, cancellationToken);
 
             if (document is null)
             {
@@ -117,17 +116,17 @@ namespace backend.Model
             } 
             else
             {
-                await _indexRepository.DeleteAsync(documentId, cancellationToken);
+                await indexRepository.DeleteAsync(documentId, cancellationToken);
             }
 
             // Update lexeme frequencies
             foreach (KeywordMetadata keyword in document.Metadata.Keywords)
             {
-                var lexeme = await _indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
+                var lexeme = await indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
 
                 if (lexeme is null)
                 {
-                    await _indexRepository.AddAsync(new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 0 }, cancellationToken);
+                    await indexRepository.AddAsync(new LexemeMetadata() { Text = keyword.Text, ContainingDocuments = 0 }, cancellationToken);
                 }
                 else
                 {
@@ -135,34 +134,26 @@ namespace backend.Model
 
                     if (lexeme.ContainingDocuments <= 0)
                     {
-                        await _indexRepository.DeleteAsync(lexeme, cancellationToken);
+                        await indexRepository.DeleteAsync(lexeme, cancellationToken);
                     }
                     else
                     {
-                        await _indexRepository.UpdateAsync(lexeme, cancellationToken);
+                        await indexRepository.UpdateAsync(lexeme, cancellationToken);
                     }
                 }
             }
         }
 
-        private async Task UpdateInIndexAsync(Uri path, 
-            IndexRepository _indexRepository, 
-            IDatetimeProvider _datetimeProvider, 
-            NLPService _nlpService, 
-            CancellationToken cancellationToken = default)
+        private async Task UpdateInIndexAsync(Uri path, IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
         {
-            await DeleteFromIndexAsync(path, _indexRepository, cancellationToken);
-            await AddToIndexAsync(path, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
+            await DeleteFromIndexAsync(path, serviceScopeFactory, cancellationToken);
+            await AddToIndexAsync(path, serviceScopeFactory, cancellationToken);
         }
 
-        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath,
-            IndexRepository _indexRepository,
-            NLPService _nlpService,
-            IDatetimeProvider _datetimeProvider,
-            CancellationToken cancellationToken = default)
+        private async Task RenameInIndexAsync(Uri oldPath, Uri newPath, IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
         {
-            await DeleteFromIndexAsync(oldPath, _indexRepository, cancellationToken);
-            await AddToIndexAsync(newPath, _indexRepository, _nlpService, _datetimeProvider, cancellationToken);
+            await DeleteFromIndexAsync(oldPath, serviceScopeFactory, cancellationToken);
+            await AddToIndexAsync(newPath, serviceScopeFactory, cancellationToken);
         }
 
         private void CreateFileWatcher(string path)
@@ -223,19 +214,19 @@ namespace backend.Model
 
             while (_eventsQueue.TryDequeue(out var e))
             {
-                _logger.LogInformation($"{e.Type} {string.Join(", ", e.Args)}");
+                _logger.LogInformation("{} {}", e.Type, string.Join(", ", e.Args));
                 try
                 {
                     switch (e.Type)
                     {
                         case FileEventType.Created:
-                            await AddToIndexAsync(new(e.Args[0]), indexRepository, nlpService, dateTimeProvider); break;
+                            await AddToIndexAsync(new(e.Args[0]), _scopeFactory); break;
                         case FileEventType.Deleted:
-                            await DeleteFromIndexAsync(new(e.Args[0]), indexRepository); break;
+                            await DeleteFromIndexAsync(new(e.Args[0]), _scopeFactory); break;
                         case FileEventType.Changed:
-                            await UpdateInIndexAsync(new(e.Args[0]), indexRepository, dateTimeProvider, nlpService); break;
+                            await UpdateInIndexAsync(new(e.Args[0]), _scopeFactory); break;
                         case FileEventType.Renamed:
-                            await RenameInIndexAsync(new(e.Args[0]), new(e.Args[1]), indexRepository, nlpService, dateTimeProvider); break;
+                            await RenameInIndexAsync(new(e.Args[0]), new(e.Args[1]), _scopeFactory); break;
                     }
                 }
                 catch (Exception ex)
@@ -263,7 +254,7 @@ namespace backend.Model
             var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDatetimeProvider>();
             var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
 
-            await IndexAll(indexRepository, nlpService, dateTimeProvider, cancellationToken);
+            await IndexAll(_scopeFactory, cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

@@ -12,12 +12,17 @@ namespace backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddLogging(builder =>
+            {
+                builder.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+            });
+
             builder.Services.AddControllers();
 
             builder.Services.AddDbContext<IndexDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddScoped<IndexRepository>();
+            builder.Services.AddTransient<IndexRepository>();
             builder.Services.AddScoped<NLPService>();
             builder.Services.AddTransient<IDatetimeProvider, DatetimeProvider>();
             builder.Services.AddHostedService<Crawler>();
@@ -33,13 +38,21 @@ namespace backend
 
             var app = builder.Build();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                using (var dbContext = scope.ServiceProvider.GetRequiredService<IndexDbContext>())
+                {
+                    dbContext.Database.EnsureCreated();
+                }
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
