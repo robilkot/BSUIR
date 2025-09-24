@@ -22,7 +22,7 @@ namespace backend.Model
             {
                 var allText = await File.ReadAllTextAsync(doc.Uri.LocalPath, cancellationToken);
 
-                return allText.Substring(0, Math.Min(allText.Length, 100));
+                return allText[..Math.Min(allText.Length, 100)].Replace('\n', ' ').Replace('\r', ' ');
             }
             catch
             {
