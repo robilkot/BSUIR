@@ -40,10 +40,8 @@ namespace backend
 
             using (var scope = app.Services.CreateScope())
             {
-                using (var dbContext = scope.ServiceProvider.GetRequiredService<IndexDbContext>())
-                {
-                    dbContext.Database.EnsureCreated();
-                }
+                using var dbContext = scope.ServiceProvider.GetRequiredService<IndexDbContext>();
+                dbContext.Database.EnsureCreated();
             }
 
             if (app.Environment.IsDevelopment())

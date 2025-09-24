@@ -16,20 +16,20 @@ namespace backend.Model
     }
     public record FileEvent(FileEventType Type, string[] Args);
 
-    public class Crawler : IHostedService, IDisposable
+    public class Crawler : BackgroundService
     {
-        private static DatetimeProvider s_datetimeProvider = new();
+        private static readonly DatetimeProvider s_datetimeProvider = new();
         private readonly Uri _rootIndexingUri;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<Crawler> _logger;
 
-        private readonly ConcurrentQueue<FileEvent> _eventsQueue = new();
+        private FileSystemWatcher? _watcher;
 
-        private Timer? _timer = null;
+        private readonly ConcurrentQueue<FileEvent> _eventsQueue = new();
 
         private static readonly ImmutableHashSet<string> AllowedExtensions = ImmutableHashSet.Create(
             StringComparer.OrdinalIgnoreCase,
-            ".txt", ".html", ".htm", ".json", ".md"
+            ".txt", ".md"
         );
 
         public Crawler(IConfiguration configuration, IServiceScopeFactory scopeFactory, ILogger<Crawler> logger)
@@ -43,8 +43,6 @@ namespace backend.Model
                 ?? throw new Exception("No indexing URI set");
 
             _rootIndexingUri = new(uriString);
-
-            CreateFileWatcher(_rootIndexingUri.LocalPath);
         }
 
         public async Task IndexAll(IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
@@ -61,6 +59,7 @@ namespace backend.Model
             {
                 await AddToIndexAsync(fileUri, serviceScopeFactory, cancellationToken);
 
+                //await AddToIndexAsync(fileUri, serviceScopeFactory, cancellationToken);
                 //indexingTasks.Add(task);
             }
 
@@ -80,10 +79,13 @@ namespace backend.Model
                 return;
             }
 
-            var document = await path.ToDocumentAsync(s_datetimeProvider, nlpService, cancellationToken);
+            _logger.LogInformation("Indexing {}", path);
+
+            var document = await path.ToDocumentAsync(s_datetimeProvider, nlpService, cancellationToken) 
+                ?? throw new Exception("Could not create document. Possibly, problem with NLP service");
 
             // Update lexeme frequencies
-            foreach(KeywordMetadata keyword in document.Metadata.Keywords)
+            foreach (KeywordMetadata keyword in document.Metadata.Keywords)
             {
                 var lexeme = await indexRepository.GetByTextAsync(keyword.Text, cancellationToken);
 
@@ -158,7 +160,7 @@ namespace backend.Model
 
         private void CreateFileWatcher(string path)
         {
-            FileSystemWatcher watcher = new()
+            _watcher = new()
             {
                 Path = path,
                 IncludeSubdirectories = true,
@@ -166,12 +168,12 @@ namespace backend.Model
                 Filter = "*.*"
             };
 
-            watcher.Changed += new FileSystemEventHandler(OnChanged);
-            watcher.Created += new FileSystemEventHandler(OnChanged);
-            watcher.Deleted += new FileSystemEventHandler(OnChanged);
-            watcher.Renamed += new RenamedEventHandler(OnRenamed);
+            _watcher.Changed += new FileSystemEventHandler(OnChanged);
+            _watcher.Created += new FileSystemEventHandler(OnChanged);
+            _watcher.Deleted += new FileSystemEventHandler(OnChanged);
+            _watcher.Renamed += new RenamedEventHandler(OnRenamed);
 
-            watcher.EnableRaisingEvents = true;
+            _watcher.EnableRaisingEvents = true;
         }
 
         private void OnChanged(object source, FileSystemEventArgs e)
@@ -203,18 +205,12 @@ namespace backend.Model
             _eventsQueue.Enqueue(new(FileEventType.Renamed, [e.OldFullPath, e.FullPath]));
         }
 
-        private async void HandleEvents()
+        private async Task HandleEvents()
         {
-            _timer?.Change(Timeout.Infinite, 0);
-
-            using var scope = _scopeFactory.CreateAsyncScope();
-            var nlpService = scope.ServiceProvider.GetRequiredService<NLPService>();
-            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDatetimeProvider>();
-            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
-
             while (_eventsQueue.TryDequeue(out var e))
             {
                 _logger.LogInformation("{} {}", e.Type, string.Join(", ", e.Args));
+
                 try
                 {
                     switch (e.Type)
@@ -229,17 +225,17 @@ namespace backend.Model
                             await RenameInIndexAsync(new(e.Args[0]), new(e.Args[1]), _scopeFactory); break;
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError("{} {}", e.Type, e.Args[0]);
                 }
             }
-
-            _timer?.Change(TimeSpan.FromSeconds(3), TimeSpan.Zero);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            CreateFileWatcher(_rootIndexingUri.LocalPath);
+
             if (!Directory.Exists(_rootIndexingUri.LocalPath))
             {
                 throw new DirectoryNotFoundException($"Directory not found: {_rootIndexingUri.LocalPath}");
@@ -247,28 +243,16 @@ namespace backend.Model
 
             _logger.LogInformation("Crawler started");
 
-            _timer = new Timer(new TimerCallback((state) => HandleEvents()), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
+            await IndexAll(_scopeFactory, stoppingToken);
+            
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
-            using var scope = _scopeFactory.CreateAsyncScope();
-            var nlpService = scope.ServiceProvider.GetRequiredService<NLPService>();
-            var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDatetimeProvider>();
-            var indexRepository = scope.ServiceProvider.GetRequiredService<IndexRepository>();
+            while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
+            {
+                await HandleEvents();
+            }
 
-            await IndexAll(_scopeFactory, cancellationToken);
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer?.Change(Timeout.Infinite, 0);
-
-            _logger.LogInformation("Crawler stopped");
-
-            return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            _timer?.Dispose();
+            _logger.LogInformation("Crawler stopped.");
         }
     }
 }

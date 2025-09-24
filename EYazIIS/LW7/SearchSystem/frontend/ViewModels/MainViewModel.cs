@@ -1,6 +1,5 @@
 ﻿using CommonLib.Models;
 using DynamicData;
-using DynamicData.Binding;
 using frontend.Services;
 using ReactiveUI;
 using System;

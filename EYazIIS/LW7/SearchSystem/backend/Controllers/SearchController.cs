@@ -5,20 +5,15 @@ using CommonLib.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 
+namespace backend.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
-public class SearchController : ControllerBase
+public class SearchController(IndexRepository repo, NLPService nlpService, ILogger<SearchController> logger) : ControllerBase
 {
-    private readonly IndexRepository _indexRepository;
-    private readonly NLPService _nlpService;
-    private readonly ILogger<SearchController> _logger;
-
-    public SearchController(IndexRepository repo, NLPService nlpService, ILogger<SearchController> logger)
-    {
-        _logger = logger;
-        _nlpService = nlpService;
-        _indexRepository = repo;
-    }
+    private readonly IndexRepository _indexRepository = repo;
+    private readonly NLPService _nlpService = nlpService;
+    private readonly ILogger<SearchController> _logger = logger;
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -65,24 +60,23 @@ public class SearchController : ControllerBase
         await Task.WhenAll(filterTasks);
 
         var results = filteredDocs
-            .Where(pair => pair.Item1 > 0.02)
-            .OrderByDescending(pair => pair.Item1)
-            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-            .ToList();
+            .Where(pair => pair.Item1 > 0.025)
+            .OrderByDescending(pair => pair.Item1);
 
-        _logger.LogInformation("Searching: {}. Returned {} results", text, results.Count);
+        List<(double, Document)> total = [];
 
-        return Ok(await results.ToSearchResultsAsync(cancellationToken));
-    }
-
-    [HttpGet("health")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult GetHealth()
-    {
-        return Ok(new
+        if (pageSize != 0)
         {
-            status = "healthy",
-            timestamp = DateTimeOffset.UtcNow
-        });
+            total = [.. results
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)];
+        }
+        else
+        {
+            total = [.. results];
+        }
+
+        _logger.LogInformation("Searching: {}. Returned {} results", text, total.Count);
+
+        return Ok(await total.ToSearchResultsAsync(cancellationToken));
     }
 }

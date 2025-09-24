@@ -34,29 +34,23 @@ namespace backend.Model
             async Task<double> filter(Document doc, IndexRepository repo)
             {
                 // account for TF-IDF
-                var documentTfIdf = new Dictionary<string, double>();
+                double keywordsScore = 0;
 
                 foreach (var keyword in doc.Metadata.Keywords)
                 {
+                    if(!queryMetadata.Keywords.Any(kw => kw.Text == keyword.Text))
+                    {
+                        continue;
+                    }
+                        
                     var lexeme = await repo.GetByTextAsync(keyword.Text, cancellationToken);
 
                     var tf = keyword.Frequency;
-                    var idf = Math.Log(documentsCount / lexeme!.ContainingDocuments);
+                    var idf = Math.Log(documentsCount / lexeme!.ContainingDocuments) + 0.7;
                     var tfidf = tf * idf;
 
-                    documentTfIdf.Add(lexeme.Text, tfidf);
+                    keywordsScore += tfidf;
                 }
-                
-                double keywordsScore = 0;
-
-                foreach(var keyword in queryMetadata.Keywords)
-                {
-                    if(documentTfIdf.TryGetValue(keyword.Text, out double tfidf))
-                    {
-                        keywordsScore += tfidf;
-                    }
-                }
-
 
                 double totalScore = 0;
 
@@ -82,24 +76,45 @@ namespace backend.Model
             return filter;
         }
 
-        public async static Task<DocumentMetadata> ToMetadataAsync(this Uri uri, NLPService nlp, CancellationToken cancellationToken = default)
+        public async static Task<DocumentMetadata?> ToMetadataAsync(this Uri uri, NLPService nlp, CancellationToken cancellationToken = default)
         {
-            string content = await File.ReadAllTextAsync(uri.LocalPath, cancellationToken);
+            try
+            {
+                string content = await File.ReadAllTextAsync(uri.LocalPath, cancellationToken);
 
-            var metadataResponse = await nlp.GetTextMetadataAsync(content);
-            // todo handle errors
-            
-            var metadata = new DocumentMetadata([.. metadataResponse.Keywords], [.. metadataResponse.Entities]);
+                var metadataResponse = await nlp.GetTextMetadataAsync(content);
 
-            return metadata;
+                if(metadataResponse is null)
+                {
+                    return null;
+                }
+
+                var metadata = new DocumentMetadata([.. metadataResponse.Keywords], [.. metadataResponse.Entities]);
+
+                return metadata;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
         
 
-        public static async Task<Document> ToDocumentAsync(this Uri uri, 
+        public static async Task<Document?> ToDocumentAsync(this Uri uri, 
             IDatetimeProvider datetimeProvider, 
             NLPService nlp, 
             CancellationToken cancellationToken = default)
-            => new(uri.ToGuid(), uri, await uri.ToMetadataAsync(nlp, cancellationToken), datetimeProvider.Now);
+        {
+            var metadata = await uri.ToMetadataAsync(nlp, cancellationToken);
+
+            if(metadata is null)
+            {
+                return null;
+            }
+
+            var doc = new Document(uri.ToGuid(), uri, metadata, datetimeProvider.Now);
+            return doc;
+        }
 
         public static async Task<SearchResult> ToSearchResult(this (double relevance, Document doc) pair, CancellationToken cancellationToken = default)
             => new(pair.doc.Id, pair.doc.Uri, pair.doc.ToTitle(), await pair.doc.ToSnippetAsync(cancellationToken) ?? "Ошибка чтения документа", pair.doc.IndexedAt, pair.relevance);
