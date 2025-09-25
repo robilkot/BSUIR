@@ -30,6 +30,10 @@ public class MainViewModel : ViewModelBase
         {
             SearchQuery = string.Empty;
         }, canClearSearch);
+
+        SearchResults = [
+            new(Guid.NewGuid(), new("D:/indexingTest/test.txt"), "Test document.txt", DateTimeOffset.Now, ["keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3"])
+            ];
     }
 
     private string? _errMsg = null;
@@ -102,9 +106,8 @@ public class MainViewModel : ViewModelBase
 
     private async Task SearchAsync()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
+        if (string.IsNullOrEmpty(SearchQuery))
         {
-            SearchResults = null;
             return;
         }
 

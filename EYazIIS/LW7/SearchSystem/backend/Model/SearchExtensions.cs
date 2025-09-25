@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace backend.Model
 {
-    public delegate Task<double> DocumentFilter(Document document, IndexRepository repo);
+    public delegate Task<(double relevance, List<string> keywords)> DocumentFilter(Document document, IndexRepository repo);
 
     public class NamedEntityComparer : IEqualityComparer<NamedEntity>
     {
@@ -31,10 +31,11 @@ namespace backend.Model
             var documentsCount = await repository.GetDocumentsCount(cancellationToken);
 
             
-            async Task<double> filter(Document doc, IndexRepository repo)
+            async Task<(double, List<string>)> filter(Document doc, IndexRepository repo)
             {
                 // account for TF-IDF
                 double keywordsScore = 0;
+                List<string> matches = [];
 
                 foreach (var keyword in doc.Metadata.Keywords)
                 {
@@ -50,6 +51,7 @@ namespace backend.Model
                     var tfidf = tf * idf;
 
                     keywordsScore += tfidf;
+                    matches.Add(keyword.Text);
                 }
 
                 double totalScore = 0;
@@ -70,7 +72,7 @@ namespace backend.Model
                     totalScore = 0.3 * nerScore + 0.7 * keywordsScore;
                 }
 
-                return totalScore;
+                return (totalScore, matches);
             }
 
             return filter;
@@ -99,7 +101,6 @@ namespace backend.Model
             }
         }
         
-
         public static async Task<Document?> ToDocumentAsync(this Uri uri, 
             IDatetimeProvider datetimeProvider, 
             NLPService nlp, 
@@ -116,19 +117,10 @@ namespace backend.Model
             return doc;
         }
 
-        public static async Task<SearchResult> ToSearchResult(this (double relevance, Document doc) pair, CancellationToken cancellationToken = default)
-            => new(pair.doc.Id, pair.doc.Uri, pair.doc.ToTitle(), await pair.doc.ToSnippetAsync(cancellationToken) ?? "Ошибка чтения документа", pair.doc.IndexedAt, pair.relevance);
+        public static SearchResult ToSearchResult(this (double relevance, Document doc, List<string> keywords) pair)
+            => new(pair.doc.Id, pair.doc.Uri, pair.doc.ToTitle(), pair.doc.IndexedAt, pair.keywords);
 
-        public async static Task<List<SearchResult>> ToSearchResultsAsync(this IEnumerable<(double, Document)> documents, CancellationToken cancellationToken = default)
-        {
-            var result = new List<SearchResult>();
-
-            foreach (var doc in documents)
-            {
-                result.Add(await doc.ToSearchResult(cancellationToken));
-            }
-
-            return result;
-        }
+        public static IEnumerable<SearchResult> ToSearchResults(this IEnumerable<(double, Document, List<string> keywords)> documents)
+            => documents.Select(doc => doc.ToSearchResult());
     }
 }

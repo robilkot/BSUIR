@@ -15,20 +15,5 @@ namespace backend.Model
 
         public static string ToTitle(this Document doc)
             => Path.GetFileName(doc.Uri.LocalPath);
-
-        public async static Task<string?> ToSnippetAsync(this Document doc, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var allText = await File.ReadAllTextAsync(doc.Uri.LocalPath, cancellationToken);
-
-                return allText[..Math.Min(allText.Length, 100)].Replace('\n', ' ').Replace('\r', ' ');
-            }
-            catch
-            {
-                return null;
-            }
-
-        }
     }
 }

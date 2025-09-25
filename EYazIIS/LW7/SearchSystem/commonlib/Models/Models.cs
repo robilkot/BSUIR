@@ -2,7 +2,7 @@
 
 namespace CommonLib.Models;
 
-public record SearchResult(Guid DocumentId, Uri Uri, string Title, string Snippet, DateTimeOffset IndexedAt, double Relevance);
+public record SearchResult(Guid DocumentId, Uri Uri, string Title, DateTimeOffset IndexedAt, List<string> KeywordMatches);
 
 public enum NamedEntityType
 {

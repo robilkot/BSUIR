@@ -149,38 +149,55 @@
 		  ScrollChanged="ScrollViewer_ScrollChanged">
 		<ItemsControl
 			ItemsSource="{Binding SearchResults}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel
+						Spacing="8"
+						Orientation="Vertical"/>
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<Border 
-						Padding="15" 
-						Margin="0,0,0,10" 
+					<Border
+						Padding="12 8 12 12"
 						Background="#F8F9FA"
 						MaxWidth="600"
-						CornerRadius="8">
-						<StackPanel Spacing="4">
+						CornerRadius="16">
+						<StackPanel 
+							Spacing="8">
 							<StackPanel
 								Orientation="Horizontal"
 								Spacing="8">
-								<TextBlock 
+								<TextBlock
+									VerticalAlignment="Center"
 									Text="{Binding Title}"
+									Foreground="#4285F4"
 									FontWeight="Bold"
 									FontSize="18"
 									TextDecorations="{x:Null}"
 									 PointerPressed="TextBlock_PointerPressed"/>
 								<TextBlock
 									VerticalAlignment="Center"
-									Text="{Binding Relevance, StringFormat='{}{0:P0} relevance'}"
-									FontSize="12"
-									Foreground="#70757A"/>
-								<TextBlock
-									VerticalAlignment="Center"
 									Text="{Binding IndexedAt, StringFormat='{}{0:dd/MM/yyyy}'}"
 									FontSize="12"
 									Foreground="#70757A"/>
 							</StackPanel>
-							<TextBlock
-								Text="{Binding Snippet}"
-								TextWrapping="Wrap"/>
+							<ItemsControl 
+								ItemsSource="{Binding KeywordMatches}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+							            <TextBlock
+											FontSize="12"
+								            Text="{Binding .}"/>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel
+											ItemSpacing="8"/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+							</ItemsControl>
 						</StackPanel>
 					</Border>
 				</DataTemplate>

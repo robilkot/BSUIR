@@ -38,7 +38,7 @@ public class SearchController(IndexRepository repo, NLPService nlpService, ILogg
             return StatusCode(500, "NLP service did not respond");
         }
 
-        ConcurrentBag<(double, Document)> filteredDocs = [];
+        ConcurrentBag<(double, Document, List<string>)> filteredDocs = [];
 
         List<Task> filterTasks = [];
 
@@ -49,9 +49,9 @@ public class SearchController(IndexRepository repo, NLPService nlpService, ILogg
                 var scope = serviceScopeFactory.CreateAsyncScope();
                 var repo = scope.ServiceProvider.GetRequiredService<IndexRepository>();
 
-                var result = await filter(document, repo);
+                var (result, keywords) = await filter(document, repo);
 
-                filteredDocs.Add((result, document));
+                filteredDocs.Add((result, document, keywords));
             }, cancellationToken);
 
             filterTasks.Add(task);
@@ -63,7 +63,7 @@ public class SearchController(IndexRepository repo, NLPService nlpService, ILogg
             .Where(pair => pair.Item1 > 0.025)
             .OrderByDescending(pair => pair.Item1);
 
-        List<(double, Document)> total = [];
+        List<(double, Document, List<string>)> total = [];
 
         if (pageSize != 0)
         {
@@ -77,6 +77,6 @@ public class SearchController(IndexRepository repo, NLPService nlpService, ILogg
 
         _logger.LogInformation("Searching: {}. Returned {} results", text, total.Count);
 
-        return Ok(await total.ToSearchResultsAsync(cancellationToken));
+        return Ok(total.ToSearchResults());
     }
 }
