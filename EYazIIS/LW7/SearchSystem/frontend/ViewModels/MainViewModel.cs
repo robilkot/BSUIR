@@ -12,12 +12,14 @@ namespace frontend.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    private readonly AudioRecognitionService _audioRecognitionService;
     private readonly ApiService _apiService;
     private const int PageSize = 10;
     private bool _hasNextPage = true;
 
     public MainViewModel()
     {
+        _audioRecognitionService = new AudioRecognitionService();
         _apiService = new ApiService();
 
         var canSearch = this.WhenAnyValue(x => x.SearchQuery, (query) => !string.IsNullOrEmpty(query));
@@ -26,14 +28,13 @@ public class MainViewModel : ViewModelBase
         NextPageCommand = ReactiveCommand.CreateFromTask(NextPage);
 
         var canClearSearch = this.WhenAnyValue(x => x.SearchQuery, (query) => !string.IsNullOrEmpty(query));
-        ClearSearchCommand = ReactiveCommand.Create(() =>
-        {
-            SearchQuery = string.Empty;
-        }, canClearSearch);
+        ClearSearchCommand = ReactiveCommand.Create(ClearSearch, canClearSearch);
 
-        SearchResults = [
-            new(Guid.NewGuid(), new("D:/indexingTest/test.txt"), "Test document.txt", DateTimeOffset.Now, ["keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3"])
-            ];
+        SpeechSearchCommand = ReactiveCommand.CreateFromTask(SpeechSearch);
+
+        //SearchResults = [
+        //    new(Guid.NewGuid(), new("D:/indexingTest/test.txt"), "Test document.txt", DateTimeOffset.Now, ["keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3", "keyword1", "keyword2", "keyword3"])
+        //    ];
     }
 
     private string? _errMsg = null;
@@ -71,6 +72,13 @@ public class MainViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isLoading, value);
     }
 
+    private bool _isRecording;
+    public bool IsRecording
+    {
+        get => _isRecording;
+        set => this.RaiseAndSetIfChanged(ref _isRecording, value);
+    }
+
     private int _currentPage = 1;
     public int CurrentPage
     {
@@ -85,6 +93,7 @@ public class MainViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _searchResults, value);
     }
 
+    public ReactiveCommand<Unit, Unit> SpeechSearchCommand { get; }
     public ReactiveCommand<Unit, Unit> SearchCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSearchCommand { get; }
     public ReactiveCommand<Unit, Unit> NextPageCommand { get; }
@@ -101,6 +110,33 @@ public class MainViewModel : ViewModelBase
         {
             CurrentPage++;
             await SearchAsync();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        SearchQuery = string.Empty;
+    }
+
+    private async Task SpeechSearch()
+    {
+        try
+        {
+            IsRecording = true;
+            var query = await _audioRecognitionService.RecordUntilSilenceAndRecognizeAsync();
+            
+            IsRecording = false;
+            ClearSearch();
+            SearchQuery = query;
+           await SearchAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsRecording = false;
         }
     }
 

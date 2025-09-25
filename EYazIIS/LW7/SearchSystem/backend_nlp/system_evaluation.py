@@ -1,6 +1,8 @@
 import os
 import json
 import random
+from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 from typing import List, Dict, Tuple
@@ -13,9 +15,7 @@ class SearchResult:
     DocumentId: str
     Uri: str
     Title: str
-    Snippet: str
     IndexedAt: str
-    Relevance: float
 
 
 class SearchEvaluator:
@@ -52,9 +52,7 @@ class SearchEvaluator:
                 results.append(SearchResult(DocumentId=item["documentId"],
                                             Uri=item["uri"],
                                             Title=item["title"],
-                                            Snippet=item["snippet"],
-                                            IndexedAt=item["indexedAt"],
-                                            Relevance=item["relevance"]))
+                                            IndexedAt=item["indexedAt"]))
 
             return results
         except requests.exceptions.RequestException as e:
@@ -67,12 +65,14 @@ class SearchEvaluator:
         if search_result.DocumentId in relevant_docs:
             return True
 
-        # Дополнительная проверка по содержанию
-        query_words = query.lower().split()
-        content = f"{search_result.Title} {search_result.Snippet}".lower()
+        with open(urlparse(search_result.Uri).path[1:], 'r', encoding='utf-8') as f:
+            words = query.split()
 
-        # Если есть совпадение по ключевым словам
-        return any(word in content for word in query_words if len(word) > 2)
+            for word in words:
+                if f.read().__contains__(word):
+                    return True
+
+        return False
 
     def create_test_queries(self, num_queries: int = 10) -> List[Tuple[str, List[str]]]:
         """Создает тестовые запросы на основе датасета"""
@@ -155,6 +155,7 @@ class SearchEvaluator:
             results = self.search_documents(query, page_size=0)
 
             metrics = self.evaluate_precision_recall(results, query, relevant_docs)
+            print(metrics)
 
             all_metrics['precision'].append(metrics['precision'])
             all_metrics['recall'].append(metrics['recall'])

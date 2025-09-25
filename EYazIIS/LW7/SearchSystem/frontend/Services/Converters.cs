@@ -48,4 +48,24 @@ namespace frontend.Services
             throw new NotImplementedException();
         }
     }
+
+    public class BoolToValueConverter : IValueConverter
+    {
+        public object? TrueValue { get; set; }
+        public object? FalseValue { get; set; }
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if(value is not bool b)
+            {
+                return FalseValue;
+            }
+            else return b ? TrueValue : FalseValue;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

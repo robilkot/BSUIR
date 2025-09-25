@@ -14,6 +14,7 @@
 	<Window.Resources>
 		<svc:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter"/>
 		<svc:IsNotNullAndIsEmptyConverter x:Key="IsNotNullAndIsEmptyConverter"/>
+		<svc:BoolToValueConverter x:Key="RecordingConverter" TrueValue="Red" FalseValue="White"/>
 	</Window.Resources>
     
     <Window.DataContext>
@@ -69,18 +70,18 @@
           </Button>
         </Grid>
 
-        <Border
+		  <Border
+			BorderBrush="LightGray"
+			  BorderThickness="0 1 1 1"
           Name="SearchOptionsBorder"
-          BorderBrush="LightGray"
-          CornerRadius="0 20 20 0"
-          BorderThickness="0 1 1 1">
+          CornerRadius="0 20 20 0">
           <StackPanel
             Orientation="Horizontal">
-            <Button
-				IsVisible="False"
-              Width="35"
-              Command="{Binding VoiceInputCommand}"
-              CornerRadius="0">
+			  <Button
+				  Background="{Binding IsRecording, Converter={StaticResource RecordingConverter}}"
+				  Command="{Binding SpeechSearchCommand}"
+				  Width="35"
+				  CornerRadius="0">
               <PathIcon
                 Height="16"
                 Data="{StaticResource mic_on_regular}"/>
@@ -89,14 +90,15 @@
               MinHeight="20"
               Name="OptionsToggle"
               Width="35"
+			BorderBrush="LightGray"
               CornerRadius="0">
               <PathIcon
                 Height="12"
                 Data="{StaticResource options_regular}"/>
             </ToggleButton>
 			  <Button
+				  Margin="-1"
 				IsEnabled="{Binding !IsLoading}"
-				Margin="-1"
                 Command="{Binding SearchCommand}"
                 CornerRadius="{Binding #SearchOptionsBorder.CornerRadius}"
                 Background="#4285F4">

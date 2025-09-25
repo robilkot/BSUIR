@@ -182,7 +182,7 @@ def generate_dataset(dataset_folder: str = "dataset", num_documents: int = 100) 
 if __name__ == "__main__":
     # Пример использования
     generator = DatasetGenerator("D:/indexingTest")
-    dataset_path = generator.generate_dataset(250)
+    dataset_path = generator.generate_dataset(500)
 
     info = generator.get_dataset_info()
     print("\nИнформация о датасете:")
