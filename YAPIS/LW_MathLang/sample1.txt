@@ -1,0 +1,62 @@
+// Объявление встроенных функций в начале программы
+function calculateHypotenuse(float a, float b, float result) {
+	result = (a^2 + b^2)^0.5;
+}
+
+function isRightTriangle(float a, float b, float c, bool result) {
+	result = (a^2 + b^2 == c^2) or (a^2 + c^2 == b^2) or (b^2 + c^2 == a^2);
+}
+
+function usingGlobalStuff() {
+	global float global_var1;
+	global_var1 = 3.0;
+	
+	float global_var2;
+	global_var2 = 3.0;
+	
+	write(global_var3); // 2.0
+}
+
+// Начало основной программы
+int counter = 0;
+float cathetusA, cathetusB = 0.0;
+
+write("Enter the first cathetus: ");
+cathetusA = read();
+write("Enter the second cathetus: ");
+cathetusB = read();
+
+// Многоцелевое присваивание и вызов функции
+float area, hypotenuse = 0.0;
+area, hypotenuse = (cathetusA * cathetusB / 2.0), calculateHypotenuse(cathetusA, cathetusB);
+
+// Использование условного оператора
+if (hypotenuse > 10.0) {
+	write("Large triangle. ");
+} else {
+	write("Small triangle. ");
+}
+
+write("Area: ", area, ", Hypotenuse: ", hypotenuse);
+
+// Явное преобразование типов
+int roundedHypotenuse = (int) hypotenuse;
+write("Rounded hypotenuse: ", roundedHypotenuse);
+
+// Проверка на прямоугольность с использованием составного выражения
+bool isRight = isRightTriangle(cathetusA, cathetusB, hypotenuse);
+write("Is right triangle? ", isRight);
+
+// Цикл until
+int x = 0;
+until(x == 10) {
+	write(x + 1);
+}
+
+float global_var1 = 2.0;
+float global_var2 = 2.0;
+float global_var3 = 2.0;
+
+write(global_var1); // 3.0
+write(global_var2); // 2.0
+
