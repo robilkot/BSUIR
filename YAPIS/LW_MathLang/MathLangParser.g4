@@ -1,16 +1,16 @@
-parser grammar MathLangParser;
-options { tokenVocab=MathLangLexer; }
+parser grammar ExprParser;
+options { tokenVocab=ExprLexer; }
 
 program
     : statement* EOF ;
 
 statement 
-    : control_flow_operator | declaration | subprogram | branching | loop | assignment | call ;
+    : control_flow_operator | block | declaration | subprogram | branching | loop | assignment | call ;
     
 subprogram 
-    : SUB ID '(' declaration_list? ')' '{' statement* '}' ;
+    : SUB ID '(' declaration_list? ')' block ;
 branching 
-    : IF '(' expression ')' '{' statement* '}' (ELSE '{' statement* '}')? ;
+    : IF '(' expression ')' block (ELSE block)? ;
 
 declaration 
     : declaration_list;
@@ -22,11 +22,14 @@ call
 loop
     : for_loop | while_loop | until_loop ;
 for_loop 
-    : FOR '(' assignment ';' expression ';' statement ')' '{' statement* '}';
+    : FOR '(' assignment ';' expression ';' statement ')' block;
 while_loop 
-    : WHILE '(' expression ')' '{' statement* '}';
+    : WHILE '(' expression ')' block;
 until_loop 
-    : UNTIL '(' expression ')' '{' statement* '}';
+    : UNTIL '(' expression ')' block;
+
+block
+    : '{' statement* '}' ;
 
 
 id_list : (ID ',')* ID ;
@@ -44,7 +47,10 @@ expression
 cast_expression
     : type_specifier '(' expression ')' ;
     
-assignment_operator : EQ ;
+assignment_operator : simple_assignment_operator ;
+
+simple_assignment_operator : EQ ;
+
 binary_operator 
     : PLUS 
     | MINUS 
@@ -79,7 +85,7 @@ declaration_list
     ;
 
 variable_declaration 
-    : ID (assignment_operator expression)?
+    : ID (simple_assignment_operator expression)?
     ;
 
 type_specifier 

@@ -31,7 +31,14 @@ float num1 = 15.7
 float num2 = 8.3
 float minimum, maximum = 0.0
 
-findMinMax(num1, num2, minimum, maximum)
+{{{{
+    findMinMax(num1, num2, minimum, maximum)
+    
+    {
+        findMinMax(num1, num2, minimum, maximum)
+    }
+}}}}
+
 write("Min: ", minimum, ", Max: ", maximum)
 
 write("Before swap: num1 = ", num1, ", num2 = ", num2)
