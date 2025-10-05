@@ -1,40 +1,39 @@
-// Объявление перегруженных функций
-function computeWave(float x, float result) {
-    result = sin(x) + 0.5 * sin(2*x + 1.0);
+// Function overloading
+sub computeWave(float x, float result) {
+    result = sin(x) + 0.5 * sin(2*x + 1.0)
 }
 
-// Перегрузка функции computeWave для другого типа волны
-function computeWave(float x, float amplitude, float result) {
-    result = amplitude * sin(x);
+// Function overloading example
+sub computeWave(float x, float amplitude, float result) {
+    result = amplitude * sin(x)
 }
 
-// Начало основной программы
-write("Calculating sine wave values from 0 to 2*PI:\n");
+// Start of program
+write("Calculating sine wave values from 0 to 2*PI:\n")
 
-// Цикл for с итерациями
+// For loop
 for (float angle = 0.0; angle <= 6.28318; angle = angle + 0.1) {
-    float result;
-	computeWave(angle, result);
-    write("sin(", angle, ") = ", result);
+    float result
+	computeWave(angle, result)
+    write("sin(", angle, ") = ", result)
 }
 
-// Использование цикла while для поиска решения
-float x = 0.0;
-float precision = 0.001;
-float target = 0.5;
+// While loop
+float x = 0.0
+float precision = 0.001
+float target = 0.5
 
-write("\nFinding solution for sin(x) = 0.5\n");
+write("\nFinding solution for sin(x) = 0.5\n")
 
-while (abs(sin(x) - target) > precision) {
-    x = x + 0.01;
-    if (x > 10.0) { // Защита от бесконечного цикла
-        break;
+while(abs(sin(x) - target) > precision) {
+    x = x + 0.01
+    if (x > 10.0) { // Infinite loop guard
+        break
     }
 }
 
-write("Solution found: x ≈ ", x, ", sin(x) ≈ ", sin(x));
+write("Solution found: x ≈ ", x, ", sin(x) ≈ ", sin(x))
 
-// Демонстрация других операций и функций
-float result = (cos(x) ^ 2) + (sin(x) ^ 2); // Должно быть ≈1
-write("sin^2(x) + cos^2(x) = ", result);
+float result = (cos(x) ^ 2) + (sin(x) ^ 2) // Should be ≈1
+write("sin^2(x) + cos^2(x) = ", result)
 
