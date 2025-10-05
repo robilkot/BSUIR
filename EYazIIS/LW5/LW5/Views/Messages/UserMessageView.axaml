@@ -76,6 +76,7 @@
 					DataContext="{Binding Metadata}"
 					x:DataType="vm_msg:MessageMetadataViewModel">
 					<TextBlock
+						Margin="0 0 5 0"
 						Grid.Column="0"
 						FontWeight="DemiBold"
 						Foreground="#b47bd5"

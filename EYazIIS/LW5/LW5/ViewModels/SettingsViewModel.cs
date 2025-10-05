@@ -36,7 +36,7 @@ namespace LW5.ViewModels
             set => this.RaiseAndSetIfChanged(ref _user, value);
         }
 
-        private string _serverIp = "http://192.168.1.32:8000";
+        private string _serverIp = "http://127.0.0.1:8000";
         [DataMember]
         public string ServerIp
         {
@@ -70,11 +70,6 @@ namespace LW5.ViewModels
             DialogService?.ClearSession();
             Dialog.Messages.Clear();
             Dialog.Init();
-        }
-
-        private void InitService(DialogService service)
-        {
-            service.BaseUrl = ServerIp;
         }
     }
 }
