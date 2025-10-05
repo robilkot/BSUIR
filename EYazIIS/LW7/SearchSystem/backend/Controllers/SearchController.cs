@@ -60,7 +60,7 @@ public class SearchController(IndexRepository repo, NLPService nlpService, ILogg
         await Task.WhenAll(filterTasks);
 
         var results = filteredDocs
-            .Where(pair => pair.Item1 > 0.025)
+            .Where(pair => pair.Item1 > 0.015)
             .OrderByDescending(pair => pair.Item1);
 
         List<(double, Document, List<string>)> total = [];

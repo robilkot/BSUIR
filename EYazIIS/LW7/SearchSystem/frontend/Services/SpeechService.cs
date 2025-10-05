@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using NAudio.Wave;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace frontend.Services;
 
@@ -12,7 +13,7 @@ public class AudioRecognitionService
     private readonly string _apiEndpoint = "http://localhost:8000/speech-to-text";
     private readonly HttpClient _httpClient;
 
-    private const float SilenceThreshold = 0.02f; // Порог тишины (0.02 = 2% от максимальной амплитуды)
+    private const float SilenceThreshold = 0.08f; // Порог тишины (0.02 = 2% от максимальной амплитуды)
     private const int SilenceDurationMs = 2000;   // Длительность тишины для остановки записи (2 секунды)
     private const int SampleRate = 16000;         // Частота дискретизации
     private const int Channels = 1;               // Моно аудио
@@ -36,7 +37,7 @@ public class AudioRecognitionService
         return response.Replace("\"", string.Empty);
     }
 
-    private async Task<byte[]> RecordAudioUntilSilenceAsync()
+    private static async Task<byte[]> RecordAudioUntilSilenceAsync()
     {
         using var memoryStream = new MemoryStream();
 
@@ -90,20 +91,20 @@ public class AudioRecognitionService
 
         while (isRecording && (DateTime.Now - startTime) < timeout)
         {
-            await Task.Delay(100);
+            await Task.Delay(200);
         }
 
         waveIn.StopRecording();
 
         if (recordedData.Count < waveFormat.AverageBytesPerSecond) // Меньше 1 секунды
         {
-            return null;
+            return [];
         }
 
-        return CreateWavFile(recordedData.ToArray(), waveFormat);
+        return CreateWavFile([.. recordedData], waveFormat);
     }
 
-    private bool IsSilent(byte[] buffer, int bytesRecorded)
+    private static bool IsSilent(byte[] buffer, int bytesRecorded)
     {
         // Конвертируем байты в float samples для анализа амплитуды
         float maxAmplitude = 0f;
@@ -123,7 +124,7 @@ public class AudioRecognitionService
         return maxAmplitude < SilenceThreshold;
     }
 
-    private byte[] CreateWavFile(byte[] audioData, WaveFormat waveFormat)
+    private static byte[] CreateWavFile(byte[] audioData, WaveFormat waveFormat)
     {
         using var memoryStream = new MemoryStream();
 

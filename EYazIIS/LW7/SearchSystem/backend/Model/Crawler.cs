@@ -58,12 +58,7 @@ namespace backend.Model
             foreach (var fileUri in filteredFiles)
             {
                 await AddToIndexAsync(fileUri, serviceScopeFactory, cancellationToken);
-
-                //await AddToIndexAsync(fileUri, serviceScopeFactory, cancellationToken);
-                //indexingTasks.Add(task);
             }
-
-            //await Task.WhenAll(indexingTasks);
         }
 
         private async Task AddToIndexAsync(Uri path, IServiceScopeFactory serviceScopeFactory, CancellationToken cancellationToken = default)
