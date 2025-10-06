@@ -125,11 +125,11 @@ if __name__ == '__main__':
     (R, M) = (4, 4)
     LEARNING_RATE = 0.1
     COMPRESSION_COEFFICIENT = 6
-    T_MAX = 10
-    E_MAX = 10
+    T_MAX = 15
+    E_MAX = 500
 
 
-    img_path = 'test_images/blackbuck.bmp'
+    img_path = 'test_images/square.png'
     img = cv2.imread(img_path, cv2.IMREAD_COLOR_BGR)
 
 

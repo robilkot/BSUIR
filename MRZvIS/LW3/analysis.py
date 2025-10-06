@@ -9,15 +9,17 @@ def analyze_learning_rate_dependency(
         r: int = 4,
         m: int = 4,
         compression_coef: int = 6,
-        target_error: float = 10,
+        target_error: float = 250,
         learning_rates: list[float] = None,
-        max_iterations: int = 100
+        max_iterations: int = 50
 ) -> None:
     """
     Анализ зависимости количества итераций от коэффициента обучения
     """
+    print("=== Анализ зависимости от коэффициента обучения ===")
+
     if learning_rates is None:
-        learning_rates = [0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5]
+        learning_rates = [0.001, 0.01, 0.05, 0.1, 0.5, 1]
 
     iterations_data = []
 
@@ -55,15 +57,17 @@ def analyze_compression_coef_dependency(
         image_path: str,
         r: int = 4,
         m: int = 4,
-        target_error: float = 10,
+        target_error: float = 500,
         compression_coefs: list[float] = None,
         max_iterations: int = 100
 ) -> None:
     """
     Анализ зависимости количества итераций от коэффициента сжатия
     """
+    print("\n=== Анализ зависимости от коэффициента сжатия ===")
+
     if compression_coefs is None:
-        compression_coefs = [4.2, 5, 6, 7, 8, 9, 10, 11]
+        compression_coefs = [4.2, 5, 5.5, 6, 6.5, 7, 7.5, 8]
 
     iterations_data = []
 
@@ -98,13 +102,15 @@ def analyze_image_type_dependency(
         image_names: list[str],
         r: int = 4,
         m: int = 4,
-        compression_coef: int = 6,
-        target_error: float = 100,
-        max_iterations: int = 100
+        compression_coef: int = 4,
+        target_error: float = 1000,
+        max_iterations: int = 50
 ) -> None:
     """
     Анализ зависимости количества итераций от типа изображения
     """
+    print("\n=== Анализ зависимости от типа изображения ===")
+
     iterations_data = []
 
     for img_path in image_paths:
@@ -143,15 +149,17 @@ def analyze_error_threshold_dependency(
         image_path: str,
         r: int = 4,
         m: int = 4,
-        compression_coef: int = 6,
+        compression_coef: int = 5,
         error_thresholds: list[float] = None,
-        max_iterations: int = 250
+        max_iterations: int = 50
 ) -> None:
     """
     Анализ зависимости количества итераций от величины ошибки
     """
+    print("\n=== Анализ зависимости от величины ошибки ===")
+
     if error_thresholds is None:
-        error_thresholds = [3000, 1500, 1000, 750, 500, 250, 100, 50]
+        error_thresholds = [2000, 1600, 1300, 1100, 900, 700, 500, 300]
 
     iterations_data = []
 
@@ -181,55 +189,19 @@ def analyze_error_threshold_dependency(
     plt.show()
 
 
-def run_comprehensive_analysis():
-    """
-    Запуск комплексного анализа всех зависимостей
-    """
-    # Пример использования с разными изображениями
-    image_paths = [
-        'test_images/blackbuck.bmp',
-        'test_images/blackbuck.bmp',  # Замените на другие изображения
-        'test_images/blackbuck.bmp',
-        'test_images/blackbuck.bmp'
-    ]
-
-    image_names = [
-        'Простое',
-        'Сложное',
-        'Текстура',
-        'Градиент'
-    ]
-
-    print("=== Анализ зависимости от коэффициента обучения ===")
-    analyze_learning_rate_dependency('test_images/blackbuck.bmp')
-
-    print("\n=== Анализ зависимости от коэффициента сжатия ===")
-    analyze_compression_coef_dependency('test_images/blackbuck.bmp')
-
-    print("\n=== Анализ зависимости от типа изображения ===")
-    analyze_image_type_dependency(image_paths, image_names)
-
-    print("\n=== Анализ зависимости от величины ошибки ===")
-    analyze_error_threshold_dependency('test_images/blackbuck.bmp')
-
-
 # Дополнительная функция для анализа прогресса обучения
 def analyze_training_progress(
         image_path: str,
         r: int = 4,
         m: int = 4,
-        compression_coef: int = 6,
-        learning_rate: float = 0.1,
+        compression_coef: int = 4,
         max_iterations: int = 50
 ) -> None:
     """
     Анализ прогресса обучения во времени
     """
 
-    def constant_lr_func(_) -> float:
-        return learning_rate
-
-    auto_encoder = AutoEncoder(constant_lr_func, constant_lr_func, np.float32)
+    auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
     auto_encoder.init_weights(3 * r * m, compression_coef)
 
     loader = ImageDataLoader(image_path, r, m)
@@ -245,18 +217,10 @@ def analyze_training_progress(
     # Построение графика прогресса обучения
     plt.figure(figsize=(12, 5))
 
-    plt.subplot(1, 2, 1)
     plt.plot(iterations, errors, 'b-', linewidth=2)
     plt.xlabel('Итерация')
     plt.ylabel('Ошибка')
     plt.title('Прогресс обучения')
-    plt.grid(True, alpha=0.3)
-
-    plt.subplot(1, 2, 2)
-    plt.semilogy(iterations, errors, 'r-', linewidth=2)
-    plt.xlabel('Итерация')
-    plt.ylabel('Ошибка (лог. шкала)')
-    plt.title('Прогресс обучения (лог. шкала)')
     plt.grid(True, alpha=0.3)
 
     plt.tight_layout()
@@ -264,6 +228,29 @@ def analyze_training_progress(
 
 
 if __name__ == '__main__':
-    run_comprehensive_analysis()
+    # analyze_learning_rate_dependency('test_images/blackbuck.bmp')
+    # analyze_compression_coef_dependency('test_images/blackbuck.bmp', target_error=1500)
+    # analyze_error_threshold_dependency('test_images/lena.bmp')
 
-    analyze_training_progress('test_images/blackbuck.bmp')
+    image_paths = [
+        'test_images/solid_color.png',
+        'test_images/lena.bmp',
+        'test_images/golub.png',
+        'test_images/two_colors.png',
+        'test_images/52.jpg'
+    ]
+    image_names = [
+        'Простое',
+        'Простое',
+        'Среднее',
+        'Сложное',
+        'Высокое разрешение'
+    ]
+    analyze_image_type_dependency(image_paths, image_names)
+
+
+    # analyze_training_progress('test_images/52.jpg')
+    # analyze_training_progress('test_images/snail.bmp')
+    # analyze_training_progress('test_images/lena.bmp')
+    # analyze_training_progress('test_images/blackbuck.bmp')
+    # analyze_training_progress('test_images/golub.png')
