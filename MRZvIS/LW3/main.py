@@ -32,6 +32,14 @@ class ImageDataLoader:
         return iter(self.items)
 
 
+def adaptive_af_func(arr) -> float:
+    return 1 / np.dot(arr, arr)
+
+
+def adaptive_ab_func(arr) -> float:
+    return 1 / np.dot(arr, arr)
+
+
 class AutoEncoder:
     def __init__(self, af_func: Callable[[np.ndarray], float], ab_func: Callable[[np.ndarray], float], dtype):
         self.WF = None
@@ -46,8 +54,6 @@ class AutoEncoder:
 
         self.WF = wf if wf is not None else np.random.uniform(low=-1, high=1, size=(input_layer_size, hidden_layer_size)).astype(self.__dtype)
         self.WB = wb if wb is not None else np.random.uniform(low=-1, high=1, size=(hidden_layer_size, input_layer_size)).astype(self.__dtype)
-
-        print(f"Encoder weights size: {(self.WF.nbytes + self.WB.nbytes) / 1_000:.2f} KB ({self.WF.dtype}, {self.WF.shape})")
 
     def encode(self, x: np.array) -> np.array:
         return x @ self.WF
@@ -127,17 +133,13 @@ if __name__ == '__main__':
     img = cv2.imread(img_path, cv2.IMREAD_COLOR_BGR)
 
 
-    def adaptive_af_func(arr) -> float:
-        return 1 / np.dot(arr, arr)
-
-    def adaptive_ab_func(arr) -> float:
-        return 1 / np.dot(arr, arr)
-
     def constant_lr_func(_) -> float:
         return LEARNING_RATE
 
     auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
     auto_encoder.init_weights(3 * R * M, COMPRESSION_COEFFICIENT)
+
+    print(f"Encoder weights size: {(auto_encoder.WF.nbytes + auto_encoder.WB.nbytes) / 1_000:.2f} KB ({auto_encoder.WF.dtype}, {auto_encoder.WF.shape})")
 
     loader = ImageDataLoader(img_path, R, M)
 
