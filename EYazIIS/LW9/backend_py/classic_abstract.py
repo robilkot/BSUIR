@@ -43,45 +43,77 @@ class ClassicAbstract:
             if top_words:
                 words_info = ", ".join([f"'{w.word}'(TF-IDF:{w.tfidf_score:.3f})" for w in top_words])
                 print(f"   [Вес: {sentence.score:.3f}] Ключевые слова: {words_info}")
-            print()
 
 
 class ClassicAbstractGenerator(AbstractGenerator):
-    """Генератор классического реферата методом sentence extraction"""
-    def __init__(self):
-        self.stop_words = {
-            'и', 'в', 'во', 'не', 'что', 'он', 'на', 'я', 'с', 'со', 'как', 'а', 'то', 'все', 'она',
-            'так', 'его', 'но', 'да', 'ты', 'к', 'у', 'же', 'вы', 'за', 'бы', 'по', 'только', 'ее',
-            'мне', 'было', 'вот', 'от', 'меня', 'еще', 'нет', 'о', 'из', 'ему', 'теперь', 'когда',
-            'даже', 'ну', 'вдруг', 'ли', 'если', 'уже', 'или', 'ни', 'быть', 'был', 'него', 'до',
-            'вас', 'нибудь', 'опять', 'уж', 'вам', 'ведь', 'там', 'потом', 'себя', 'ничего', 'ей',
-            'может', 'они', 'тут', 'где', 'есть', 'надо', 'ней', 'для', 'мы', 'тебя', 'их', 'чем',
-            'была', 'сам', 'чтоб', 'без', 'будто', 'чего', 'раз', 'тоже', 'себе', 'под', 'будет',
-            'ж', 'тогда', 'кто', 'этот', 'того', 'потому', 'этого', 'какой', 'совсем', 'ним',
-            'здесь', 'этом', 'один', 'почти', 'мой', 'тем', 'чтобы', 'нее', 'сейчас', 'были', 'куда',
-            'зачем', 'всех', 'никогда', 'можно', 'при', 'наконец', 'два', 'об', 'другой', 'хоть',
-            'после', 'над', 'больше', 'тот', 'через', 'эти', 'нас', 'про', 'всего', 'них', 'какая',
-            'много', 'разве', 'три', 'эту', 'моя', 'впрочем', 'хорошо', 'свою', 'этой', 'перед',
-            'иногда', 'лучше', 'чуть', 'том', 'нельзя', 'такой', 'им', 'более', 'всегда', 'конечно',
-            'всю', 'между'
-        }
+    def __init__(self, language: str = 'russian'):
+        """
+        Args:
+            language: язык текста ('russian' или 'english')
+        """
+        self.language = language.lower()
+        self.stop_words = self._get_stop_words()
+
+    def _get_stop_words(self):
+        if self.language == 'english':
+            return {
+                'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+                'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against',
+                'during', 'without', 'before', 'under', 'around', 'among', 'i', 'you', 'he', 'she', 'it',
+                'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their',
+                'mine', 'yours', 'hers', 'ours', 'theirs', 'this', 'that', 'these', 'those', 'is', 'are',
+                'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did',
+                'doing', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 'can', 'could', 'what',
+                'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how', 'all', 'any', 'both', 'each',
+                'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same',
+                'so', 'than', 'too', 'very', 'just', 'now', 'then', 'there', 'here', 'when', 'where', 'why',
+                'how', 'also', 'even', 'well', 'back', 'down', 'up', 'off', 'on', 'again', 'further', 'then',
+                'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'every'
+            }
+        else:
+            return {
+                'и', 'в', 'во', 'не', 'что', 'он', 'на', 'я', 'с', 'со', 'как', 'а', 'то', 'все', 'она',
+                'так', 'его', 'но', 'да', 'ты', 'к', 'у', 'же', 'вы', 'за', 'бы', 'по', 'только', 'ее',
+                'мне', 'было', 'вот', 'от', 'меня', 'еще', 'нет', 'о', 'из', 'ему', 'теперь', 'когда',
+                'даже', 'ну', 'вдруг', 'ли', 'если', 'уже', 'или', 'ни', 'быть', 'был', 'него', 'до',
+                'вас', 'нибудь', 'опять', 'уж', 'вам', 'ведь', 'там', 'потом', 'себя', 'ничего', 'ей',
+                'может', 'они', 'тут', 'где', 'есть', 'надо', 'ней', 'для', 'мы', 'тебя', 'их', 'чем',
+                'была', 'сам', 'чтоб', 'без', 'будто', 'чего', 'раз', 'тоже', 'себе', 'под', 'будет',
+                'ж', 'тогда', 'кто', 'этот', 'того', 'потому', 'этого', 'какой', 'совсем', 'ним',
+                'здесь', 'этом', 'один', 'почти', 'мой', 'тем', 'чтобы', 'нее', 'сейчас', 'были', 'куда',
+                'зачем', 'всех', 'никогда', 'можно', 'при', 'наконец', 'два', 'об', 'другой', 'хоть',
+                'после', 'над', 'больше', 'тот', 'через', 'эти', 'нас', 'про', 'всего', 'них', 'какая',
+                'много', 'разве', 'три', 'эту', 'моя', 'впрочем', 'хорошо', 'свою', 'этой', 'перед',
+                'иногда', 'лучше', 'чуть', 'том', 'нельзя', 'такой', 'им', 'более', 'всегда', 'конечно',
+                'всю', 'между'
+            }
+
+    def _is_valid_token(self, word: str) -> bool:
+        if word in punctuation or word.isdigit():
+            return False
+
+        if len(word) <= 1:
+            return False
+
+        if word in self.stop_words:
+            return False
+
+        if self.language == 'english':
+            return bool(re.match(r'^[a-zA-Z]+$', word))
+        else:
+            return not bool(re.match(r'^[a-zA-Z]+$', word))
 
     def preprocess_text(self, text: str) -> list[str]:
         """Предобработка текста: токенизация и нормализация"""
         tokens = []
         for token in tokenize(text):
             word = token.text.lower()
-            # Удаляем пунктуацию, числа, латинские буквы и стоп-слова
-            if (word not in punctuation and
-                    not word.isdigit() and
-                    not re.match(r'^[a-zA-Z]+$', word) and
-                    word not in self.stop_words and
-                    len(word) > 1):
+            if self._is_valid_token(word):
                 tokens.append(word)
         return tokens
 
     def calculate_tf(self, document_tokens: list[str]) -> dict[str, float]:
-        """Вычисление TF (Term Frequency) для документа"""
+        """Вычисление TF для документа"""
         total_words = len(document_tokens)
         word_counts = Counter(document_tokens)
         tf_scores = {}
@@ -92,7 +124,7 @@ class ClassicAbstractGenerator(AbstractGenerator):
         return tf_scores
 
     def calculate_idf(self, documents: list[list[str]]) -> dict[str, float]:
-        """Вычисление IDF (Inverse Document Frequency) для коллекции документов"""
+        """Вычисление IDF для коллекции документов"""
         num_documents = len(documents)
         idf_scores = {}
 
@@ -111,7 +143,7 @@ class ClassicAbstractGenerator(AbstractGenerator):
                                  idf_scores: dict[str, float]) -> (float, list):
         """Вычисление веса предложения на основе TF-IDF слов"""
         if not sentence_tokens:
-            return 0.0
+            return 0.0, []
 
         total_score = 0.0
         scored_words = []
@@ -165,7 +197,7 @@ class ClassicAbstractGenerator(AbstractGenerator):
 
 
 if __name__ == "__main__":
-    sample_text = """
+    sample_russian_text = """
     Искусственный интеллект представляет собой одну из наиболее перспективных технологий современности. 
     Машинное обучение, являющееся ключевой составляющей ИИ, позволяет компьютерам обучаться на основе данных. 
     Глубокое обучение использует нейронные сети с множеством слоев для решения сложных задач. 
@@ -188,7 +220,37 @@ if __name__ == "__main__":
     Развитие квантовых вычислений может значительно ускорить тренировку моделей ИИ.
     """
 
-    generator = ClassicAbstractGenerator()
-    abstract = generator.generate(sample_text, num_sentences=10)
+    sample_english_text = """
+    Artificial intelligence represents one of the most promising technologies of our time.
+    Machine learning, which is a key component of AI, enables computers to learn from data.
+    Deep learning uses neural networks with multiple layers to solve complex problems.
+    In recent years, significant progress has been made in natural language processing.
+    Transformers have revolutionized the approach to machine translation and text generation.
+    Large language models such as GPT demonstrate impressive abilities in understanding context.
+    Computer vision is also actively developing thanks to convolutional neural networks.
+    Autonomous vehicles use AI for navigation in complex road conditions.
+    Ethical issues of artificial intelligence are becoming increasingly relevant.
+    Regulation of AI development and application requires careful consideration.
+    The security of artificial intelligence systems is a critically important topic.
+    The future of artificial intelligence is associated with creating more explainable and reliable systems.
+    Research in the field of artificial general intelligence continues to develop.
+    Collaboration between humans and AI opens up new possibilities for creativity.
+    Educational systems based on AI personalize the learning process.
+    Medical diagnostics using artificial intelligence increases the accuracy of analyses.
+    Industry is actively implementing AI systems to optimize production processes.
+    The financial sector uses machine learning algorithms for market forecasting.
+    Cybersecurity is enhanced through the application of artificial intelligence methods.
+    The development of quantum computing could significantly accelerate the training of AI models.
+    """
 
-    abstract.print()
+    print("=== РУССКИЙ ТЕКСТ ===")
+    generator_ru = ClassicAbstractGenerator(language='russian')
+    abstract_ru = generator_ru.generate(sample_russian_text, num_sentences=5)
+    abstract_ru.print()
+
+    print("\n" + "=" * 80 + "\n")
+
+    print("=== ENGLISH TEXT ===")
+    generator_en = ClassicAbstractGenerator(language='english')
+    abstract_en = generator_en.generate(sample_english_text, num_sentences=5)
+    abstract_en.print()

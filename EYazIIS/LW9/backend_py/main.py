@@ -22,5 +22,5 @@ if __name__ == '__main__':
     keyword_structure = keyword_generator.generate(sample_text, top_n=5)
     keyword_structure.print()
 
-    # classic_abstract = ClassicAbstractGenerator().generate_abstract(sample_text, num_sentences=5)
-    # classic_abstract.print()
+    classic_abstract = ClassicAbstractGenerator(language='russian').generate(sample_text, num_sentences=5)
+    classic_abstract.print()
