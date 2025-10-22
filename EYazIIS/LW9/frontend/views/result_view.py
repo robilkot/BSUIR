@@ -3,7 +3,7 @@ from frontend.views.base_view import BaseView
 from frontend.widgets.abstract_display import AbstractDisplay
 from frontend.widgets.action_buttons import ActionButtons
 from frontend.widgets.save_dialog import SaveDialog
-from backend_py.classic_abstract import ClassicAbstractGenerator
+from backend_py.classic_abstract_se import SEClassicAbstractGenerator
 from backend_py.keyword_ru import RUKeywordAbstractGenerator
 from backend_py.keyword_en import ENKeywordAbstractGenerator
 
@@ -90,7 +90,7 @@ class ResultView(BaseView):
 
     def _generate_classic_abstract(self, text: str, language: str):
         """Генерирует классический реферат"""
-        generator = ClassicAbstractGenerator(language=language)
+        generator = SEClassicAbstractGenerator(language=language)
         abstract = generator.generate(text, num_sentences=10)
         self.abstract_display.show_classic_abstract(abstract)
 

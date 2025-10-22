@@ -1,4 +1,4 @@
-from backend_py.classic_abstract import ClassicAbstractGenerator
+from backend_py.classic_abstract_se import SEClassicAbstractGenerator
 from backend_py.keyword_en import ENKeywordAbstractGenerator
 from backend_py.keyword_ru import RUKeywordAbstractGenerator
 
@@ -22,5 +22,5 @@ if __name__ == '__main__':
     keyword_structure = keyword_generator.generate(sample_text, top_n=5)
     keyword_structure.print()
 
-    classic_abstract = ClassicAbstractGenerator(language='russian').generate(sample_text, num_sentences=5)
+    classic_abstract = SEClassicAbstractGenerator(language='russian').generate(sample_text, num_sentences=5)
     classic_abstract.print()

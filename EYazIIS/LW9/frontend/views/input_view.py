@@ -1,10 +1,9 @@
-from typing import Any
-
 import flet as ft
+
 from frontend.views.base_view import BaseView
+from frontend.widgets.action_buttons import ActionButtons
 from frontend.widgets.file_picker import FilePickerWidget
 from frontend.widgets.language_selector import LanguageSelector
-from frontend.widgets.action_buttons import ActionButtons
 
 
 class InputView(BaseView):

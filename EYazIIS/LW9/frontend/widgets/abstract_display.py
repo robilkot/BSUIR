@@ -1,5 +1,6 @@
 # frontend/widgets/abstract_display.py
 import flet as ft
+
 from backend_py.classic_abstract import ClassicAbstract
 from backend_py.keyword_abstract import KeywordAbstract
 
