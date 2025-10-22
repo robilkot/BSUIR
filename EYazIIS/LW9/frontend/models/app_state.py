@@ -6,6 +6,7 @@ class AppState:
     current_text: str = ""
     current_language: str = "russian"
     abstract_type: str = "classic"
+    use_llm: bool = False
     result_data: Optional[Any] = None
     file_path: Optional[str] = None
     last_classic_abstract: Optional[Any] = None

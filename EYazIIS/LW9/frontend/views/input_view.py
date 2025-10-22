@@ -37,11 +37,14 @@ class InputView(BaseView):
             on_help=self._show_help
         )
 
+        llm_checkbox = self._build_llm_checkbox()
+
         self.controls_list = [
             title,
             ft.Divider(),
             language_selector.build(),
             abstract_type_selector,
+            llm_checkbox,
             ft.Divider(),
             ft.Text("Ввод текста:", size=18, weight=ft.FontWeight.BOLD),
             self.file_picker_widget.build(),
@@ -64,6 +67,20 @@ class InputView(BaseView):
             )
         ], alignment=ft.MainAxisAlignment.START)
 
+    def _build_llm_checkbox(self) -> ft.Control:
+        return ft.Row([
+            ft.Checkbox(
+                label="Использовать LLM",
+                value=self.app_state.use_llm,
+                on_change=self._on_llm_box_change
+            ),
+            ft.Text(
+                "Использовать продвинутые алгоритмы ИИ для реферирования",
+                size=12,
+                color=ft.Colors.GREY
+            )
+        ], alignment=ft.MainAxisAlignment.START)
+
     def _on_text_change(self, e):
         self.app_state.update_state(current_text=e.control.value)
 
@@ -79,6 +96,10 @@ class InputView(BaseView):
 
     def _on_abstract_type_change(self, e):
         self.app_state.update_state(abstract_type=e.control.value)
+
+    def _on_llm_box_change(self, e):
+        self.app_state.update_state(use_llm=e.control.value)
+        print(self.app_state.use_llm)
 
     def _generate_abstract(self, e):
         if not self.app_state.current_text.strip():

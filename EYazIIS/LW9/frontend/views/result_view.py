@@ -7,6 +7,9 @@ from backend_py.classic_abstract_se import SEClassicAbstractGenerator
 from backend_py.keyword_ru import RUKeywordAbstractGenerator
 from backend_py.keyword_en import ENKeywordAbstractGenerator
 
+from backend_py.classic_abstract_llm import LLMClassicAbstractGenerator
+from backend_py.keyword_llm import LLMKeywordAbstractGenerator
+
 
 class ResultView(BaseView):
     """Представление результатов"""
@@ -90,16 +93,24 @@ class ResultView(BaseView):
 
     def _generate_classic_abstract(self, text: str, language: str):
         """Генерирует классический реферат"""
-        generator = SEClassicAbstractGenerator(language=language)
-        abstract = generator.generate(text, num_sentences=10)
-        self.abstract_display.show_classic_abstract(abstract)
+        if self.app_state.use_llm:
+            generator = LLMClassicAbstractGenerator()
+            abstract = generator.generate(text)
+            self.abstract_display.show_classic_abstract(abstract)
+        else:
+            generator = SEClassicAbstractGenerator(language=language)
+            abstract = generator.generate(text, num_sentences=10)
+            self.abstract_display.show_classic_abstract(abstract)
 
     def _generate_keyword_abstract(self, text: str, language: str):
         """Генерирует реферат ключевых слов"""
-        if language == "russian":
-            generator = RUKeywordAbstractGenerator()
+        if self.app_state.use_llm:
+            generator = LLMKeywordAbstractGenerator()
         else:
-            generator = ENKeywordAbstractGenerator()
+            if language == "russian":
+                generator = RUKeywordAbstractGenerator()
+            else:
+                generator = ENKeywordAbstractGenerator()
 
         abstract = generator.generate(text, top_n=10)
         self.abstract_display.show_keyword_abstract(abstract)
