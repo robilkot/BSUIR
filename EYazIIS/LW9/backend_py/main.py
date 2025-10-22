@@ -1,6 +1,6 @@
-from classic_abstract import ClassicAbstractGenerator
-from keyword_en import ENKeywordAbstractGenerator
-from keyword_ru import RUKeywordAbstractGenerator
+from backend_py.classic_abstract import ClassicAbstractGenerator
+from backend_py.keyword_en import ENKeywordAbstractGenerator
+from backend_py.keyword_ru import RUKeywordAbstractGenerator
 
 if __name__ == '__main__':
     sample_text = """

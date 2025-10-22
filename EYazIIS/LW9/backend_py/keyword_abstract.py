@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from abstract import AbstractGenerator, Abstract
+from backend_py.abstract import AbstractGenerator, Abstract
 
 
 @dataclass

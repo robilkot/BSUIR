@@ -6,7 +6,7 @@ from string import punctuation
 
 from razdel import sentenize, tokenize
 
-from abstract import AbstractGenerator
+from backend_py.abstract import AbstractGenerator
 
 
 @dataclass

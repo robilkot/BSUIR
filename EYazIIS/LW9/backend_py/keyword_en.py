@@ -1,14 +1,13 @@
 from string import punctuation
 
 import spacy
-
-from keyword_abstract import KeywordAbstract, KeywordAbstractGenerator
-
+from spacy.lang.en.stop_words import STOP_WORDS
+from backend_py.keyword_abstract import KeywordAbstract, KeywordAbstractGenerator
 
 class ENKeywordAbstractGenerator(KeywordAbstractGenerator):
     def __init__(self):
         self.nlp = spacy.load("en_core_web_sm")
-        self.stop_words = set(spacy.lang.en.stop_words.STOP_WORDS)
+        self.stop_words = set(STOP_WORDS)
         self.ignore_pos = {'ADP', 'CCONJ', 'PART', 'SCONJ', 'PRON', 'DET', 'AUX', 'SYM', 'X', 'SPACE'}
 
     def is_valid_token(self, token) -> bool:
