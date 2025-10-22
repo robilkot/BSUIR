@@ -8,15 +8,17 @@ from backend_py.llm import LLM
 class LLMClassicAbstractGenerator(AbstractGenerator, LLM):
     def _create_keyword_prompt(self, text: str, top_n: int) -> str:
         return f"""
-            Проанализируй следующий текст и выдели строго {top_n} самых важных предложений.
+            Проанализируй следующий текст и сформируй строго {top_n} предложений, описывающих суть текста.
             
             Текст для анализа:
             {text}
 
-            Верни ответ в формате JSON-списка:
-            ["предложение 1", "предложение 2"]
+            Верни ответ в формате JSON:
+            {{
+                "sentences": ["предложение 1", "предложение 2"]
+            }}
 
-            Только JSON, без дополнительного текста.
+            Только JSON и без дополнительного текста.
             """
 
     def _parse_llm_response(self, response: str) -> ClassicAbstract:
@@ -27,7 +29,8 @@ class LLMClassicAbstractGenerator(AbstractGenerator, LLM):
             json_end = response.rfind('}') + 1
             if json_start != -1 and json_end != 0:
                 json_str = response[json_start:json_end]
-                data = json.loads(json_str)
+                json_str = json_str.encode('utf-8')
+                data = json.loads(json_str)['sentences']
 
                 for sent in data:
                     abstract.sentences.append(ScoredSentence(original_text=sent))
@@ -37,7 +40,7 @@ class LLMClassicAbstractGenerator(AbstractGenerator, LLM):
 
         return abstract
 
-    def generate(self, text: str, top_n: int = 20) -> ClassicAbstract:
+    def generate(self, text: str, top_n: int = 10) -> ClassicAbstract:
         if not text.strip():
             raise ValueError("Текст не может быть пустым")
 
@@ -45,7 +48,7 @@ class LLMClassicAbstractGenerator(AbstractGenerator, LLM):
 
         llm_response = self._call_ollama(prompt)
 
-        abstract = self._parse_llm_response(llm_response, top_n)
+        abstract = self._parse_llm_response(llm_response)
 
         return abstract
 
@@ -61,6 +64,6 @@ if __name__ == "__main__":
     включая обработку естественного языка, компьютерное зрение и автономные транспортные средства.
     """
 
-    generator = LLMKeywordAbstractGenerator()
+    generator = LLMClassicAbstractGenerator()
     abstract = generator.generate(sample_text, top_n=10)
     abstract.print()

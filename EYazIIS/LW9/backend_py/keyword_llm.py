@@ -8,8 +8,8 @@ from backend_py.llm import LLM
 class LLMKeywordAbstractGenerator(AbstractGenerator, LLM):
     def _create_keyword_prompt(self, text: str, top_n: int) -> str:
         return f"""
-            Проанализируй следующий текст и выдели {top_n} самых важных ключевых слов и словосочетаний.
-            Для каждого ключевого слова приведи 1-2 примера употребления из текста.
+            Проанализируй следующий текст и выдели {top_n} самых важных слов и словосочетаний.
+            Ключевое слово должно быть ровно одним словом, не больше.
             
             Текст для анализа:
             {text}
@@ -18,9 +18,9 @@ class LLMKeywordAbstractGenerator(AbstractGenerator, LLM):
             {{
                 "keywords": [
                     {{
-                        "keyword": "ключевое слово или словосочетание",
-                        "frequency": число_вхождений,
-                        "phrases": ["пример фразы 1", "пример фразы 2"]
+                        "keyword": "слово",
+                        "frequency": сколько раз встречается в тексте,
+                        "phrases": ["словосочетание с данным словом 1", "словосочетание с данным словом 2"]
                     }}
                 ]
             }}
@@ -37,6 +37,7 @@ class LLMKeywordAbstractGenerator(AbstractGenerator, LLM):
             json_end = response.rfind('}') + 1
             if json_start != -1 and json_end != 0:
                 json_str = response[json_start:json_end]
+                json_str = json_str.encode('utf-8')
                 data = json.loads(json_str)
 
                 keywords_data = data.get("keywords", [])

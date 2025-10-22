@@ -2,7 +2,7 @@ import requests
 
 
 class LLM:
-    def __init__(self, model: str = "llama3.2", base_url: str = "http://localhost:11434"):
+    def __init__(self, model: str = "gemma3:1b", base_url: str = "http://localhost:11434"):
         self.model = model
         self.base_url = base_url
         self.api_url = f"{base_url}/api/generate"
