@@ -57,7 +57,7 @@ class ClassicAbstractGenerator(AbstractGenerator):
     def _get_stop_words(self):
         if self.language == 'english':
             return {
-                'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+                'a', 'an', 'am', 've', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
                 'about', 'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against',
                 'during', 'without', 'before', 'under', 'around', 'among', 'i', 'you', 'he', 'she', 'it',
                 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their',
@@ -175,20 +175,33 @@ class ClassicAbstractGenerator(AbstractGenerator):
         idf_scores = self.calculate_idf(sentence_documents)
 
         scored_sentences = []
+        seen_texts = set()  # Track unique sentence texts
+
         for i, sentence in enumerate(sentences):
+            sentence_text = sentence.strip()
+
+            # Skip duplicate sentences
+            if sentence_text in seen_texts:
+                continue
+            seen_texts.add(sentence_text)
+
             sentence_tokens = self.preprocess_text(sentence)
             score, scored_words = self.calculate_sentence_score(sentence_tokens, tf_scores, idf_scores)
 
             scored_sentence = ScoredSentence(
-                original_text=sentence.strip(),
-                normalized_text=sentence.strip(),
+                original_text=sentence_text,
+                normalized_text=sentence_text,
                 score=score,
                 position=i,
                 words=scored_words
             )
             scored_sentences.append(scored_sentence)
 
+        # Sort by score and take top sentences
         top_sentences = sorted(scored_sentences, key=lambda x: x.score, reverse=True)[:num_sentences]
+
+        # Sort top sentences by original position to maintain readability
+        top_sentences.sort(key=lambda x: x.position)
 
         total_score = sum(sentence.score for sentence in top_sentences)
         compression_ratio = 1 - len(top_sentences) / len(sentences) if sentences else 0
