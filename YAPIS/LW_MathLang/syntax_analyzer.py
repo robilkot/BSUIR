@@ -9,15 +9,6 @@ from antlr4.error.ErrorListener import ErrorListener
 
 from generator import generate_parser
 
-try:
-    from generated.grammar.MathLangLexer import MathLangLexer
-    from generated.grammar.MathLangParser import MathLangParser
-except ImportError:
-    print("Parser not found. Generating...")
-    if not generate_parser():
-        print("Could not generate parser.")
-        sys.exit(1)
-
 
 class CustomErrorListener(ErrorListener):
     """Кастомный обработчик ошибок для красивого вывода"""
@@ -52,35 +43,30 @@ class SyntaxAnalyzer:
             print(f"File not found: {file_path}")
             return False
 
-        try:
-            # Чтение входного файла
-            input_stream = FileStream(file_path, encoding='utf-8')
+        # Чтение входного файла
+        input_stream = FileStream(file_path, encoding='utf-8')
 
-            # Лексический анализ
-            lexer = MathLangLexer(input_stream)
-            lexer.removeErrorListeners()
-            lexer.addErrorListener(self.error_listener)
+        # Лексический анализ
+        lexer = MathLangLexer(input_stream)
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(self.error_listener)
 
-            tokens = CommonTokenStream(lexer)
+        tokens = CommonTokenStream(lexer)
 
-            # Синтаксический анализ
-            parser = MathLangParser(tokens)
-            parser.removeErrorListeners()
-            parser.addErrorListener(self.error_listener)
+        # Синтаксический анализ
+        parser = MathLangParser(tokens)
+        parser.removeErrorListeners()
+        parser.addErrorListener(self.error_listener)
 
-            tree = parser.program()
+        tree = parser.program()
 
-            if self.error_listener.has_errors:
-                print(f"\nReport for: {file_path}")
-                print(f"Errors count: {len(self.error_listener.errors)}")
-                return False
-            else:
-                print(f"File {file_path} is syntactically correct.")
-                return True
-
-        except Exception as e:
-            print(f"Unexpected error while analyzing: {e}")
+        if self.error_listener.has_errors:
+            print(f"\nReport for: {file_path}")
+            print(f"Errors count: {len(self.error_listener.errors)}")
             return False
+        else:
+            print(f"File {file_path} is syntactically correct.")
+            return True
 
     def print_errors(self):
         if self.error_listener.errors:
@@ -93,10 +79,9 @@ def main():
     """Основная функция программы"""
 
     if len(sys.argv) != 2:
-        print("Usage: python syntax_analyzer.py <source_code_filepath>")
-        sys.exit(1)
+        print("No file specified. Using default one.")
 
-    source_file = sys.argv[1]
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample5.ml'
 
     # Анализируем файл
     analyzer = SyntaxAnalyzer()
@@ -110,4 +95,9 @@ def main():
 
 
 if __name__ == "__main__":
+    generate_parser()
+
+    from generated.grammar.MathLangLexer import MathLangLexer
+    from generated.grammar.MathLangParser import MathLangParser
+
     main()
