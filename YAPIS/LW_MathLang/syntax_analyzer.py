@@ -81,7 +81,7 @@ def main():
     if len(sys.argv) != 2:
         print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample5.ml'
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample6.ml'
 
     # Анализируем файл
     analyzer = SyntaxAnalyzer()

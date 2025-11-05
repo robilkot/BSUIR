@@ -6,11 +6,9 @@
 import sys
 from enum import IntEnum, auto
 from itertools import zip_longest
-from os import write
 from symtable import SymbolTable
 
 from antlr4 import *
-from antlr4.tree.Tree import TerminalNodeImpl
 
 from generated.grammar.MathLangLexer import MathLangLexer
 from generated.grammar.MathLangParser import MathLangParser
@@ -62,6 +60,10 @@ class SemanticError(Exception):
         if self.line is not None and self.column is not None:
             return f"[{self.line}:{self.column}]: {self.message}"
         return self.message
+
+
+class SemanticWarning(SemanticError):
+    pass
 
 
 class Symbol:
@@ -130,12 +132,13 @@ class SymbolTable:
     def add_symbol(self, symbol: Symbol):
         # todo варнинг если объявлен в паренте но не локально
         if symbol in self.symbols:
-            print(self)
             raise SemanticError(f"'{symbol}' уже объявлен в этой области видимости")
 
         if self.parent is not None:
             if self.parent.has_defined(symbol):
-                print('Warning! already defi')
+                msg = f"'{symbol}' уже объявлен в верхней области видимости"
+                print(msg)
+                raise SemanticWarning(msg)
 
         self.symbols.add(symbol)
         existing_symbols = self.symbols_dict.get(symbol.name, [])
@@ -153,15 +156,12 @@ class SymbolTable:
         return None
 
     def create_child_scope(self) -> "SymbolTable":
-        """Создает дочернюю область видимости"""
         child = SymbolTable(self)
         self.children.append(child)
         return child
 
 
 class TypeChecker:
-    """Класс для проверки типов"""
-
     @staticmethod
     def is_numeric_type(type: Type) -> bool:
         return type in [Type.FLOAT, Type.INT]
@@ -172,7 +172,6 @@ class TypeChecker:
 
     @staticmethod
     def get_expression_type(expression_ctx, visitor) -> Type:
-        """Определяет тип выражения"""
         if hasattr(expression_ctx, 'type'):
             return Type.create(expression_ctx.type)
         return visitor.visit(expression_ctx)
@@ -233,6 +232,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_scope = self.global_scope
         self.current_subprogram = None
         self.errors = []
+        self.warnings = []
 
         self.__write_subprogram = SubprogramSymbol(name='write', return_type=Type.VOID, parameters=[Type.ANY])
 
@@ -248,7 +248,6 @@ class SemanticAnalyzer(MathLangVisitor):
             self.global_scope.add_symbol(sub)
 
     def add_error(self, message, ctx=None):
-        """Добавляет ошибку в список"""
         line = ctx.start.line if ctx else None
         column = ctx.start.column if ctx else None
         error = SemanticError(message, line, column)
@@ -260,7 +259,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
         parameters_symbols: list[Symbol] = []
         if ctx.declaration_list():
-            param_symbols = self.visitDeclaration_list(ctx.declaration_list())
+            param_symbols = self.visitDeclaration_list(ctx.declaration_list(), allow_decl_only=True)
             for param in param_symbols:
                 parameters_symbols.append(param)
 
@@ -268,7 +267,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
         try:
             self.global_scope.add_symbol(subprogram_symbol)
-        except SemanticError as e:
+        except (SemanticError, SemanticWarning) as e:
             self.add_error(e.message, ctx)
 
         # Сохраняем текущий контекст и создаем новую область видимости
@@ -282,8 +281,8 @@ class SemanticAnalyzer(MathLangVisitor):
         for param_symbol in parameters_symbols:
             try:
                 self.current_scope.add_symbol(param_symbol)
-            except SemanticError as e:
-                self.add_error(str(e), ctx)
+            except (SemanticError, SemanticWarning) as e:
+                self.add_error(e.message, ctx)
 
         # Обрабатываем тело подпрограммы
         self.visitBlock(ctx.block())
@@ -292,31 +291,46 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_scope = previous_scope
         self.current_subprogram = previous_subprogram
 
-    def visitDeclaration_list(self, ctx: MathLangParser.Declaration_listContext) -> list[Symbol]:
+    def visitDeclaration_list(self, ctx: MathLangParser.Declaration_listContext, allow_decl_only: bool = False) -> list[Symbol]:
+        # NOT float x
+        # float x = 0
+        # global float x = 0
+        # global float x
+        local = ctx.scope_modifier() is None
+
+        def get_right_expr_count(decl_ctx) -> int:
+            return len([expr for expr in decl_ctx if expr.expression() is not None])
+
+        is_expr_count_valid_func = \
+            lambda i: i == 0 or i == 1 or i == len(ctx.type_specifier()) \
+                if not local else\
+                lambda i: i == 1 or i == len(ctx.type_specifier() or (i == 0 and allow_decl_only))
+
+        expr_count = get_right_expr_count(ctx.variable_declaration())
+        if (not is_expr_count_valid_func(expr_count)):
+            # print(ctx.getText(), expr_count)
+            self.add_error('Количество выражений должно совпадать с количеством переменных или быть равным 1', ctx)
+
         declarations = []
 
-        type = None
-        for var_type_ctx, var_decl in zip_longest(ctx.type_specifier(), ctx.variable_declaration(), fillvalue=None):
-            if var_type_ctx is not None:
-                type = Type.create(var_type_ctx.getText())
+        left_type = None
+        init_type = None
+        for type_ctx, decl_ctx in zip_longest(reversed(ctx.type_specifier()), reversed(ctx.variable_declaration()), fillvalue=None):
+            if type_ctx is not None:
+                left_type = Type.create(type_ctx.getText())
 
-            var_name = var_decl.ID().getText()
-
-            if var_decl.expression():
-                init_expression = var_decl.expression()
+            init_expression = decl_ctx.expression()
+            if init_expression is not None:
                 init_type = TypeChecker.get_expression_type(init_expression, self)
 
-                if not TypeChecker.can_cast(init_type, type):
-                    self.add_error(f"Нельзя присвоить {safe_type_name(init_type)} переменной типа {safe_type_name(type)}", var_decl)
+            var_name = decl_ctx.ID().getText()
+            # print('GLOBAL' if not local else '', safe_type_name(left_type), var_name, safe_type_name(init_type), init_expression.getText() if init_expression else None)
 
-            symbol = Symbol(var_name, type)
+            if init_type and not TypeChecker.can_cast(init_type, left_type):
+                self.add_error(f"Нельзя присвоить {safe_type_name(init_type)} переменной типа {safe_type_name(left_type)}", decl_ctx)
+
+            symbol = Symbol(var_name, left_type)
             declarations.append(symbol)
-
-        for symbol in declarations:
-            try:
-                self.current_scope.add_symbol(symbol)
-            except SemanticError as e:
-                self.add_error(e.message, ctx)
 
         return declarations
 
@@ -333,7 +347,6 @@ class SemanticAnalyzer(MathLangVisitor):
             left_symbols: list[Symbol] | None = self.visitId_list(left_side)
 
             if left_symbols is None or len(left_symbols) != len(right_expressions):
-                print(left_symbols, right_expressions)
                 self.add_error("Количество переменных и выражений в присваивании не совпадает", ctx)
                 return
 
@@ -345,6 +358,12 @@ class SemanticAnalyzer(MathLangVisitor):
         elif isinstance(left_side, MathLangParser.Declaration_listContext):
             left_symbols = self.visitDeclaration_list(left_side)
 
+            for symbol in left_symbols:
+                try:
+                    self.current_scope.add_symbol(symbol)
+                except (SemanticError, SemanticWarning) as e:
+                    self.add_error(e.message, ctx)
+
             if len(right_expressions) != 1:
                 if len(left_symbols) != len(right_expressions):
                     self.add_error("Количество переменных и выражений в присваивании не совпадает", ctx)
@@ -354,10 +373,9 @@ class SemanticAnalyzer(MathLangVisitor):
                     if not TypeChecker.can_cast(expression_type, symbol.type):
                         add_assignment_error(symbol.type, expression_type)
             else:
-                for left_symbol in left_symbols:
-                    if not TypeChecker.can_cast(right_expressions[0], left_symbol.type):
-                        add_assignment_error(left_symbol.type, right_expressions[0])
-
+                for symbol in left_symbols:
+                    if not TypeChecker.can_cast(right_expressions[0], symbol.type):
+                        add_assignment_error(symbol.type, right_expressions[0])
         else:
             raise ValueError("Unknown type")
 
@@ -385,41 +403,9 @@ class SemanticAnalyzer(MathLangVisitor):
         return types
 
     def visitExpression(self, ctx: MathLangParser.ExpressionContext) -> Type | None:
-        """Обработка выражения"""
-        if ctx.ID():
-            # Идентификатор
-            var_name = ctx.ID().getText()
-            symbol = self.current_scope.lookup(var_name) # todo
-            if not symbol:
-                self.add_error(f"Переменная '{var_name}' не объявлена", ctx)
-                return None
-            else:
-                symbol = symbol[0]
-
-            ctx.type = symbol.type
-            return symbol.type
-
-        elif ctx.literal():
-            # Литерал
-            literal_type = self.visitLiteral(ctx.literal())
-            ctx.type = literal_type
-            return Type.create(literal_type)
-
-        elif ctx.call():
-            # Вызов подпрограммы
-            return_type = self.visitCall(ctx.call())
-            ctx.type = return_type
-            return return_type
-
-        elif ctx.cast_expression():
-            # Преобразование типа
-            return self.visitCast_expression(ctx.cast_expression())
-
-        elif ctx.binary_operator():
-            # Бинарная операция
+        def visit_binary_expression(ctx, operator: str) -> Type | None:
             left_type = self.visit(ctx.expression(0))
             right_type = self.visit(ctx.expression(1))
-            operator = ctx.binary_operator().getText()
 
             if left_type is None or right_type is None:
                 print(left_type, right_type, ctx.getText())
@@ -428,44 +414,89 @@ class SemanticAnalyzer(MathLangVisitor):
 
             try:
                 result_type = TypeChecker.get_binary_operation_type(left_type, right_type, operator)
-                ctx.type = result_type
                 return result_type
-            except SemanticError as e:
-                self.add_error(str(e), ctx)
+            except (SemanticError, SemanticWarning) as e:
+                self.add_error(e.message, ctx)
                 return None
 
-        elif ctx.unary_operator():
-            # Унарная операция
+        def visit_unary_expression(ctx, operator: str) -> Type | None:
             expr_type = self.visit(ctx.expression(0))
-            operator = ctx.unary_operator().getText()
 
-            if operator == '-' and not TypeChecker.is_numeric_type(expr_type):
-                self.add_error(f"Унарный минус применим только к числовым типам. Получен тип {safe_type_name(expr_type)}", ctx)
+            if operator == '-' and not TypeChecker.is_numeric_type(expr_type) and not TypeChecker.is_boolean_type(expr_type):
+                self.add_error(f"Унарная операция применима только к числовым и булевым типам. Получен тип {safe_type_name(expr_type)}", ctx)
                 return None
 
-            ctx.type = expr_type
             return expr_type
+
+        if ctx.ID():
+            var_name = ctx.ID().getText()
+            symbol = self.current_scope.lookup(var_name) # todo
+            if not symbol:
+                self.add_error(f"Переменная '{var_name}' не объявлена", ctx)
+                return None
+            else:
+                symbol = symbol[0]
+
+            return symbol.type
+
+        elif ctx.literal():
+            return self.visitLiteral(ctx.literal())
+        elif ctx.call():
+            return self.visitCall(ctx.call())
+        elif ctx.cast_expression():
+            return self.visitCast_expression(ctx.cast_expression())
 
         elif ctx.getChildCount() == 3 and ctx.getChild(0).getText() == '(':
             # Выражение в скобках
             expr_type = self.visit(ctx.expression(0))
-            ctx.type = expr_type
             return expr_type
 
+        elif ctx.NOT():
+            return visit_unary_expression(ctx, ctx.NOT().getText())
+        elif ctx.MINUS() and ctx.getChildCount() == 2:
+            return visit_unary_expression(ctx, ctx.MINUS().getText())
+
+        elif ctx.CARET():
+            return visit_binary_expression(ctx, ctx.CARET().getText())
+        elif ctx.ASTERISK():
+            return visit_binary_expression(ctx, ctx.ASTERISK().getText())
+        elif ctx.SLASH():
+            return visit_binary_expression(ctx, ctx.SLASH().getText())
+        elif ctx.PLUS():
+            return visit_binary_expression(ctx, ctx.PLUS().getText())
+        elif ctx.MINUS():
+            return visit_binary_expression(ctx, ctx.MINUS().getText())
+        elif ctx.AND():
+            return visit_binary_expression(ctx, ctx.AND().getText())
+        elif ctx.OR():
+            return visit_binary_expression(ctx, ctx.OR().getText())
+        elif len(ctx.EQ()) == 2:
+            return visit_binary_expression(ctx, "==")
+        elif ctx.NEQ():
+            return visit_binary_expression(ctx, ctx.NEQ().getText())
+        elif ctx.GT():
+            return visit_binary_expression(ctx, ctx.GT().getText())
+        elif ctx.LT():
+            return visit_binary_expression(ctx, ctx.LT().getText())
+        elif ctx.GE():
+            return visit_binary_expression(ctx, ctx.GE().getText())
+        elif ctx.LE():
+            return visit_binary_expression(ctx, ctx.LE().getText())
+
+        print(ctx.getText())
         self.add_error("Неизвестный тип выражения", ctx)
         return None
 
     def visitCast_expression(self, ctx: MathLangParser.Cast_expressionContext) -> Type | None:
         """Обработка преобразования типов"""
-        target_type = ctx.type_specifier().getText()
-        expr_type = self.visit(ctx.expression())
+        target_type = Type.create(ctx.type_specifier().getText())
+        expr_type = self.visitExpression(ctx.expression())
 
         if not TypeChecker.can_cast(expr_type, target_type):
             self.add_error(f"Невозможно преобразовать {safe_type_name(expr_type)} в {safe_type_name(target_type)}", ctx)
             return None
 
-        ctx.type = target_type
-        return Type.create(target_type)
+        return target_type
 
     def visitCall(self, ctx: MathLangParser.CallContext, expected_type: Type = Type.VOID) -> Type | None:
         sub_name = ctx.ID().getText()
@@ -509,14 +540,17 @@ class SemanticAnalyzer(MathLangVisitor):
 
     def visitLiteral(self, ctx: MathLangParser.LiteralContext):
         if ctx.INT():
-            return 'int'
+            string = 'int'
         elif ctx.FLOAT():
-            return 'float'
+            string = 'float'
         elif ctx.BOOL():
-            return 'bool'
+            string = 'bool'
         elif ctx.STRING():
-            return 'string'
-        return 'unknown'
+            string = 'string'
+        else:
+            string = 'unknown'
+
+        return Type.create(string)
 
 
     def visitBranching(self, ctx: MathLangParser.BranchingContext):
@@ -535,12 +569,21 @@ class SemanticAnalyzer(MathLangVisitor):
 
     def visitLoop(self, ctx: MathLangParser.LoopContext):
         """Обработка циклов"""
+        # Сохраняем текущий контекст и создаем новую область видимости
+        previous_scope = self.current_scope
+
+        self.current_scope = self.current_scope.create_child_scope()
+        self.current_scope.parent = previous_scope
+
         if ctx.for_loop():
             self.visitFor_loop(ctx.for_loop())
         elif ctx.while_loop():
             self.visitWhile_loop(ctx.while_loop())
         elif ctx.until_loop():
             self.visitUntil_loop(ctx.until_loop())
+
+        # Восстанавливаем предыдущий контекст
+        self.current_scope = previous_scope
 
     def visitWhile_loop(self, ctx: MathLangParser.While_loopContext):
         """Обработка цикла while"""
@@ -562,7 +605,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
     def visitFor_loop(self, ctx: MathLangParser.For_loopContext):
         """Обработка цикла for"""
-        self.visit(ctx.assignment())
+        self.visitAssignment(ctx.assignment())
 
         condition_type = self.visit(ctx.expression())
         if not TypeChecker.is_boolean_type(condition_type):
@@ -596,7 +639,7 @@ def main():
     if len(sys.argv) != 2:
         print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample4.ml'
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample3.ml'
 
     try:
         # Чтение и лексический анализ

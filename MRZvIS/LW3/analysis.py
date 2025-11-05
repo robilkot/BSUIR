@@ -1,17 +1,22 @@
+###############################
+# Лабораторная работа №3 по дисциплине МРЗвИС
+# Выполнена студентом группы 221701 БГУИР Робилко Тимуром Марковичем
+# Файл, содержащий функции построения графиков для оценки работы нейросети
+#
 import matplotlib.pyplot as plt
 import numpy as np
 
-from main import ImageDataLoader, AutoEncoder, adaptive_af_func, adaptive_ab_func
+from main import ImageDataLoader, AutoEncoder, adaptive_a_func
 
 
 def analyze_learning_rate_dependency(
         image_path: str,
-        r: int = 4,
-        m: int = 4,
+        r: int = 12,
+        m: int = 12,
         compression_coef: int = 6,
-        target_error: float = 250,
+        target_error: float = 500,
         learning_rates: list[float] = None,
-        max_iterations: int = 50
+        max_iterations: int = 100
 ) -> None:
     """
     Анализ зависимости количества итераций от коэффициента обучения
@@ -19,7 +24,7 @@ def analyze_learning_rate_dependency(
     print("=== Анализ зависимости от коэффициента обучения ===")
 
     if learning_rates is None:
-        learning_rates = [0.001, 0.01, 0.05, 0.1, 0.5, 1]
+        learning_rates = [0.005, 0.003, 0.001, 0.0005, 0.0001]
 
     iterations_data = []
 
@@ -72,7 +77,7 @@ def analyze_compression_coef_dependency(
     iterations_data = []
 
     for comp_coef in compression_coefs:
-        auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
+        auto_encoder = AutoEncoder(adaptive_a_func, adaptive_a_func, np.float32)
         auto_encoder.init_weights(3 * r * m, comp_coef)
 
         loader = ImageDataLoader(image_path, r, m)
@@ -114,7 +119,7 @@ def analyze_image_type_dependency(
     iterations_data = []
 
     for img_path in image_paths:
-        auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
+        auto_encoder = AutoEncoder(adaptive_a_func, adaptive_a_func, np.float32)
         auto_encoder.init_weights(3 * r * m, compression_coef)
 
         loader = ImageDataLoader(img_path, r, m)
@@ -164,7 +169,7 @@ def analyze_error_threshold_dependency(
     iterations_data = []
 
     for error_threshold in error_thresholds:
-        auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
+        auto_encoder = AutoEncoder(adaptive_a_func, adaptive_a_func, np.float32)
         auto_encoder.init_weights(3 * r * m, compression_coef)
 
         loader = ImageDataLoader(image_path, r, m)
@@ -201,7 +206,7 @@ def analyze_training_progress(
     Анализ прогресса обучения во времени
     """
 
-    auto_encoder = AutoEncoder(adaptive_af_func, adaptive_ab_func, np.float32)
+    auto_encoder = AutoEncoder(adaptive_a_func, adaptive_a_func, np.float32)
     auto_encoder.init_weights(3 * r * m, compression_coef)
 
     loader = ImageDataLoader(image_path, r, m)
@@ -228,9 +233,9 @@ def analyze_training_progress(
 
 
 if __name__ == '__main__':
-    # analyze_learning_rate_dependency('test_images/blackbuck.bmp')
-    # analyze_compression_coef_dependency('test_images/blackbuck.bmp', target_error=1500)
-    # analyze_error_threshold_dependency('test_images/lena.bmp')
+    # analyze_learning_rate_dependency('test_images/lena.bmp', r=10, m=10, target_error=500, max_iterations=200, learning_rates=[0.0095, 0.007, 0.0035, 0.001, 0.00075, 0.0005, 0.00025])
+    # analyze_compression_coef_dependency('test_images/blackbuck.bmp', r=10, m=10, target_error=750, compression_coefs=[4, 7, 10, 13, 16, 19])
+    # analyze_error_threshold_dependency('test_images/lena.bmp', r=10, m=10, max_iterations=200, compression_coef=10)
 
     image_paths = [
         'test_images/solid_color.png',
@@ -246,11 +251,11 @@ if __name__ == '__main__':
         'Сложное',
         'Высокое разрешение'
     ]
-    analyze_image_type_dependency(image_paths, image_names)
+    # analyze_image_type_dependency(image_paths, image_names)
 
 
     # analyze_training_progress('test_images/52.jpg')
     # analyze_training_progress('test_images/snail.bmp')
-    # analyze_training_progress('test_images/lena.bmp')
+    analyze_training_progress('test_images/lena.bmp', r=10, m=10)
     # analyze_training_progress('test_images/blackbuck.bmp')
     # analyze_training_progress('test_images/golub.png')

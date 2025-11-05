@@ -29,13 +29,18 @@ class MathLangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MathLangParser#declaration.
-    def visitDeclaration(self, ctx:MathLangParser.DeclarationContext):
+    # Visit a parse tree produced by MathLangParser#assignment.
+    def visitAssignment(self, ctx:MathLangParser.AssignmentContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MathLangParser#assignment.
-    def visitAssignment(self, ctx:MathLangParser.AssignmentContext):
+    # Visit a parse tree produced by MathLangParser#declaration_list.
+    def visitDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MathLangParser#variable_declaration.
+    def visitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
         return self.visitChildren(ctx)
 
 
@@ -99,16 +104,6 @@ class MathLangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MathLangParser#binary_operator.
-    def visitBinary_operator(self, ctx:MathLangParser.Binary_operatorContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by MathLangParser#unary_operator.
-    def visitUnary_operator(self, ctx:MathLangParser.Unary_operatorContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by MathLangParser#control_flow_operator.
     def visitControl_flow_operator(self, ctx:MathLangParser.Control_flow_operatorContext):
         return self.visitChildren(ctx)
@@ -116,16 +111,6 @@ class MathLangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MathLangParser#literal.
     def visitLiteral(self, ctx:MathLangParser.LiteralContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by MathLangParser#declaration_list.
-    def visitDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by MathLangParser#variable_declaration.
-    def visitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
         return self.visitChildren(ctx)
 
 

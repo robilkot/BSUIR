@@ -44,21 +44,30 @@ class MathLangListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by MathLangParser#declaration.
-    def enterDeclaration(self, ctx:MathLangParser.DeclarationContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#declaration.
-    def exitDeclaration(self, ctx:MathLangParser.DeclarationContext):
-        pass
-
-
     # Enter a parse tree produced by MathLangParser#assignment.
     def enterAssignment(self, ctx:MathLangParser.AssignmentContext):
         pass
 
     # Exit a parse tree produced by MathLangParser#assignment.
     def exitAssignment(self, ctx:MathLangParser.AssignmentContext):
+        pass
+
+
+    # Enter a parse tree produced by MathLangParser#declaration_list.
+    def enterDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
+        pass
+
+    # Exit a parse tree produced by MathLangParser#declaration_list.
+    def exitDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
+        pass
+
+
+    # Enter a parse tree produced by MathLangParser#variable_declaration.
+    def enterVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
+        pass
+
+    # Exit a parse tree produced by MathLangParser#variable_declaration.
+    def exitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
         pass
 
 
@@ -170,24 +179,6 @@ class MathLangListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by MathLangParser#binary_operator.
-    def enterBinary_operator(self, ctx:MathLangParser.Binary_operatorContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#binary_operator.
-    def exitBinary_operator(self, ctx:MathLangParser.Binary_operatorContext):
-        pass
-
-
-    # Enter a parse tree produced by MathLangParser#unary_operator.
-    def enterUnary_operator(self, ctx:MathLangParser.Unary_operatorContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#unary_operator.
-    def exitUnary_operator(self, ctx:MathLangParser.Unary_operatorContext):
-        pass
-
-
     # Enter a parse tree produced by MathLangParser#control_flow_operator.
     def enterControl_flow_operator(self, ctx:MathLangParser.Control_flow_operatorContext):
         pass
@@ -203,24 +194,6 @@ class MathLangListener(ParseTreeListener):
 
     # Exit a parse tree produced by MathLangParser#literal.
     def exitLiteral(self, ctx:MathLangParser.LiteralContext):
-        pass
-
-
-    # Enter a parse tree produced by MathLangParser#declaration_list.
-    def enterDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#declaration_list.
-    def exitDeclaration_list(self, ctx:MathLangParser.Declaration_listContext):
-        pass
-
-
-    # Enter a parse tree produced by MathLangParser#variable_declaration.
-    def enterVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#variable_declaration.
-    def exitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
         pass
 
 

@@ -9,6 +9,7 @@ class LLMClassicAbstractGenerator(AbstractGenerator, LLM):
     def _create_keyword_prompt(self, text: str, top_n: int) -> str:
         return f"""
             Проанализируй следующий текст и сформируй строго {top_n} предложений, описывающих суть текста.
+            Предложений должно быть ровно {top_n}. Реферат должен быть на таком же языке, что и сам текст.
             
             Текст для анализа:
             {text}

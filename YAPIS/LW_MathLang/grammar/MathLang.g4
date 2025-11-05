@@ -7,17 +7,24 @@ program
     ;
 
 statement
-    : control_flow_operator | block | declaration | branching | loop | assignment | call ;
+    : control_flow_operator | block | branching | loop | assignment | call ;
 
 subprogram
     : SUB ID '(' declaration_list? ')' block ;
 branching
     : IF '(' expression ')' block (ELSE block)? ;
 
-declaration
-    : declaration_list;
 assignment
     : (declaration_list | id_list) assignment_operator expression_list ;
+
+declaration_list
+    : scope_modifier? type_specifier variable_declaration (',' type_specifier  variable_declaration)*
+    ;
+
+variable_declaration
+    : ID (simple_assignment_operator expression)?
+    ;
+
 call
     : ID '(' expression_list? ')' ;
 
@@ -42,9 +49,24 @@ expression
     | literal
     | call
     | cast_expression
-    | expression binary_operator expression
-    | unary_operator expression
-    | ('(' expression ')') ;
+    | '(' expression ')'
+    | NOT expression
+    | MINUS expression
+    | expression CARET expression
+    | expression ASTERISK expression
+    | expression SLASH expression
+    | expression PLUS expression
+    | expression MINUS expression
+    | expression AND expression
+    | expression OR expression
+    | expression EQ EQ expression
+    | expression NEQ expression
+    | expression GT expression
+    | expression LT expression
+    | expression GE expression
+    | expression LE expression
+    ;
+
 
 cast_expression
     : type_specifier '(' expression ')' ;
@@ -52,24 +74,6 @@ cast_expression
 assignment_operator : simple_assignment_operator ;
 
 simple_assignment_operator : EQ ;
-
-binary_operator
-    : PLUS
-    | MINUS
-    | ASTERISK
-    | SLASH
-    | CARET
-    | (EQ EQ)
-    | OR
-    | AND
-    | NOT
-    | GT
-    | LS
-    | (GT EQ)
-    | (LS EQ) ;
-
-unary_operator
-    : MINUS ;
 
 control_flow_operator
     : RETURN
@@ -82,28 +86,22 @@ literal
     | BOOL
     | STRING ;
 
-declaration_list
-    : scope_modifier? type_specifier variable_declaration (',' scope_modifier? type_specifier?  variable_declaration)*
-    ;
-
-variable_declaration
-    : ID (simple_assignment_operator expression)?
-    ;
-
 type_specifier
     : FLOAT_T | INT_T | BOOL_T;
 
 scope_modifier
     : GLOBAL ;
 
-
 AND : 'and' ;
 OR : 'or' ;
 NOT : 'not' ;
 
 EQ : '=' ;
+NEQ : '!=' ;
 GT : '>' ;
-LS : '<' ;
+LT : '<' ;
+GE : '>=' ;
+LE : '<=' ;
 
 COMMA : ',' ;
 SEMI : ';' ;
