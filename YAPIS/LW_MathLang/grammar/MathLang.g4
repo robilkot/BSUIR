@@ -10,7 +10,11 @@ statement
     : control_flow_operator | block | branching | loop | assignment | call ;
 
 subprogram
-    : SUB ID '(' declaration_list? ')' block ;
+    : SUB ID template? '(' declaration_list? ')' block ;
+
+template
+    : '<' type_specifier_list '>' ;
+
 branching
     : IF '(' expression ')' block (ELSE block)? ;
 
@@ -26,7 +30,7 @@ variable_declaration
     ;
 
 call
-    : ID '(' expression_list? ')' ;
+    : ID template? '(' expression_list? ')' ;
 
 loop
     : for_loop | while_loop | until_loop ;
@@ -87,7 +91,10 @@ literal
     | STRING ;
 
 type_specifier
-    : FLOAT_T | INT_T | BOOL_T;
+    : FLOAT_T | INT_T | BOOL_T | ID ;
+
+type_specifier_list
+    : type_specifier (',' type_specifier)* ;
 
 scope_modifier
     : GLOBAL ;
