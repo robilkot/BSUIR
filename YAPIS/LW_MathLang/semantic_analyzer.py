@@ -517,7 +517,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
             params_ok = True
             for (param_called, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
-                if not TypeChecker.can_cast(param_actual, param_actual):
+                if not TypeChecker.can_cast(param_called, param_actual):
                     params_ok = False
                     break
 
@@ -639,7 +639,7 @@ def main():
     if len(sys.argv) != 2:
         print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample3.ml'
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample6.ml'
 
     try:
         # Чтение и лексический анализ
