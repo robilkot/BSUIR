@@ -237,9 +237,18 @@ class SemanticAnalyzer(MathLangVisitor):
         self.__write_subprogram = SubprogramSymbol(name='write', return_type=Type.VOID, parameters=[Type.ANY])
 
         self.__default_subprograms = [
+            #tan, asin, acos, atan
             SubprogramSymbol(name='abs', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='log', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='ln', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
             SubprogramSymbol(name='sin', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
             SubprogramSymbol(name='cos', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='tg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='atg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='ctg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='actg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='asin', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
+            SubprogramSymbol(name='acos', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
             SubprogramSymbol(name='read', return_type=Type.ANY, parameters=[]),
             self.__write_subprogram
         ]

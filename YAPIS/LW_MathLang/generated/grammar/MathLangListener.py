@@ -35,6 +35,15 @@ class MathLangListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by MathLangParser#template.
+    def enterTemplate(self, ctx:MathLangParser.TemplateContext):
+        pass
+
+    # Exit a parse tree produced by MathLangParser#template.
+    def exitTemplate(self, ctx:MathLangParser.TemplateContext):
+        pass
+
+
     # Enter a parse tree produced by MathLangParser#branching.
     def enterBranching(self, ctx:MathLangParser.BranchingContext):
         pass
@@ -203,6 +212,15 @@ class MathLangListener(ParseTreeListener):
 
     # Exit a parse tree produced by MathLangParser#type_specifier.
     def exitType_specifier(self, ctx:MathLangParser.Type_specifierContext):
+        pass
+
+
+    # Enter a parse tree produced by MathLangParser#type_specifier_list.
+    def enterType_specifier_list(self, ctx:MathLangParser.Type_specifier_listContext):
+        pass
+
+    # Exit a parse tree produced by MathLangParser#type_specifier_list.
+    def exitType_specifier_list(self, ctx:MathLangParser.Type_specifier_listContext):
         pass
 
 

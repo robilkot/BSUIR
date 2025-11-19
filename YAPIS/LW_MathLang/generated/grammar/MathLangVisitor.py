@@ -24,6 +24,11 @@ class MathLangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MathLangParser#template.
+    def visitTemplate(self, ctx:MathLangParser.TemplateContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MathLangParser#branching.
     def visitBranching(self, ctx:MathLangParser.BranchingContext):
         return self.visitChildren(ctx)
@@ -116,6 +121,11 @@ class MathLangVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by MathLangParser#type_specifier.
     def visitType_specifier(self, ctx:MathLangParser.Type_specifierContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by MathLangParser#type_specifier_list.
+    def visitType_specifier_list(self, ctx:MathLangParser.Type_specifier_listContext):
         return self.visitChildren(ctx)
 
 
