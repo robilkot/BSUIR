@@ -161,15 +161,6 @@ class MathLangListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by MathLangParser#cast_expression.
-    def enterCast_expression(self, ctx:MathLangParser.Cast_expressionContext):
-        pass
-
-    # Exit a parse tree produced by MathLangParser#cast_expression.
-    def exitCast_expression(self, ctx:MathLangParser.Cast_expressionContext):
-        pass
-
-
     # Enter a parse tree produced by MathLangParser#assignment_operator.
     def enterAssignment_operator(self, ctx:MathLangParser.Assignment_operatorContext):
         pass

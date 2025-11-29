@@ -52,7 +52,6 @@ expression
     : ID
     | literal
     | call
-    | cast_expression
     | '(' expression ')'
     | NOT expression
     | MINUS expression
@@ -70,10 +69,6 @@ expression
     | expression GE expression
     | expression LE expression
     ;
-
-
-cast_expression
-    : type_specifier '(' expression ')' ;
 
 assignment_operator : simple_assignment_operator ;
 

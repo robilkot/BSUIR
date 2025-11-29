@@ -39,11 +39,22 @@ float minimum, float maximum = 0.0
     }
 }}}}
 
-write("Min: ", minimum, ", Max: ", maximum)
+write("Min: ")
+write(minimum)
+write(", Max: ")
+write(maximum)
 
-write("Before swap: num1 = ", num1, ", num2 = ", num2)
+write("Before swap: num1 = ")
+write(num1)
+write(", num2 = ")
+write(num2)
+
 num1, num2 = num2, num1
-write("After swap: num1 = ", num1, ", num2 = ", num2)
+
+write("After swap: num1 = ")
+write(num1)
+write(", num2 = ")
+write(num2)
 
 float a = 1.0, float b = -5.0, float c = 6.0
 float root1, float root2 = 0.0, 0.0
@@ -54,15 +65,28 @@ test, test2 = 0.2, 0.7
 bool result = false
 solveQuadratic(a, b, c, root1, root2, result)
 if (result) {
-    write("Roots of equation ", a, "x^2 + ", b, "x + ", c, " = 0 are:")
-    write("Root 1: ", root1, ", Root 2: ", root2)
+    write("Roots of equation ")
+    write(a)
+    write("x^2 + ")
+    write(b)
+    write("x + ")
+    write(c)
+    write(" = 0 are:")
+    write("Root 1: ")
+    write(root1)
+    write(", Root 2: ")
+    write(root2)
     
     float check1 = a*(root1^2) + b*root1 + c
     float check2 = a*(root2^2) + b*root2 + c
-    write("Verification (should be close to 0): ", check1, " and ", check2)
+    write("Verification (should be close to 0): ")
+    write(check1)
+    write(" and ")
+    write(check2)
 } else {
     write("No real roots found")
 }
 
 bool isPositive = (root1 > 0) and (root2 > 0)
-write("Both roots are positive: ", isPositive)
+write("Both roots are positive: ")
+write(isPositive)

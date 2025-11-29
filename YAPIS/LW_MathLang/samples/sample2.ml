@@ -16,7 +16,10 @@ for (float angle = 0.0; angle <= 6.28318; angle = angle + 0.1) {
     float result = 0
 	computeWave(angle, result)
 
-    write("sin(", angle, ") = ", result)
+    write("sin(")
+    write(angle)
+    write(") = ")
+    write(result)
 }
 
 // While loop
@@ -33,8 +36,12 @@ while(abs(sin(x) - target) > precision) {
     }
 }
 
-write("Solution found: x ≈ ", x, ", sin(x) ≈ ", sin(x))
+write("Solution found: x ≈ ")
+write(x)
+write(", sin(x) ≈ ")
+write(sin(x))
 
 float result = (cos(x) ^ 2) + (sin(x) ^ 2) // Should be ≈1
-write("sin^2(x) + cos^2(x) = ", result)
+write("sin^2(x) + cos^2(x) = ")
+write(result)
 

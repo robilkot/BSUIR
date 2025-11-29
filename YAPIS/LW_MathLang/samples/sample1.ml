@@ -37,15 +37,20 @@ if (hypotenuse > 10.0) {
 	write("Small triangle. ")
 }
 
-write("Area: ", area, ", Hypotenuse: ", hypotenuse)
+write("Area: ")
+write(area)
+write(", Hypotenuse: ")
+write(hypotenuse)
 
 // Type conversion
-int roundedHypotenuse = int(hypotenuse)
-write("Rounded hypotenuse: ", roundedHypotenuse)
+int roundedHypotenuse = cast(hypotenuse)
+write("Rounded hypotenuse: ")
+write(roundedHypotenuse)
 
 bool isRight = false
 isRightTriangle(cathetusA, cathetusB, hypotenuse, isRight)
-write("Is right triangle? ", isRight)
+write("Is right triangle? ")
+write(isRight)
 
 // until loop
 int x = 0

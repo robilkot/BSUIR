@@ -11,13 +11,13 @@ sub pretty_write<T>(T a)
 // Using two or more template arguments
 sub double_template<K, V>(K key, V value)
 {
-    int key_casted = int(key)
+    int key_casted = cast(key)
 }
 
 // Variables of templated types may be created in subprogram
 sub inner_initialization<T>(T result)
 {
-    T intermediate_result = T(read())
+    T intermediate_result = cast(read())
     result = intermediate_result * 2
 }
 
@@ -27,7 +27,7 @@ sub call_to_templated_sub<T>(T val)
     pretty_write(val)
 
     // Providing template argument explicitly is allowed in call statement
-    int i_val = int(val)
+    int i_val = cast(val)
     pretty_write<int>(val)
 }
 
@@ -51,16 +51,16 @@ sub explicit_implementation<int>(int val)
 
 
 // Zero template arguments
-sub zero_template_arguments<>() {}
+//sub zero_template_arguments<>() {}
 
 // Using literals or expressions in template arguments
-sub literal_in_template_arguments<2, 2 + 4>() {}
+//sub literal_in_template_arguments<2, 2 + 4>() {}
 
 
 // Semantically incorrect samples
 
 // Explicit implementation not allowed without previously declared templated subprogram
-sub explicit_implementation<int>(int val)
+sub explicit_implementation_without_templated_declaration<int>(int val)
 {
     write("Specifically for int!")
     write(val)

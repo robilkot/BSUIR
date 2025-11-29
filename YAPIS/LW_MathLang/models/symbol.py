@@ -1,0 +1,100 @@
+from models.errors import SemanticError
+from models.types import Type
+
+
+class Symbol:
+    """Класс для представления символа в таблице символов"""
+
+    def __init__(self, name, type: Type):
+        self.name = name
+        self.type: Type = type
+
+    def __str__(self):
+        return f"{self.type.name} {self.name}"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __key(self):
+        return (self.name, self.type)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, Symbol):
+            return self.__key() == other.__key()
+        return NotImplemented
+
+
+class SubprogramSymbol(Symbol):
+    def __init__(self, name, parameters: list[Type], return_type: Type, template_args: list[Type]):
+        super().__init__(name, return_type)
+        self.parameters: list[Type] = parameters
+        self.template_args: list[Type] = template_args
+        self.local_scope = SymbolTable()
+
+    def __str__(self):
+        return f"sub {self.name}({self.__params_str()})"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __params_str(self):
+        return ", ".join([type.name for type in self.parameters])
+
+    def __template_args_str(self):
+        return ", ".join([type.name for type in self.template_args])
+
+    def __key(self):
+        return self.name, self.type, self.__params_str(), self.__template_args_str()
+
+    def __hash__(self):
+        return hash(self.__key())
+
+
+class SymbolTable:
+    """Таблица символов с поддержкой вложенных областей видимости"""
+
+    def __init__(self, parent=None):
+        self.symbols = set()
+        self.symbols_dict: dict[str, list[Symbol]] = {}
+
+        self.parent = parent
+        self.children = []
+
+    def __str__(self):
+        return self.symbols.__str__()
+
+    def __repr__(self):
+        return self.__str__()
+
+    def add_symbol(self, symbol: Symbol):
+        # todo варнинг если объявлен в паренте но не локально
+        if symbol in self.symbols:
+            raise SemanticError(f"'{symbol}' уже объявлен в этой области видимости")
+
+        if self.parent is not None:
+            if self.parent.has_defined(symbol):
+                msg = f"'{symbol}' уже объявлен в верхней области видимости"
+                print(msg)
+
+        self.symbols.add(symbol)
+        existing_symbols = self.symbols_dict.get(symbol.name, [])
+        existing_symbols.append(symbol)
+        self.symbols_dict[symbol.name] = existing_symbols
+
+    def has_defined(self, symbol: Symbol) -> bool:
+        return self.lookup(symbol.name) is not None
+
+    def lookup(self, name: str) -> None | list[Symbol]:
+        if name in self.symbols_dict:
+            return self.symbols_dict[name]
+        if self.parent:
+            return self.parent.lookup(name)
+        return None
+
+    def create_child_scope(self) -> "SymbolTable":
+        child = SymbolTable(self)
+        self.children.append(child)
+        return child

@@ -94,11 +94,6 @@ class MathLangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MathLangParser#cast_expression.
-    def visitCast_expression(self, ctx:MathLangParser.Cast_expressionContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by MathLangParser#assignment_operator.
     def visitAssignment_operator(self, ctx:MathLangParser.Assignment_operatorContext):
         return self.visitChildren(ctx)
