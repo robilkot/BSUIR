@@ -4,6 +4,7 @@
 """
 
 import sys
+from dataclasses import dataclass
 from enum import IntEnum, auto
 from itertools import zip_longest
 from symtable import SymbolTable
@@ -15,13 +16,29 @@ from generated.grammar.MathLangParser import MathLangParser
 from generated.grammar.MathLangVisitor import MathLangVisitor
 
 
-class Type(IntEnum):
-    ANY = auto()
-    FLOAT = auto()
-    INT = auto()
-    BOOL = auto()
-    STRING = auto()
-    VOID = auto()
+@dataclass
+class Type:
+    name: str
+
+    @staticmethod
+    def int():
+        return Type('int')
+
+    @staticmethod
+    def float():
+        return Type('float')
+
+    @staticmethod
+    def bool():
+        return Type('bool')
+
+    @staticmethod
+    def string():
+        return Type('string')
+
+    @staticmethod
+    def void():
+        return Type('void')
 
     @staticmethod
     def create(typename: str):
@@ -29,22 +46,20 @@ class Type(IntEnum):
             raise ValueError(f'typename уже типа ({typename.name})')
 
         if typename == "float":
-            return Type.FLOAT
+            return Type.float()
         elif typename == "int":
-            return Type.INT
+            return Type.int()
         elif typename == "bool":
-            return Type.BOOL
+            return Type.bool()
         elif typename == "string":
-            return Type.STRING
+            return Type.string
         elif typename == "void":
-            return Type.VOID
+            return Type.void
         else:
-            raise SemanticError(f'Неизвестный тип {typename}')
+            return Type(typename)
 
-
-def safe_type_name(type: Type | None) -> str:
-    return type.name if type is not None else 'unknown'
-
+    def __hash__(self):
+        return hash(self.name)
 
 
 class SemanticError(Exception):
@@ -92,9 +107,10 @@ class Symbol:
 
 
 class SubprogramSymbol(Symbol):
-    def __init__(self, name, parameters: list[Type], return_type: Type):
+    def __init__(self, name, parameters: list[Type], return_type: Type, template_args: list[Type]):
         super().__init__(name, return_type)
         self.parameters: list[Type] = parameters
+        self.template_args: list[Type] = template_args
         self.local_scope = SymbolTable()
 
     def __str__(self):
@@ -106,8 +122,11 @@ class SubprogramSymbol(Symbol):
     def __params_str(self):
         return ", ".join([type.name for type in self.parameters])
 
+    def __template_args_str(self):
+        return ", ".join([type.name for type in self.template_args])
+
     def __key(self):
-        return (self.name, self.type, self.__params_str())
+        return (self.name, self.type, self.__params_str(), self.__template_args_str())
 
     def __hash__(self):
         return hash(self.__key())
@@ -164,11 +183,11 @@ class SymbolTable:
 class TypeChecker:
     @staticmethod
     def is_numeric_type(type: Type) -> bool:
-        return type in [Type.FLOAT, Type.INT]
+        return type in [Type.float(), Type.int()]
 
     @staticmethod
     def is_boolean_type(type: Type) -> bool:
-        return type in [Type.BOOL]
+        return type in [Type.bool()]
 
     @staticmethod
     def get_expression_type(expression_ctx, visitor) -> Type:
@@ -181,16 +200,12 @@ class TypeChecker:
         if from_type is None or to_type is None:
             return False
 
-        if to_type == Type.ANY:
-            return True
-
         can_cast = {
-            Type.BOOL: [],
-            Type.STRING: [],
-            Type.VOID: [],
-            Type.INT: [Type.FLOAT],
-            Type.FLOAT: [Type.INT],
-            Type.ANY: [Type.INT, Type.FLOAT, Type.BOOL],
+            Type.bool(): [],
+            Type.string: [],
+            Type.void: [],
+            Type.int(): [Type.float()],
+            Type.float(): [Type.int()],
         }
 
         if from_type == to_type:
@@ -209,19 +224,19 @@ class TypeChecker:
             if not (TypeChecker.is_numeric_type(left_type) and TypeChecker.is_numeric_type(right_type)):
                 raise SemanticError(f"Операция '{operator}' применима только к числовым типам. Получены типы {left_type.name}, {right_type.name}")
             # Если хотя бы один операнд float - результат float
-            if Type.FLOAT in [left_type, right_type]:
-                return Type.FLOAT
-            return Type.INT
+            if Type.float() in [left_type, right_type]:
+                return Type.float()
+            return Type.int()
 
         elif operator in comparison_ops:
             if left_type != right_type and not TypeChecker.can_cast(left_type, right_type):
                 raise SemanticError(f"Несовместимые типы для сравнения: {left_type} и {right_type}")
-            return Type.BOOL
+            return Type.bool()
 
         elif operator in logical_ops:
             if not (TypeChecker.is_boolean_type(left_type) and TypeChecker.is_boolean_type(right_type)):
                 raise SemanticError(f"Логические операции применимы только к boolean типам. Получены типы {left_type}, {right_type}")
-            return Type.BOOL
+            return Type.bool()
 
         raise SemanticError(f"Неизвестный оператор: {operator}")
 
@@ -234,22 +249,22 @@ class SemanticAnalyzer(MathLangVisitor):
         self.errors = []
         self.warnings = []
 
-        self.__write_subprogram = SubprogramSymbol(name='write', return_type=Type.VOID, parameters=[Type.ANY])
+        self.__write_subprogram = SubprogramSymbol(name='write', return_type=Type.void, parameters=[Type('T')], template_args=[Type('T')])
 
         self.__default_subprograms = [
             #tan, asin, acos, atan
-            SubprogramSymbol(name='abs', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='log', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='ln', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='sin', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='cos', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='tg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='atg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='ctg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='actg', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='asin', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='acos', return_type=Type.FLOAT, parameters=[Type.FLOAT]),
-            SubprogramSymbol(name='read', return_type=Type.ANY, parameters=[]),
+            SubprogramSymbol(name='abs', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='log', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='ln', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='sin', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='cos', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='tg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='atg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='ctg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='actg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='asin', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='acos', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
+            SubprogramSymbol(name='read', return_type=Type('T'), parameters=[], template_args=[Type('T')]),
             self.__write_subprogram
         ]
 
@@ -272,7 +287,8 @@ class SemanticAnalyzer(MathLangVisitor):
             for param in param_symbols:
                 parameters_symbols.append(param)
 
-        subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.VOID, parameters=[param.type for param in parameters_symbols])
+        # todo templ args
+        subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void, parameters=[param.type for param in parameters_symbols], template_args=[])
 
         try:
             self.global_scope.add_symbol(subprogram_symbol)
@@ -336,7 +352,7 @@ class SemanticAnalyzer(MathLangVisitor):
             # print('GLOBAL' if not local else '', safe_type_name(left_type), var_name, safe_type_name(init_type), init_expression.getText() if init_expression else None)
 
             if init_type and not TypeChecker.can_cast(init_type, left_type):
-                self.add_error(f"Нельзя присвоить {safe_type_name(init_type)} переменной типа {safe_type_name(left_type)}", decl_ctx)
+                self.add_error(f"Нельзя присвоить {init_type} переменной типа {left_type}", decl_ctx)
 
             symbol = Symbol(var_name, left_type)
             declarations.append(symbol)
@@ -346,7 +362,7 @@ class SemanticAnalyzer(MathLangVisitor):
     # todo
     def visitAssignment(self, ctx: MathLangParser.AssignmentContext):
         def add_assignment_error(expected: Type, actual: Type):
-            self.add_error(f'Невозможно присвоить значение типа {safe_type_name(actual)} к переменной типа {safe_type_name(expected)}', ctx)
+            self.add_error(f'Невозможно присвоить значение типа {actual} к переменной типа {expected}', ctx)
 
         left_side = ctx.declaration_list() or ctx.id_list()
         right_expressions = self.visitExpression_list(ctx.expression_list())
@@ -432,7 +448,7 @@ class SemanticAnalyzer(MathLangVisitor):
             expr_type = self.visit(ctx.expression(0))
 
             if operator == '-' and not TypeChecker.is_numeric_type(expr_type) and not TypeChecker.is_boolean_type(expr_type):
-                self.add_error(f"Унарная операция применима только к числовым и булевым типам. Получен тип {safe_type_name(expr_type)}", ctx)
+                self.add_error(f"Унарная операция применима только к числовым и булевым типам. Получен тип {expr_type}", ctx)
                 return None
 
             return expr_type
@@ -502,12 +518,12 @@ class SemanticAnalyzer(MathLangVisitor):
         expr_type = self.visitExpression(ctx.expression())
 
         if not TypeChecker.can_cast(expr_type, target_type):
-            self.add_error(f"Невозможно преобразовать {safe_type_name(expr_type)} в {safe_type_name(target_type)}", ctx)
+            self.add_error(f"Невозможно преобразовать {expr_type} в {target_type}", ctx)
             return None
 
         return target_type
 
-    def visitCall(self, ctx: MathLangParser.CallContext, expected_type: Type = Type.VOID) -> Type | None:
+    def visitCall(self, ctx: MathLangParser.CallContext, expected_type: Type = Type.void) -> Type | None:
         sub_name = ctx.ID().getText()
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
 
@@ -541,7 +557,7 @@ class SemanticAnalyzer(MathLangVisitor):
             if sub_name == self.__write_subprogram.name:
                 return self.__write_subprogram.type
 
-            params_string = ', '.join([safe_type_name(type) for type in sub_parameters])
+            params_string = ', '.join([type.name for type in sub_parameters])
             self.add_error(f"Не найдено подходящей перегрузки {sub_name} с параметрами {params_string}", ctx)
             return None
 
@@ -567,7 +583,7 @@ class SemanticAnalyzer(MathLangVisitor):
         condition_type = self.visit(ctx.expression())
 
         if not TypeChecker.is_boolean_type(condition_type):
-            self.add_error(f"Ожидался тип {Type.BOOL.name} в if. Получен {safe_type_name(condition_type)}", ctx.expression())
+            self.add_error(f"Ожидался тип {Type.bool()} в if. Получен {condition_type}", ctx.expression())
 
         # Проверяем then блок
         self.visitBlock(ctx.block(0))
@@ -599,7 +615,7 @@ class SemanticAnalyzer(MathLangVisitor):
         condition_type = self.visit(ctx.expression())
 
         if not TypeChecker.is_boolean_type(condition_type):
-            self.add_error(f"Ожидался тип {Type.BOOL.name} в while. Получен {safe_type_name(condition_type)}", ctx.expression())
+            self.add_error(f"Ожидался тип {Type.bool()} в while. Получен {condition_type}", ctx.expression())
 
         self.visitBlock(ctx.block())
 
@@ -608,7 +624,7 @@ class SemanticAnalyzer(MathLangVisitor):
         condition_type = self.visit(ctx.expression())
 
         if not TypeChecker.is_boolean_type(condition_type):
-            self.add_error(f"Ожидался тип {Type.BOOL.name} в until. Получен {safe_type_name(condition_type)}", ctx.expression())
+            self.add_error(f"Ожидался тип {Type.bool()} в until. Получен {condition_type}", ctx.expression())
 
         self.visitBlock(ctx.block())
 
@@ -618,7 +634,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
         condition_type = self.visit(ctx.expression())
         if not TypeChecker.is_boolean_type(condition_type):
-            self.add_error(f"Ожидался тип {Type.BOOL.name} в for. Получен {safe_type_name(condition_type)}", ctx.expression())
+            self.add_error(f"Ожидался тип {Type.bool()} в for. Получен {condition_type}", ctx.expression())
 
         self.visit(ctx.statement())
 
