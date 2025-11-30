@@ -13,11 +13,12 @@ from models.types import Type
 from syntax_analyzer import CustomErrorListener
 
 
+# todo check for unused template arguments
 class SemanticAnalyzer(MathLangVisitor):
     def __init__(self):
         self.global_scope = SymbolTable()
         self.current_scope = self.global_scope
-        self.current_subprogram = None
+        self.current_subprogram: SubprogramSymbol | None = None
         self.in_loop = False
         self.errors = []
 
@@ -86,9 +87,10 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_scope = previous_scope
         self.current_subprogram = previous_subprogram
 
-    def visitCall(self, ctx: MathLangParser.CallContext, expected_type: Type | None = None) -> Type | None:
+    def visitCall(self, ctx: MathLangParser.CallContext) -> Type | None:
         sub_name = ctx.ID().getText()
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
+        sub_templated_arguments = self.visitTemplate(ctx.template()) if ctx.template() is not None else []
 
         defined_subprograms = self.global_scope.lookup(sub_name)
         if defined_subprograms is None:
@@ -103,29 +105,31 @@ class SemanticAnalyzer(MathLangVisitor):
             if len(defined_subprogram.parameters) != len(sub_parameters):
                 continue
 
+            # if len(defined_subprogram.template_args) != len(sub_template_arguments):
+            #     continue
+
+            templated_types_mapping: dict[Type, Type] = {}
             params_ok = True
-            for (param_called, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
-                if not TypeChecker.can_cast(param_called, param_actual):
-                    params_ok = False
-                    break
+            # todo try to make type mapping and bind
+            for (param_expected, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
+                if TypeChecker.is_templated_argument(param_expected):
+                    templated_types_mapping[param_expected] = param_actual
+                else:
+                    if param_expected != param_actual:
+                        params_ok = False
+                        break
 
             if not params_ok:
                 continue
 
-            found_overload = defined_subprogram
+            templated_subprogram = defined_subprogram.try_bind(sub_templated_arguments, templated_types_mapping)
+            found_overload = templated_subprogram
+            print(found_overload)
             break
 
         if found_overload is None:
             self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_parameters), ctx)
             return None
-
-
-        if found_overload == self.__cast_subprogram:
-            expr_type = self.visitExpression_list(ctx.expression_list())[0]
-
-            if not TypeChecker.can_cast(expr_type, expected_type):
-                self.add_error(ErrorFormatter.invalid_cast(from_type=expr_type, to_type=expected_type), ctx)
-                return None
 
         return found_overload.type
 
@@ -233,6 +237,21 @@ class SemanticAnalyzer(MathLangVisitor):
             if left_type is None or right_type is None:
                 return None
 
+            # Handle templated args
+            if self.current_subprogram and (TypeChecker.is_templated_argument(left_type) or TypeChecker.is_templated_argument(right_type)):
+                def check_valid_types(mapping: dict[Type, Type]) -> bool:
+                    # Types must be same so check for only one templated arg
+                    if not TypeChecker.is_templated_argument(left_type):
+                        return mapping.get(right_type, None) == left_type
+                    if not TypeChecker.is_templated_argument(right_type):
+                        return mapping.get(left_type, None) == right_type
+                    else:
+                        # Both types are same
+                        return (mapping.__contains__(left_type) and mapping.__contains__(right_type)
+                                and mapping.get(left_type, None) == mapping.get(right_type, None))
+
+                self.current_subprogram.requirements.append(lambda type_mapping: check_valid_types(type_mapping))
+
             try:
                 result_type = TypeChecker.get_binary_operation_type(left_type, right_type, operator)
                 return result_type
@@ -243,7 +262,14 @@ class SemanticAnalyzer(MathLangVisitor):
         def visit_unary_expression(ctx, operator: str) -> Type | None:
             expr_type = self.visit(ctx.expression(0))
 
-            if operator == '-' and not TypeChecker.is_numeric_type(expr_type) and not TypeChecker.is_boolean_type(expr_type):
+            def valid_type(type: Type | None) -> bool:
+                return TypeChecker.is_numeric_type(type) or TypeChecker.is_boolean_type(type)
+
+            # Handle templated args
+            if self.current_subprogram and TypeChecker.is_templated_argument(expr_type):
+                self.current_subprogram.requirements.append(lambda type_mapping: valid_type(type_mapping.get(expr_type, None)))
+
+            if operator == '-' and not valid_type(expr_type):
                 self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type), ctx)
                 return None
 
@@ -378,6 +404,7 @@ def main():
         print("No file specified. Using default one.")
 
     source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
+    # source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
 
     try:
         input_stream = FileStream(source_file, encoding='utf-8')

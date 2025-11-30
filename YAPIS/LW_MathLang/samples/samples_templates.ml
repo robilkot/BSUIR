@@ -17,17 +17,16 @@ sub double_template:(K, V)(K key, V value)
 // Variables of templated types may be created in subprogram
 sub inner_initialization:(T)(T result)
 {
-    T intermediate_result = cast:(float, int)(read:(float)())
+    T intermediate_result = cast:(float, T)(read:(float)())
     result = intermediate_result * 2
 }
 
 sub call_to_templated_sub:(T)(T val)
 {
-    // Suitable overload will be found without explicit statement of template argument
-    pretty_write(val)
+    pretty_write:(T)(val)
 
     // Providing template argument explicitly is allowed in call statement
-    int i_val = cast(val)
+    int i_val = cast:(T, int)(val)
     pretty_write:(int)(val)
 }
 

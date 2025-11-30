@@ -21,9 +21,9 @@ int counter = 0
 float cathetusA, float cathetusB = 0.0
 
 write("Enter the first cathetus: ")
-cathetusA = read()
+cathetusA = read:(float)()
 write("Enter the second cathetus: ")
-cathetusB = read()
+cathetusB = read:(float)()
 
 // Compound assignment
 float area, float hypotenuse = 0.0

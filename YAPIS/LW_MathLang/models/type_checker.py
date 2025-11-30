@@ -5,18 +5,16 @@ from models.types import Type
 
 class TypeChecker:
     @staticmethod
-    def is_numeric_type(type: Type) -> bool:
+    def is_templated_argument(type: Type | None) -> bool:
+        return type not in [Type.float(), Type.int(), Type.bool()]
+
+    @staticmethod
+    def is_numeric_type(type: Type | None) -> bool:
         return type in [Type.float(), Type.int()]
 
     @staticmethod
-    def is_boolean_type(type: Type) -> bool:
+    def is_boolean_type(type: Type | None) -> bool:
         return type in [Type.bool()]
-
-    @staticmethod
-    def get_expression_type(expression_ctx, visitor) -> Type:
-        if hasattr(expression_ctx, 'type'):
-            return Type.create(expression_ctx.type)
-        return visitor.visit(expression_ctx)
 
     @staticmethod
     def can_cast(from_type: Type, to_type: Type) -> bool:
@@ -42,6 +40,10 @@ class TypeChecker:
         numeric_ops = ['+', '-', '*', '/', '%', '^']
         comparison_ops = ['==', '!=', '<', '>', '<=', '>=']
         logical_ops = ['and', 'or']
+
+        # Assuming binary operations only allowed on same types
+        if TypeChecker.is_templated_argument(left_type) or TypeChecker.is_numeric_type(right_type):
+            return left_type
 
         if operator in numeric_ops:
             if not (TypeChecker.is_numeric_type(left_type) and TypeChecker.is_numeric_type(right_type)):

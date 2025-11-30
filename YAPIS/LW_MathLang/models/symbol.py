@@ -1,3 +1,5 @@
+from typing import Callable
+
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.types import Type
@@ -34,12 +36,13 @@ class SubprogramSymbol(Symbol):
         self.parameters: list[Type] = parameters
         self.template_args: list[Type] = template_args
         self.local_scope = SymbolTable()
+        self.requirements: list[Callable[[dict[Type, Type]], bool]] = []  # predicates on type_mapping to decide if binding is possible
 
     def __str__(self):
         if len(self.template_args) == 0:
-            return f"sub {self.name}({self.__params_str()})"
+            return f"sub {self.name}({self.__params_str()}) -> {self.type}"
         else:
-            return f"sub {self.name}<{self.__template_args_str()}>({self.__params_str()})"
+            return f"sub {self.name}<{self.__template_args_str()}>({self.__params_str()}) -> {self.type}"
 
     def __repr__(self):
         return self.__str__()
@@ -55,6 +58,21 @@ class SubprogramSymbol(Symbol):
 
     def __hash__(self):
         return hash(self.__key())
+
+    def try_bind(self, provided_parameters: list[Type], inferred_type_mapping: dict[Type, Type]) -> "SubprogramSymbol | None":
+        if not all([req(inferred_type_mapping) for req in self.requirements]):
+            return None
+        else:
+            for provided, expected in zip(provided_parameters, self.template_args):
+                inferred_type_mapping[expected] = provided
+
+            substituted_template_args = [inferred_type_mapping.get(type, type) for type in self.template_args]
+            return SubprogramSymbol(
+                name=self.name,
+                parameters=[inferred_type_mapping.get(param, param) for param in self.parameters],
+                template_args=substituted_template_args,
+                return_type=inferred_type_mapping.get(self.type, self.type)
+            )
 
 
 class SymbolTable:

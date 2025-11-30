@@ -1,4 +1,4 @@
-sub test<T, S>(float a)
+sub test:(T, S)(float a)
 {
     test(a)
 }

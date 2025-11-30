@@ -56,7 +56,7 @@ write(num1)
 write(", num2 = ")
 write(num2)
 
-float a = 1.0, float b = -5.0, float c = 6.0
+float a, float b, float c = 1.0, -5.0, 6.0
 float root1, float root2 = 0.0, 0.0
 float test, float test2 = 0.5, 0.5
 test, test2 = 0.2, 0.7
