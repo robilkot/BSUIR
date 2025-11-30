@@ -11,8 +11,8 @@ class ErrorFormatter:
         return 'Количество выражений должно совпадать с количеством переменных или быть равным 1'
 
     @staticmethod
-    def redefined_symbol(symbol_id: str):
-        return f"Символ {symbol_id} уже определен в этой области видимости"
+    def redefined_symbol(symbol):
+        return f"Символ {symbol} уже определен в этой области видимости"
 
     @staticmethod
     def undefined_symbol(symbol_id: str):

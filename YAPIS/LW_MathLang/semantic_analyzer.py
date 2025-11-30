@@ -97,7 +97,8 @@ class SemanticAnalyzer(MathLangVisitor):
             self.add_error(ErrorFormatter.undefined_subprogram(sub_name), ctx)
             return None
 
-        found_overload = None
+        overload_candidate_subprograms: list[(SubprogramSymbol, dict[Type, Type])] = []
+
         for defined_subprogram in defined_subprograms:
             if not isinstance(defined_subprogram, SubprogramSymbol):
                 continue
@@ -105,12 +106,8 @@ class SemanticAnalyzer(MathLangVisitor):
             if len(defined_subprogram.parameters) != len(sub_parameters):
                 continue
 
-            # if len(defined_subprogram.template_args) != len(sub_template_arguments):
-            #     continue
-
             templated_types_mapping: dict[Type, Type] = {}
             params_ok = True
-            # todo try to make type mapping and bind
             for (param_expected, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
                 if TypeChecker.is_templated_argument(param_expected):
                     templated_types_mapping[param_expected] = param_actual
@@ -119,13 +116,24 @@ class SemanticAnalyzer(MathLangVisitor):
                         params_ok = False
                         break
 
-            if not params_ok:
-                continue
+            if params_ok:
+                # = Is templated subprogram
+                if len(templated_types_mapping) > 0:
+                    overload_candidate_subprograms.append((defined_subprogram, templated_types_mapping))
+                else:
+                    overload_candidate_subprograms.insert(0, (defined_subprogram, templated_types_mapping))
 
-            templated_subprogram = defined_subprogram.try_bind(sub_templated_arguments, templated_types_mapping)
-            found_overload = templated_subprogram
-            print(found_overload)
-            break
+        # Try to find suitable with higher priority for non-templated subs
+        found_overload = None
+        for subprogram, type_mapping in overload_candidate_subprograms:
+            # print("Before binding:", subprogram)
+            templated_subprogram = subprogram.try_bind(sub_templated_arguments, type_mapping)
+            if templated_subprogram is not None:
+                found_overload = templated_subprogram
+
+                # print("After binding: ", found_overload)
+                self.global_scope.add_symbol(found_overload, exist_ok=True)
+                break
 
         if found_overload is None:
             self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_parameters), ctx)
@@ -403,7 +411,7 @@ def main():
     if len(sys.argv) != 2:
         print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample7.ml'
     # source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
 
     try:

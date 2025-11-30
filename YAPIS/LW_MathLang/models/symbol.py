@@ -89,9 +89,12 @@ class SymbolTable:
     def __repr__(self):
         return self.__str__()
 
-    def add_symbol(self, symbol: Symbol):
+    def add_symbol(self, symbol: Symbol, exist_ok: bool = False):
         if symbol in self.symbols:
-            raise SemanticError(ErrorFormatter.redefined_symbol(symbol.name))
+            if exist_ok:
+                return
+            else:
+                raise SemanticError(ErrorFormatter.redefined_symbol(symbol))
 
         if self.parent is not None:
             if self.parent.has_defined(symbol):
