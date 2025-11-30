@@ -71,12 +71,12 @@ class MathLangListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by MathLangParser#variable_declaration.
-    def enterVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
+    # Enter a parse tree produced by MathLangParser#global_variable_declaration.
+    def enterGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext):
         pass
 
-    # Exit a parse tree produced by MathLangParser#variable_declaration.
-    def exitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
+    # Exit a parse tree produced by MathLangParser#global_variable_declaration.
+    def exitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext):
         pass
 
 

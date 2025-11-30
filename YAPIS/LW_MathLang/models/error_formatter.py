@@ -7,24 +7,32 @@ class ErrorFormatter:
         return f'Нельзя присвоить значение типа {from_type} переменной типа {to_type}'
 
     @staticmethod
-    def unmatched_variables_and_expressions():
-        return 'Количество переменных и выражений в присваивании не совпадает'
-
-    @staticmethod
     def unmatched_number_of_expressions_or_not_single_expression():
         return 'Количество выражений должно совпадать с количеством переменных или быть равным 1'
 
     @staticmethod
-    def undefined_symbol(id: str):
-        return f'Символ {id} не определен'
+    def redefined_symbol(symbol_id: str):
+        return f"Символ {symbol_id} уже определен в этой области видимости"
 
     @staticmethod
-    def undefined_subprogram(id: str):
-        return f'Подпрограмма {id} не определена'
+    def undefined_symbol(symbol_id: str):
+        return f'Символ {symbol_id} не определен'
+
+    @staticmethod
+    def undefined_global_symbol(symbol_id: str):
+        return f'Символ {symbol_id} не определен в глобальной области видимости'
+
+    @staticmethod
+    def undefined_subprogram(subprogram_id: str):
+        return f'Подпрограмма {subprogram_id} не определена'
+
+    @staticmethod
+    def uninitialized_global_symbol(symbol_id: str):
+        return f'Глобальная переменная {symbol_id} вне подпрограммы не инициализирована'
 
     @staticmethod
     def no_overload_found(sub_name: str, sub_parameters: list[Type]):
-        params_string = ', '.join([type.name for type in sub_parameters if type is not None])
+        params_string = ', '.join([param.name for param in sub_parameters if param is not None])
         return f"Не найдено перегрузки {sub_name} с параметрами {params_string}"
 
     @staticmethod
@@ -38,6 +46,10 @@ class ErrorFormatter:
     @staticmethod
     def return_outside_of_subprogram():
         return "Оператор return может использоваться только внутри подпрограмм"
+
+    @staticmethod
+    def flow_control_operator_outside_of_loop():
+        return "Операторы continue и break могут использоваться только внутри циклов"
 
     @staticmethod
     def unmatched_condition_type(actual_type: Type):

@@ -1,7 +1,3 @@
-"""
-Синтаксический анализатор для пользовательского языка программирования
-"""
-
 import sys
 import os
 from antlr4 import *
@@ -37,23 +33,18 @@ class SyntaxAnalyzer:
         self.error_listener = CustomErrorListener()
 
     def analyze_file(self, file_path):
-        """Анализирует файл на соответствие грамматике"""
-
         if not os.path.exists(file_path):
             print(f"File not found: {file_path}")
             return False
 
-        # Чтение входного файла
         input_stream = FileStream(file_path, encoding='utf-8')
 
-        # Лексический анализ
         lexer = MathLangLexer(input_stream)
         lexer.removeErrorListeners()
         lexer.addErrorListener(self.error_listener)
 
         tokens = CommonTokenStream(lexer)
 
-        # Синтаксический анализ
         parser = MathLangParser(tokens)
         parser.removeErrorListeners()
         parser.addErrorListener(self.error_listener)
@@ -76,12 +67,10 @@ class SyntaxAnalyzer:
 
 
 def main():
-    """Основная функция программы"""
-
     if len(sys.argv) != 2:
         print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample6.ml'
+    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample7.ml'
 
     # Анализируем файл
     analyzer = SyntaxAnalyzer()

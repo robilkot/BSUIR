@@ -7,13 +7,13 @@ program
     ;
 
 statement
-    : control_flow_operator | block | branching | loop | assignment | call ;
+    : control_flow_operator | block | branching | loop | assignment | global_variable_declaration | call ;
 
 subprogram
     : SUB ID template? '(' declaration_list? ')' block ;
 
 template
-    : '<' type_specifier_list '>' ;
+    : ':(' type_specifier_list ')' ;
 
 branching
     : IF '(' expression ')' block (ELSE block)? ;
@@ -22,12 +22,10 @@ assignment
     : (declaration_list | id_list) assignment_operator expression_list ;
 
 declaration_list
-    : scope_modifier? type_specifier variable_declaration (',' type_specifier  variable_declaration)*
-    ;
+    : scope_modifier? type_specifier ID (',' type_specifier  ID)* ;
 
-variable_declaration
-    : ID (simple_assignment_operator expression)?
-    ;
+global_variable_declaration
+    : scope_modifier type_specifier ID ;
 
 call
     : ID template? '(' expression_list? ')' ;
@@ -49,9 +47,9 @@ id_list : (ID ',')* ID ;
 
 expression_list : (expression ',')* expression ;
 expression
-    : ID
+    : call
+    | ID
     | literal
-    | call
     | '(' expression ')'
     | NOT expression
     | MINUS expression
@@ -86,7 +84,7 @@ literal
     | STRING ;
 
 type_specifier
-    : FLOAT_T | INT_T | BOOL_T | ID ;
+    : ID ;
 
 type_specifier_list
     : type_specifier (',' type_specifier)* ;
@@ -130,9 +128,6 @@ ELSE : 'else' ;
 
 SUB : 'sub' ;
 DSLASH : SLASH SLASH ;
-FLOAT_T : 'float' ;
-INT_T : 'int' ;
-BOOL_T : 'bool' ;
 
 INT : '-'?[0-9]+ ;
 FLOAT : INT '.' INT? | INT 'e' INT ;

@@ -44,8 +44,8 @@ class MathLangVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by MathLangParser#variable_declaration.
-    def visitVariable_declaration(self, ctx:MathLangParser.Variable_declarationContext):
+    # Visit a parse tree produced by MathLangParser#global_variable_declaration.
+    def visitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext):
         return self.visitChildren(ctx)
 
 

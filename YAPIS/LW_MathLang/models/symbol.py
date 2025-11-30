@@ -1,22 +1,22 @@
+from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.types import Type
 
 
 class Symbol:
-    """Класс для представления символа в таблице символов"""
-
-    def __init__(self, name, type: Type):
+    def __init__(self, name, type: Type, is_global: bool = False):
         self.name = name
         self.type: Type = type
+        self.is_global = is_global
 
     def __str__(self):
-        return f"{self.type.name} {self.name}"
+        return f"{'global ' if self.is_global else ''}{self.type.name} {self.name}"
 
     def __repr__(self):
         return self.__str__()
 
     def __key(self):
-        return (self.name, self.type)
+        return self.is_global, self.name, self.type
 
     def __hash__(self):
         return hash(self.__key())
@@ -27,6 +27,7 @@ class Symbol:
         return NotImplemented
 
 
+# todo check for global symbols definition on call
 class SubprogramSymbol(Symbol):
     def __init__(self, name, parameters: list[Type], return_type: Type, template_args: list[Type]):
         super().__init__(name, return_type)
@@ -35,7 +36,10 @@ class SubprogramSymbol(Symbol):
         self.local_scope = SymbolTable()
 
     def __str__(self):
-        return f"sub {self.name}({self.__params_str()})"
+        if len(self.template_args) == 0:
+            return f"sub {self.name}({self.__params_str()})"
+        else:
+            return f"sub {self.name}<{self.__template_args_str()}>({self.__params_str()})"
 
     def __repr__(self):
         return self.__str__()
@@ -54,8 +58,6 @@ class SubprogramSymbol(Symbol):
 
 
 class SymbolTable:
-    """Таблица символов с поддержкой вложенных областей видимости"""
-
     def __init__(self, parent=None):
         self.symbols = set()
         self.symbols_dict: dict[str, list[Symbol]] = {}
@@ -70,14 +72,13 @@ class SymbolTable:
         return self.__str__()
 
     def add_symbol(self, symbol: Symbol):
-        # todo варнинг если объявлен в паренте но не локально
         if symbol in self.symbols:
-            raise SemanticError(f"'{symbol}' уже объявлен в этой области видимости")
+            raise SemanticError(ErrorFormatter.redefined_symbol(symbol.name))
 
         if self.parent is not None:
             if self.parent.has_defined(symbol):
                 msg = f"'{symbol}' уже объявлен в верхней области видимости"
-                print(msg)
+                print(msg) # Своего рода warning
 
         self.symbols.add(symbol)
         existing_symbols = self.symbols_dict.get(symbol.name, [])

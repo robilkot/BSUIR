@@ -43,7 +43,7 @@ write(", Hypotenuse: ")
 write(hypotenuse)
 
 // Type conversion
-int roundedHypotenuse = cast(hypotenuse)
+int roundedHypotenuse = cast:(float, int)(hypotenuse)
 write("Rounded hypotenuse: ")
 write(roundedHypotenuse)
 
