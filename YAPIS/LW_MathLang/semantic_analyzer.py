@@ -14,6 +14,7 @@ from syntax_analyzer import CustomErrorListener
 
 
 # todo check for unused template arguments
+# todo check for templated sub before using explicit implementation
 class SemanticAnalyzer(MathLangVisitor):
     def __init__(self):
         self.global_scope = SymbolTable()
@@ -23,6 +24,10 @@ class SemanticAnalyzer(MathLangVisitor):
         self.errors = []
 
         self.__cast_subprogram = SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')])
+        self.__cast_subprogram.requirements.append(lambda mapping: TypeChecker.can_cast(
+            from_type=mapping.get(Type('Tfrom'), None),
+            to_type=mapping.get(Type('Tto'), None)
+        ))
 
         self.__default_subprograms = [
             self.__cast_subprogram,
@@ -126,12 +131,12 @@ class SemanticAnalyzer(MathLangVisitor):
         # Try to find suitable with higher priority for non-templated subs
         found_overload = None
         for subprogram, type_mapping in overload_candidate_subprograms:
-            # print("Before binding:", subprogram)
+            print("Before binding:", subprogram)
             templated_subprogram = subprogram.try_bind(sub_templated_arguments, type_mapping)
             if templated_subprogram is not None:
                 found_overload = templated_subprogram
 
-                # print("After binding: ", found_overload)
+                print("After binding: ", found_overload)
                 self.global_scope.add_symbol(found_overload, exist_ok=True)
                 break
 
@@ -408,10 +413,13 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("No file specified. Using default one.")
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/sample7.ml'
+    default_file = 'samples/sample7.ml'
+
+    if len(sys.argv) != 2:
+        print(f"No file specified. Using {default_file}.")
+
+    source_file = sys.argv[1] if len(sys.argv) > 1 else default_file
     # source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
 
     try:

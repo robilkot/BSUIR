@@ -30,6 +30,7 @@ class Symbol:
 
 
 # todo check for global symbols definition on call
+# todo check for identical subprograms with different teamplte arg names
 class SubprogramSymbol(Symbol):
     def __init__(self, name, parameters: list[Type], return_type: Type, template_args: list[Type]):
         super().__init__(name, return_type)
