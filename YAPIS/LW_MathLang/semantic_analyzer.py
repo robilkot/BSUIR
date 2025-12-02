@@ -21,17 +21,15 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_scope = self.global_scope
         self.current_subprogram: SubprogramSymbol | None = None
         self.in_loop = False
+        self.type_mapping: dict[Type, Type] | None = None
+        self.binding_result = True
+        self.subprogram_ctx: dict[SubprogramSymbol, MathLangParser.SubprogramContext] = {}
+        self.defining_subprogram = True
         self.errors = []
         self.wat_code = []
 
-        self.__cast_subprogram = SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')])
-        self.__cast_subprogram.requirements.append(lambda mapping: TypeChecker.can_cast(
-            from_type=mapping.get(Type('Tfrom'), None),
-            to_type=mapping.get(Type('Tto'), None)
-        ))
-
         self.__default_subprograms = [
-            self.__cast_subprogram,
+            SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')]),
             SubprogramSymbol(name='write', return_type=Type.void(), parameters=[Type('T')], template_args=[Type('T')]),
             SubprogramSymbol(name='read', return_type=Type('T'), parameters=[], template_args=[Type('T')]),
             SubprogramSymbol(name='abs', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
@@ -49,6 +47,10 @@ class SemanticAnalyzer(MathLangVisitor):
 
         for sub in self.__default_subprograms:
             self.global_scope.add_symbol(sub)
+
+    @property
+    def is_binding(self) -> bool:
+        return self.type_mapping is not None
 
     def add_error(self, message, ctx=None):
         line = ctx.start.line if ctx else None
@@ -89,30 +91,50 @@ class SemanticAnalyzer(MathLangVisitor):
         self.add_wat("      (br $write_loop))")
         self.add_wat("    (end))")
 
-        self.visitChildren(ctx)
+        for sub in ctx.subprogram():
+            self.visitSubprogram(sub)
+
+        self.defining_subprogram = False
+
+        for statement in ctx.statement():
+            self.visit(statement)
 
         self.add_wat("  (func $main")
         self.add_wat("    (call $program_start))")
         self.add_wat("  (export \"main\" (func $main))")
         self.add_wat(")")
 
+    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> bool | None:
+        self.binding_result = True
 
-    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext):
         sub_name = ctx.ID().getText()
 
         parameters_symbols: list[Symbol] = []
         if ctx.declaration_list():
-            parameters_symbols += self.visitDeclaration_list(ctx.declaration_list())
+            params_symbols = self.visitDeclaration_list(ctx.declaration_list())
+
+            # map params types
+            if self.is_binding:
+                for symbol in params_symbols:
+                    parameters_symbols.append(Symbol(name=symbol.name, type=self.type_mapping.get(symbol.type, symbol.type), is_global=symbol.is_global))
+            else:
+                parameters_symbols += params_symbols
 
         template_args: list[Type] = []
         if ctx.template():
             template_args += self.visitTemplate(ctx.template())
 
+        # map template args
+        template_args = [self.type_mapping[type] for type in template_args] if self.is_binding else template_args
+
         subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=[param.type for param in parameters_symbols], template_args=template_args)
         try:
             self.global_scope.add_symbol(subprogram_symbol)
+            self.subprogram_ctx[subprogram_symbol] = ctx
         except SemanticError as e:
-            self.add_error(e.message, ctx)
+            self.binding_result = False
+            if not self.is_binding:
+                self.add_error(e.message, ctx)
 
         # Сохраняем текущий контекст и создаем новую область видимости
         previous_scope = self.current_scope
@@ -126,25 +148,31 @@ class SemanticAnalyzer(MathLangVisitor):
             try:
                 self.current_scope.add_symbol(param_symbol)
             except SemanticError as e:
-                self.add_error(e.message, ctx)
-
-        wat_params = " ".join([f'(param ${p.name} {p.type.to_wat()})' for p in parameters_symbols])
-        self.add_wat(f'  (func ${sub_name} {wat_params}')
-        self.add_wat('    (local $temp i32)')
+                self.binding_result = False
+                if not self.is_binding:
+                    self.add_error(e.message, ctx)
 
         self.visitBlock(ctx.block())
-
-        self.add_wat("    (return)")
-        self.add_wat("  )")
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
         self.current_subprogram = previous_subprogram
 
+        if self.is_binding:
+            if not self.binding_result:
+                self.global_scope.remove_symbol(subprogram_symbol)
+
+            return self.binding_result
+
     def visitCall(self, ctx: MathLangParser.CallContext) -> Type | None:
         sub_name = ctx.ID().getText()
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
         sub_templated_arguments = self.visitTemplate(ctx.template()) if ctx.template() is not None else []
+
+        if self.is_binding:
+            # print(sub_templated_arguments)
+            sub_templated_arguments = [self.type_mapping.get(type, type) for type in sub_templated_arguments]
+            # print(sub_templated_arguments)
 
         defined_subprograms = self.global_scope.lookup(sub_name)
         if defined_subprograms is None:
@@ -178,22 +206,40 @@ class SemanticAnalyzer(MathLangVisitor):
                     overload_candidate_subprograms.insert(0, (defined_subprogram, templated_types_mapping))
 
         # Try to find suitable with higher priority for non-templated subs
-        found_overload = None
-        for subprogram, type_mapping in overload_candidate_subprograms:
-            print("Before binding:", subprogram)
-            templated_subprogram = subprogram.try_bind(sub_templated_arguments, type_mapping)
-            if templated_subprogram is not None:
-                found_overload = templated_subprogram
+        can_bind = False
+        type_mapping: dict[Type, Type] | None = None
+        subprogram: SubprogramSymbol | None = None
 
-                print("After binding: ", found_overload)
-                self.global_scope.add_symbol(found_overload, exist_ok=True)
+        previous_mapping = self.type_mapping
+
+        for subprogram, type_mapping in overload_candidate_subprograms:
+            for declared, provided in zip(subprogram.template_args, sub_templated_arguments):
+                if type_mapping.get(declared, None) is None:
+                    type_mapping[declared] = provided
+
+            self.type_mapping = type_mapping
+
+            subprogram_ctx = self.subprogram_ctx.get(subprogram, None)
+            if subprogram_ctx is None:
+                # print("No ctx found for", subprogram)
+                can_bind = True
+            else:
+                can_bind = self.visitSubprogram(subprogram_ctx)
+
+            self.type_mapping = previous_mapping
+
+            if can_bind:
+                print("call to", ctx.getText(), "= bind", subprogram , "with", type_mapping)
                 break
 
-        if found_overload is None:
+        if not can_bind and not self.defining_subprogram:
             self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_parameters), ctx)
             return None
 
-        return found_overload.type
+        if type_mapping:
+            return type_mapping.get(subprogram.type, subprogram.type)
+        else:
+            return subprogram.type
 
 
     def visitTemplate(self, ctx:MathLangParser.TemplateContext) -> list[Type]:
@@ -242,7 +288,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
             for symbol, expression_type in zip(left_symbols, right_expressions):
                 if symbol is not None:
-                    if not TypeChecker.can_cast(expression_type, symbol.type):
+                    if expression_type != symbol.type:
                         add_assignment_error(symbol.type, expression_type)
 
                     if symbol.is_global:
@@ -265,11 +311,11 @@ class SemanticAnalyzer(MathLangVisitor):
                     return
 
                 for symbol, expression_type in zip(left_symbols, right_expressions):
-                    if not TypeChecker.can_cast(expression_type, symbol.type):
+                    if expression_type != symbol.type:
                         add_assignment_error(symbol.type, expression_type)
             else:
                 for symbol in left_symbols:
-                    if not TypeChecker.can_cast(right_expressions[0], symbol.type):
+                    if right_expressions[0] != symbol.type:
                         add_assignment_error(symbol.type, right_expressions[0])
         else:
             raise ValueError("Unknown type")
@@ -297,6 +343,8 @@ class SemanticAnalyzer(MathLangVisitor):
         return types
 
     def visitExpression(self, ctx: MathLangParser.ExpressionContext) -> Type | None:
+        result_type: Type | None = None
+
         def visit_binary_expression(ctx, operator: str) -> Type | None:
             left_type = self.visitExpression(ctx.expression(0))
             right_type = self.visitExpression(ctx.expression(1))
@@ -304,24 +352,8 @@ class SemanticAnalyzer(MathLangVisitor):
             if left_type is None or right_type is None:
                 return None
 
-            # Handle templated args
-            if self.current_subprogram and (TypeChecker.is_templated_argument(left_type) or TypeChecker.is_templated_argument(right_type)):
-                def check_valid_types(mapping: dict[Type, Type]) -> bool:
-                    # Types must be same so check for only one templated arg
-                    if not TypeChecker.is_templated_argument(left_type):
-                        return mapping.get(right_type, None) == left_type
-                    if not TypeChecker.is_templated_argument(right_type):
-                        return mapping.get(left_type, None) == right_type
-                    else:
-                        # Both types are same
-                        return (mapping.__contains__(left_type) and mapping.__contains__(right_type)
-                                and mapping.get(left_type, None) == mapping.get(right_type, None))
-
-                self.current_subprogram.requirements.append(lambda type_mapping: check_valid_types(type_mapping))
-
             try:
-                result_type = TypeChecker.get_binary_operation_type(left_type, right_type, operator)
-                return result_type
+                return TypeChecker.get_binary_operation_type(left_type, right_type, operator)
             except SemanticError as e:
                 self.add_error(e.message, ctx)
                 return None
@@ -331,10 +363,6 @@ class SemanticAnalyzer(MathLangVisitor):
 
             def valid_type(type: Type | None) -> bool:
                 return TypeChecker.is_numeric_type(type) or TypeChecker.is_boolean_type(type)
-
-            # Handle templated args
-            if self.current_subprogram and TypeChecker.is_templated_argument(expr_type):
-                self.current_subprogram.requirements.append(lambda type_mapping: valid_type(type_mapping.get(expr_type, None)))
 
             if operator == '-' and not valid_type(expr_type):
                 self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type), ctx)
@@ -347,31 +375,34 @@ class SemanticAnalyzer(MathLangVisitor):
             symbol = self.current_scope.lookup(var_name)
             if not symbol:
                 self.add_error(ErrorFormatter.undefined_symbol(var_name), ctx)
-                return None
+                result_type = None
             else:
-                symbol = symbol[0]
-
-            return symbol.type
+                result_type = symbol[0].type
 
         elif ctx.literal():
-            return self.visitLiteral(ctx.literal())
+            result_type = self.visitLiteral(ctx.literal())
         elif ctx.call():
-            return self.visitCall(ctx.call())
+            result_type = self.visitCall(ctx.call())
 
         elif ctx.getChildCount() == 3 and ctx.getChild(0).getText() == '(':
             # Выражение в скобках
-            expr_type = self.visitExpression(ctx.expression(0))
-            return expr_type
+            result_type = self.visitExpression(ctx.expression(0))
+
 
         elif ctx.NOT():
-            return visit_unary_expression(ctx, ctx.NOT().getText())
+            result_type = visit_unary_expression(ctx, ctx.NOT().getText())
         elif ctx.MINUS() and ctx.getChildCount() == 2:
-            return visit_unary_expression(ctx, ctx.MINUS().getText())
+            result_type = visit_unary_expression(ctx, ctx.MINUS().getText())
         elif len(ctx.EQ()) == 2:
-            return visit_binary_expression(ctx, "==")
+            result_type = visit_binary_expression(ctx, "==")
         else:
             binary_operator = ctx.getChild(1).getText()
-            return visit_binary_expression(ctx, binary_operator)
+            result_type = visit_binary_expression(ctx, binary_operator)
+
+        if self.is_binding:
+            result_type = self.type_mapping.get(result_type, result_type)
+
+        return result_type
 
 
     def visitLiteral(self, ctx: MathLangParser.LiteralContext) -> Type:
@@ -469,6 +500,7 @@ class SemanticAnalyzer(MathLangVisitor):
 def main():
 
     default_file = 'samples/sample7.ml'
+    default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:
         print(f"No file specified. Using {default_file}.")
@@ -505,7 +537,7 @@ def main():
         else:
             print("✅ Программа семантически корректна!")
             print("\nGenerated WAT code:")
-            print(analyzer.get_wat_code())
+            # print(analyzer.get_wat_code())
             sys.exit(0)
 
     except FileNotFoundError:

@@ -18,12 +18,12 @@ sub double_template:(K, V)(K key, V value)
 sub inner_initialization:(T)(T result)
 {
     T intermediate_result = cast:(float, T)(read:(float)())
-    result = intermediate_result * 2
+    result = cast:(float,T)(cast:(T, float)(intermediate_result) * 2.0)
 }
 
 sub call_to_templated_sub:(T)(T val)
 {
-    pretty_write:(T)(val)
+    pretty_write(val)
 
     // Providing template argument explicitly is allowed in call statement
     int i_val = cast:(T, int)(val)
