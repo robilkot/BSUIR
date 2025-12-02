@@ -22,6 +22,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_subprogram: SubprogramSymbol | None = None
         self.in_loop = False
         self.errors = []
+        self.wat_code = []
 
         self.__cast_subprogram = SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')])
         self.__cast_subprogram.requirements.append(lambda mapping: TypeChecker.can_cast(
@@ -55,6 +56,47 @@ class SemanticAnalyzer(MathLangVisitor):
         error = SemanticError(message, line, column)
         self.errors.append(error)
 
+
+    def get_wat_code(self):
+        return '\n'.join(self.wat_code)
+
+    def add_wat(self, code):
+        self.wat_code.append(code)
+
+
+    def visitProgram(self, ctx:MathLangParser.ProgramContext):
+        self.add_wat("(module")
+        self.add_wat("  (import \"console\" \"log\" (func $log (param i32)))")
+        self.add_wat("  (import \"js\" \"mem\" (memory 1))")
+        self.add_wat("  (global $str_ptr (mut i32) (i32.const 1000))")
+
+        self.add_wat("  (func $write_string (param $ptr i32)")
+        self.add_wat("    (local $i i32)")
+        self.add_wat("    (local.set $i (i32.const 0))")
+        self.add_wat("    (loop $write_loop")
+        self.add_wat("      (local.get $ptr)")
+        self.add_wat("      (local.get $i)")
+        self.add_wat("      (i32.add)")
+        self.add_wat("      (i32.load8_u)")
+        self.add_wat("      (i32.eqz)")
+        self.add_wat("      (br_if $write_loop_end)")
+        self.add_wat("      (local.get $ptr)")
+        self.add_wat("      (local.get $i)")
+        self.add_wat("      (i32.add)")
+        self.add_wat("      (i32.load8_u)")
+        self.add_wat("      (call $log)")
+        self.add_wat("      (local.set $i (i32.add (local.get $i) (i32.const 1)))")
+        self.add_wat("      (br $write_loop))")
+        self.add_wat("    (end))")
+
+        self.visitChildren(ctx)
+
+        self.add_wat("  (func $main")
+        self.add_wat("    (call $program_start))")
+        self.add_wat("  (export \"main\" (func $main))")
+        self.add_wat(")")
+
+
     def visitSubprogram(self, ctx: MathLangParser.SubprogramContext):
         sub_name = ctx.ID().getText()
 
@@ -86,7 +128,14 @@ class SemanticAnalyzer(MathLangVisitor):
             except SemanticError as e:
                 self.add_error(e.message, ctx)
 
+        wat_params = " ".join([f'(param ${p.name} {p.type.to_wat()})' for p in parameters_symbols])
+        self.add_wat(f'  (func ${sub_name} {wat_params}')
+        self.add_wat('    (local $temp i32)')
+
         self.visitBlock(ctx.block())
+
+        self.add_wat("    (return)")
+        self.add_wat("  )")
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
@@ -195,6 +244,11 @@ class SemanticAnalyzer(MathLangVisitor):
                 if symbol is not None:
                     if not TypeChecker.can_cast(expression_type, symbol.type):
                         add_assignment_error(symbol.type, expression_type)
+
+                    if symbol.is_global:
+                        self.add_wat(f"    (global.set ${symbol.name} (local.get ${expression_type}))")
+                    else:
+                        self.add_wat(f"    (local.set ${symbol.name} (local.get ${expression_type}))")
 
         elif isinstance(left_side, MathLangParser.Declaration_listContext):
             left_symbols = self.visitDeclaration_list(left_side)
@@ -450,6 +504,8 @@ def main():
             sys.exit(1)
         else:
             print("✅ Программа семантически корректна!")
+            print("\nGenerated WAT code:")
+            print(analyzer.get_wat_code())
             sys.exit(0)
 
     except FileNotFoundError:

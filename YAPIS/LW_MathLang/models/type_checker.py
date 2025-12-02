@@ -6,7 +6,7 @@ from models.types import Type
 class TypeChecker:
     @staticmethod
     def is_templated_argument(type: Type | None) -> bool:
-        return type not in [Type.float(), Type.int(), Type.bool()]
+        return not type in [Type.float(), Type.int(), Type.bool()]
 
     @staticmethod
     def is_numeric_type(type: Type | None) -> bool:
@@ -42,20 +42,17 @@ class TypeChecker:
         logical_ops = ['and', 'or']
 
         # Assuming binary operations only allowed on same types
-        if TypeChecker.is_templated_argument(left_type) or TypeChecker.is_numeric_type(right_type):
+        if TypeChecker.is_templated_argument(left_type) and right_type == left_type:
             return left_type
 
         if operator in numeric_ops:
-            if not (TypeChecker.is_numeric_type(left_type) and TypeChecker.is_numeric_type(right_type)):
-                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "числовым типам", left_type, right_type))
-            # Если хотя бы один операнд float - результат float
-            if Type.float() in [left_type, right_type]:
-                return Type.float()
-            return Type.int()
+            if not (TypeChecker.is_numeric_type(left_type) and left_type == right_type):
+                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "одинаковым числовым типам", left_type, right_type))
+            return left_type
 
         elif operator in comparison_ops:
-            if left_type != right_type and not TypeChecker.can_cast(left_type, right_type):
-                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "числовым типам", left_type, right_type))
+            if left_type != right_type:
+                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "одинаковым числовым типам", left_type, right_type))
             return Type.bool()
 
         elif operator in logical_ops:
