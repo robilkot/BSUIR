@@ -11,14 +11,14 @@ sub pretty_write:(T)(T a)
 // Using two or more template arguments
 sub double_template:(K, V)(K key, V value)
 {
-    int key_casted = cast:(K, int)(key)
+    V key_casted = cast:(K, V)(key)
 }
 
 // Variables of templated types may be created in subprogram
 sub inner_initialization:(T)(T result)
 {
-    T intermediate_result = cast:(float, T)(read:(float)())
-    result = cast:(float,T)(cast:(T, float)(intermediate_result) * 2.0)
+    T intermediate_result = read:(T)()
+    result = intermediate_result * cast:(float, T)(2.0)
 }
 
 sub call_to_templated_sub:(T)(T val)
@@ -27,7 +27,7 @@ sub call_to_templated_sub:(T)(T val)
 
     // Providing template argument explicitly is allowed in call statement
     int i_val = cast:(T, int)(val)
-    pretty_write:(int)(val)
+    pretty_write:(int)(i_val)
 }
 
 // When defining templated subprogram, it is possible to manually provide custom implementation for specific types ...
@@ -38,7 +38,7 @@ sub explicit_implementation:(T)(T val)
 }
 
 // ... This requires definition of templated subprogram before
-sub explicit_implementation:(int)(int val)
+sub explicit_implementation:(int)(T val)
 {
     write("Specifically for int!")
     write(val)
@@ -81,3 +81,9 @@ sub same_name:(K)(K value_two) {}
 // The correct way is to use explicit implementation
 sub conflicting_name:(T)(T value) {}
 sub conflicting_name(int value) {}
+
+
+// Sample calling code
+
+inner_initialization(2)
+inner_initialization(2.0)

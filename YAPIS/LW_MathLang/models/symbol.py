@@ -77,8 +77,11 @@ class SymbolTable:
         return self.__str__()
 
     def remove_symbol(self, symbol: Symbol):
-        pass
-        # todo implement
+        self.symbols.remove(symbol)
+
+        existing_symbols = self.symbols_dict.get(symbol.name, [])
+        existing_symbols.remove(symbol)
+        self.symbols_dict[symbol.name] = existing_symbols
 
     def add_symbol(self, symbol: Symbol, exist_ok: bool = False):
         if symbol in self.symbols:
@@ -89,7 +92,7 @@ class SymbolTable:
 
         if self.parent is not None:
             if self.parent.has_defined(symbol):
-                msg = f"'{symbol}' уже объявлен в верхней области видимости"
+                msg = f"'Warning: {symbol}' уже объявлен в верхней области видимости"
                 print(msg) # Своего рода warning
 
         self.symbols.add(symbol)

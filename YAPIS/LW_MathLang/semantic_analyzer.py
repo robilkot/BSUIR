@@ -13,6 +13,7 @@ from models.types import Type
 from syntax_analyzer import CustomErrorListener
 
 
+# todo read requires template arg when called
 # todo check for unused template arguments
 # todo check for templated sub before using explicit implementation
 class SemanticAnalyzer(MathLangVisitor):
@@ -104,6 +105,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.add_wat("  (export \"main\" (func $main))")
         self.add_wat(")")
 
+
     def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> bool | None:
         self.binding_result = True
 
@@ -127,13 +129,17 @@ class SemanticAnalyzer(MathLangVisitor):
         # map template args
         template_args = [self.type_mapping[type] for type in template_args] if self.is_binding else template_args
 
+        for symbol in parameters_symbols:
+            if symbol.type not in template_args:
+                self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
+
         subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=[param.type for param in parameters_symbols], template_args=template_args)
-        try:
-            self.global_scope.add_symbol(subprogram_symbol)
-            self.subprogram_ctx[subprogram_symbol] = ctx
-        except SemanticError as e:
-            self.binding_result = False
-            if not self.is_binding:
+
+        if not self.is_binding:
+            try:
+                self.global_scope.add_symbol(subprogram_symbol)
+                self.subprogram_ctx[subprogram_symbol] = ctx
+            except SemanticError as e:
                 self.add_error(e.message, ctx)
 
         # Сохраняем текущий контекст и создаем новую область видимости
@@ -159,9 +165,6 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_subprogram = previous_subprogram
 
         if self.is_binding:
-            if not self.binding_result:
-                self.global_scope.remove_symbol(subprogram_symbol)
-
             return self.binding_result
 
     def visitCall(self, ctx: MathLangParser.CallContext) -> Type | None:
@@ -170,9 +173,7 @@ class SemanticAnalyzer(MathLangVisitor):
         sub_templated_arguments = self.visitTemplate(ctx.template()) if ctx.template() is not None else []
 
         if self.is_binding:
-            # print(sub_templated_arguments)
             sub_templated_arguments = [self.type_mapping.get(type, type) for type in sub_templated_arguments]
-            # print(sub_templated_arguments)
 
         defined_subprograms = self.global_scope.lookup(sub_name)
         if defined_subprograms is None:
@@ -229,7 +230,8 @@ class SemanticAnalyzer(MathLangVisitor):
             self.type_mapping = previous_mapping
 
             if can_bind:
-                print("call to", ctx.getText(), "= bind", subprogram , "with", type_mapping)
+                # if self.is_binding:
+                #     print("call to", ctx.getText(), "= bind", subprogram , "with", type_mapping)
                 break
 
         if not can_bind and not self.defining_subprogram:
@@ -264,6 +266,9 @@ class SemanticAnalyzer(MathLangVisitor):
             var_type = Type.create(type_ctx.getText())
             var_name = id_ctx.getText()
 
+            if self.is_binding:
+                var_type = self.type_mapping.get(var_type, var_type)
+
             # print('GLOBAL' if not local else '', var_type, var_name)
 
             symbol = Symbol(var_name, var_type, is_global=(not local))
@@ -289,7 +294,9 @@ class SemanticAnalyzer(MathLangVisitor):
             for symbol, expression_type in zip(left_symbols, right_expressions):
                 if symbol is not None:
                     if expression_type != symbol.type:
-                        add_assignment_error(symbol.type, expression_type)
+                        can_ignore_error_while_templating = self.current_subprogram and (TypeChecker.is_templated_argument(expression_type) or TypeChecker.is_templated_argument(symbol.type))
+                        if not can_ignore_error_while_templating:
+                            add_assignment_error(symbol.type, expression_type)
 
                     if symbol.is_global:
                         self.add_wat(f"    (global.set ${symbol.name} (local.get ${expression_type}))")
@@ -330,7 +337,11 @@ class SemanticAnalyzer(MathLangVisitor):
                 self.add_error(ErrorFormatter.undefined_symbol(id), ctx)
                 ids.append(None)
             else:
-                ids += symbols
+                for symbol in symbols:
+                    if self.is_binding:
+                        symbol.type = self.type_mapping.get(symbol.type, symbol.type)
+
+                    ids.append(symbol)
 
         return ids
 
@@ -498,8 +509,6 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-
-    default_file = 'samples/sample7.ml'
     default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:

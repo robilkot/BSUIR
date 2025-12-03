@@ -42,10 +42,17 @@ class TypeChecker:
         logical_ops = ['and', 'or']
 
         # Assuming binary operations only allowed on same types
-        if TypeChecker.is_templated_argument(left_type) and right_type == left_type:
+        # todo does not seem valid
+        if TypeChecker.is_templated_argument(left_type) and not TypeChecker.is_templated_argument(right_type):
+            return right_type
+
+        if TypeChecker.is_templated_argument(right_type) and not TypeChecker.is_templated_argument(left_type):
             return left_type
 
         if operator in numeric_ops:
+            if TypeChecker.is_templated_argument(left_type) and left_type == right_type:
+                return left_type
+
             if not (TypeChecker.is_numeric_type(left_type) and left_type == right_type):
                 raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "одинаковым числовым типам", left_type, right_type))
             return left_type

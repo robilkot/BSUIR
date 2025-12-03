@@ -58,3 +58,7 @@ class ErrorFormatter:
     @staticmethod
     def invalid_cast(from_type: Type, to_type: Type):
         return f"Невозможно преобразовать {from_type} в {to_type}"
+
+    @staticmethod
+    def undefined_templated_argument(template_arg_type: Type):
+        return f'Шаблонный аргумент {template_arg_type} не определен'
