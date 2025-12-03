@@ -1,6 +1,6 @@
 // Function overloading
 sub computeWave(float x, float result) {
-    result = sin(x) + 0.5 * sin(2*x + 1.0)
+    result = sin(x) + 0.5 * sin(2. * x + 1.0)
 }
 
 // Function overloading example
@@ -13,7 +13,7 @@ write("Calculating sine wave values from 0 to 2*PI:\n")
 
 // For loop
 for (float angle = 0.0; angle <= 6.28318; angle = angle + 0.1) {
-    float result = 0
+    float result = 0.
 	computeWave(angle, result)
 
     write("sin(")
@@ -41,7 +41,7 @@ write(x)
 write(", sin(x) ≈ ")
 write(sin(x))
 
-float result = (cos(x) ^ 2) + (sin(x) ^ 2) // Should be ≈1
+float result = (cos(x) ^ 2.) + (sin(x) ^ 2.) // Should be ≈1
 write("sin^2(x) + cos^2(x) = ")
 write(result)
 

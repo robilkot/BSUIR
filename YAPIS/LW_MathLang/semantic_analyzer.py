@@ -285,6 +285,8 @@ class SemanticAnalyzer(MathLangVisitor):
         if type_mapping:
             return type_mapping.get(subprogram.type, subprogram.type)
         else:
+            if subprogram is None:
+                return None
             return subprogram.type
 
 
@@ -415,7 +417,7 @@ class SemanticAnalyzer(MathLangVisitor):
             try:
                 return TypeChecker.get_binary_operation_type(left_type, right_type, operator, self.type_mapping)
             except SemanticError as e:
-                self.add_error(e.message, ctx)
+                self.add_error(e, ctx)
                 return None
 
         def visit_unary_expression(ctx, operator: str) -> Type | None:
@@ -558,8 +560,8 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    # default_file = 'samples/sample6.ml'
-    default_file = 'samples/samples_templates.ml'
+    default_file = 'samples/sample6.ml'
+    # default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:
         print(f"No file specified. Using {default_file}.")

@@ -37,11 +37,11 @@ class ErrorFormatter:
 
     @staticmethod
     def binary_operator_only_valid_on_types(operator: str, type_description: str, left_type: Type, right_type: Type, type_mapping: dict | None):
-        return f"Оператор '{operator}' применим только к {type_description}. Получены типы {left_type}, {right_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
+        return f"Оператор '{operator}' применим только к {type_description}. Получены типы {left_type}, {right_type}" + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")
 
     @staticmethod
     def unary_operator_only_valid_on_types(operator: str, type_description: str, actual_type: Type, type_mapping: dict | None):
-        return f"Оператор '{operator}' применим только к {type_description}. Получен тип {actual_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
+        return f"Оператор '{operator}' применим только к {type_description}. Получен тип {actual_type}" + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")
 
     @staticmethod
     def return_outside_of_subprogram():
@@ -57,7 +57,7 @@ class ErrorFormatter:
 
     @staticmethod
     def invalid_cast(from_type: Type, to_type: Type, type_mapping: dict[Type, Type] | None):
-        return f"Невозможно преобразовать {from_type} в {to_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
+        return f"Невозможно преобразовать {from_type} в {to_type}" + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")
 
     @staticmethod
     def cast_with_not_two_arguments(args_count: int):

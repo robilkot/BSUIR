@@ -14,14 +14,14 @@ sub swap(float x, float y) {
 }
 
 sub solveQuadratic(float a, float b, float c, float root1, float root2, bool result) {
-    float discriminant = b^2 - 4*a*c
+    float discriminant = b^2. - 4.*a*c
     
-    if (discriminant < 0) {
+    if (discriminant < 0.) {
         result = false // No roots found
     }
     
-    root1 = (-b + discriminant^0.5) / (2*a)
-    root2 = (-b - discriminant^0.5) / (2*a)
+    root1 = (-b + discriminant^0.5) / (2.*a)
+    root2 = (-b - discriminant^0.5) / (2.*a)
     
 	result = true
 }
@@ -59,7 +59,6 @@ write(num2)
 float a, float b, float c = 1.0, -5.0, 6.0
 float root1, float root2 = 0.0
 float test, float test2 = 0.5
-int test3, int test5, int test6 = 0.2
 
 
 bool result = false
@@ -77,8 +76,8 @@ if (result) {
     write(", Root 2: ")
     write(root2)
     
-    float check1 = a*(root1^2) + b*root1 + c
-    float check2 = a*(root2^2) + b*root2 + c
+    float check1 = a*(root1^2.) + b*root1 + c
+    float check2 = a*(root2^2.) + b*root2 + c
     write("Verification (should be close to 0): ")
     write(check1)
     write(" and ")
@@ -87,6 +86,6 @@ if (result) {
     write("No real roots found")
 }
 
-bool isPositive = (root1 > 0) and (root2 > 0)
+bool isPositive = (root1 > 0.) and (root2 > 0.)
 write("Both roots are positive: ")
 write(isPositive)
