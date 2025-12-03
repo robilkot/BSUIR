@@ -1,14 +1,14 @@
 // Declaration above other stuff:
 sub calculateHypotenuse(float a, float b, float result) {
-	result = (a^2 + b^2)^0.5
+	result = (a^2. + b^2.)^0.5
 }
 
 sub isRightTriangle(float a, float b, float c, bool result) {
-	result = (a^2 + b^2 == c^2) or (a^2 + c^2 == b^2) or (b^2 + c^2 == a^2)
+	result = (a^2. + b^2. == c^2.) or (a^2. + c^2. == b^2.) or (b^2. + c^2. == a^2.)
 }
 
 sub usingGlobalStuff() {
-	global float global_var1, float global_var2, int global_var3 = 2.0
+	global float global_var1, float global_var2, int global_var3 = 2.0, 2.0, 2
 	global_var1 = 3.0
 
 	global_var2 = 3.0

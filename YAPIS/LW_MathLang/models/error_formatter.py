@@ -36,12 +36,12 @@ class ErrorFormatter:
         return f"Не найдено перегрузки {sub_name} с параметрами {params_string}"
 
     @staticmethod
-    def binary_operator_only_valid_on_types(operator: str, type_description: str, left_type: Type, right_type: Type):
-        return f"Оператор '{operator}' применим только к {type_description}. Получены типы {left_type}, {right_type}"
+    def binary_operator_only_valid_on_types(operator: str, type_description: str, left_type: Type, right_type: Type, type_mapping: dict | None):
+        return f"Оператор '{operator}' применим только к {type_description}. Получены типы {left_type}, {right_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
 
     @staticmethod
-    def unary_operator_only_valid_on_types(operator: str, type_description: str, actual_type: Type):
-        return f"Оператор '{operator}' применим только к {type_description}. Получен тип {actual_type}"
+    def unary_operator_only_valid_on_types(operator: str, type_description: str, actual_type: Type, type_mapping: dict | None):
+        return f"Оператор '{operator}' применим только к {type_description}. Получен тип {actual_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
 
     @staticmethod
     def return_outside_of_subprogram():
@@ -56,9 +56,21 @@ class ErrorFormatter:
         return f"Ожидался булев тип в условии. Получен {actual_type}"
 
     @staticmethod
-    def invalid_cast(from_type: Type, to_type: Type):
-        return f"Невозможно преобразовать {from_type} в {to_type}"
+    def invalid_cast(from_type: Type, to_type: Type, type_mapping: dict[Type, Type] | None):
+        return f"Невозможно преобразовать {from_type} в {to_type}" + f" (Получено при подстановке типов {type_mapping})" if type_mapping else ""
+
+    @staticmethod
+    def cast_with_not_two_arguments(args_count: int):
+        return f"Подпрограмма преобразования требует 2 шаблонных аргумента. Получено {args_count}"
+
+    @staticmethod
+    def read_with_not_one_template_argument(args_count: int):
+        return f"Подпрограмма ввода требует 1 шаблонный аргумент. Получено {args_count}"
 
     @staticmethod
     def undefined_templated_argument(template_arg_type: Type):
         return f'Шаблонный аргумент {template_arg_type} не определен'
+
+    @staticmethod
+    def undefined_type(type: Type):
+        return f'Тип {type} не определен'

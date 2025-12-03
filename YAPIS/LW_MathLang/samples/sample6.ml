@@ -1,7 +1,7 @@
-sub test:(T, S)(float a)
+sub recursion:(T)(T val, int result)
 {
-    test(a)
+    int res = cast:(K, int)(val)
 }
 
-float b = 5.0
-test(b)
+int result = 0
+recursion("dsds", result)

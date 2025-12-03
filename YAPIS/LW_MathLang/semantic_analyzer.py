@@ -13,7 +13,6 @@ from models.types import Type
 from syntax_analyzer import CustomErrorListener
 
 
-# todo read requires template arg when called
 # todo check for unused template arguments
 # todo check for templated sub before using explicit implementation
 class SemanticAnalyzer(MathLangVisitor):
@@ -28,6 +27,8 @@ class SemanticAnalyzer(MathLangVisitor):
         self.defining_subprogram = True
         self.errors = []
         self.wat_code = []
+
+        self.binding_cache = set()
 
         self.__default_subprograms = [
             SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')]),
@@ -122,16 +123,22 @@ class SemanticAnalyzer(MathLangVisitor):
             else:
                 parameters_symbols += params_symbols
 
-        template_args: list[Type] = []
+        template_args: list[Type] | None = None
         if ctx.template():
-            template_args += self.visitTemplate(ctx.template())
+            template_args = self.visitTemplate(ctx.template())
 
         # map template args
-        template_args = [self.type_mapping[type] for type in template_args] if self.is_binding else template_args
+        if template_args is not None:
+            template_args = [self.type_mapping.get(type, type) for type in template_args] if self.is_binding else template_args
 
-        for symbol in parameters_symbols:
-            if symbol.type not in template_args:
-                self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
+        if template_args:
+            for symbol in parameters_symbols:
+                if TypeChecker.is_templated_argument(symbol.type) and symbol.type not in template_args:
+                    self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
+        else:
+            for symbol in parameters_symbols:
+                if TypeChecker.is_templated_argument(symbol.type):
+                    self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
 
         subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=[param.type for param in parameters_symbols], template_args=template_args)
 
@@ -141,6 +148,11 @@ class SemanticAnalyzer(MathLangVisitor):
                 self.subprogram_ctx[subprogram_symbol] = ctx
             except SemanticError as e:
                 self.add_error(e.message, ctx)
+        else:
+            if self.binding_cache.__contains__(subprogram_symbol):
+                print("recursion detected")
+                return
+            self.binding_cache.add(subprogram_symbol)
 
         # Сохраняем текущий контекст и создаем новую область видимости
         previous_scope = self.current_scope
@@ -165,6 +177,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_subprogram = previous_subprogram
 
         if self.is_binding:
+            self.binding_cache.remove(subprogram_symbol)
             return self.binding_result
 
     def visitCall(self, ctx: MathLangParser.CallContext) -> Type | None:
@@ -172,7 +185,25 @@ class SemanticAnalyzer(MathLangVisitor):
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
         sub_templated_arguments = self.visitTemplate(ctx.template()) if ctx.template() is not None else []
 
-        if self.is_binding:
+        # Special case: cast subprogram
+        if sub_name == 'cast':
+            if len(sub_templated_arguments) != 2:
+                self.add_error(ErrorFormatter.cast_with_not_two_arguments(len(sub_templated_arguments)), ctx)
+                return None
+
+        if sub_name == 'read':
+            if len(sub_templated_arguments) != 1:
+                self.add_error(ErrorFormatter.read_with_not_one_template_argument(len(sub_templated_arguments)), ctx)
+                return None
+
+        if self.is_binding and not self.current_subprogram:
+            for param in sub_parameters:
+                param = self.type_mapping.get(param, param)
+
+                if TypeChecker.is_templated_argument(param):
+                    # todo error message
+                    self.add_error(f"fuck {param}", ctx)
+
             sub_templated_arguments = [self.type_mapping.get(type, type) for type in sub_templated_arguments]
 
         defined_subprograms = self.global_scope.lookup(sub_name)
@@ -193,7 +224,8 @@ class SemanticAnalyzer(MathLangVisitor):
             params_ok = True
             for (param_expected, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
                 if TypeChecker.is_templated_argument(param_expected):
-                    templated_types_mapping[param_expected] = param_actual
+                    if templated_types_mapping.get(param_expected, None) is None:
+                        templated_types_mapping[param_expected] = param_actual
                 else:
                     if param_expected != param_actual:
                         params_ok = False
@@ -214,9 +246,10 @@ class SemanticAnalyzer(MathLangVisitor):
         previous_mapping = self.type_mapping
 
         for subprogram, type_mapping in overload_candidate_subprograms:
-            for declared, provided in zip(subprogram.template_args, sub_templated_arguments):
-                if type_mapping.get(declared, None) is None:
-                    type_mapping[declared] = provided
+            if subprogram.template_args:
+                for declared, provided in zip(subprogram.template_args, sub_templated_arguments):
+                    if type_mapping.get(declared, None) is None:
+                        type_mapping[declared] = provided
 
             self.type_mapping = type_mapping
 
@@ -227,11 +260,22 @@ class SemanticAnalyzer(MathLangVisitor):
             else:
                 can_bind = self.visitSubprogram(subprogram_ctx)
 
-            self.type_mapping = previous_mapping
-
             if can_bind:
                 # if self.is_binding:
                 #     print("call to", ctx.getText(), "= bind", subprogram , "with", type_mapping)
+
+                # Special case: cast subprogram
+                if subprogram.name == 'cast':
+                    from_type = self.type_mapping.get(subprogram.template_args[0], None)
+                    to_type = self.type_mapping.get(subprogram.template_args[1], None)
+                    if (not TypeChecker.is_templated_argument(from_type)
+                            and not TypeChecker.is_templated_argument(to_type)
+                            and not TypeChecker.can_cast(from_type, to_type)):
+                        self.add_error(ErrorFormatter.invalid_cast(from_type, to_type, self.type_mapping), ctx)
+
+            self.type_mapping = previous_mapping
+
+            if can_bind:
                 break
 
         if not can_bind and not self.defining_subprogram:
@@ -312,6 +356,11 @@ class SemanticAnalyzer(MathLangVisitor):
                 except SemanticError as e:
                     self.add_error(e.message, ctx)
 
+            for symbol in left_symbols:
+                if not self.is_binding and not self.current_subprogram:
+                    if TypeChecker.is_templated_argument(symbol.type):
+                        self.add_error(ErrorFormatter.undefined_type(symbol.type), ctx)
+
             if len(right_expressions) != 1:
                 if len(left_symbols) != len(right_expressions):
                     self.add_error(ErrorFormatter.unmatched_number_of_expressions_or_not_single_expression(), ctx)
@@ -364,7 +413,7 @@ class SemanticAnalyzer(MathLangVisitor):
                 return None
 
             try:
-                return TypeChecker.get_binary_operation_type(left_type, right_type, operator)
+                return TypeChecker.get_binary_operation_type(left_type, right_type, operator, self.type_mapping)
             except SemanticError as e:
                 self.add_error(e.message, ctx)
                 return None
@@ -376,7 +425,7 @@ class SemanticAnalyzer(MathLangVisitor):
                 return TypeChecker.is_numeric_type(type) or TypeChecker.is_boolean_type(type)
 
             if operator == '-' and not valid_type(expr_type):
-                self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type), ctx)
+                self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type, self.type_mapping), ctx)
                 return None
 
             return expr_type
@@ -509,6 +558,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
+    # default_file = 'samples/sample6.ml'
     default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:

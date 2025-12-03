@@ -38,7 +38,7 @@ sub explicit_implementation:(T)(T val)
 }
 
 // ... This requires definition of templated subprogram before
-sub explicit_implementation:(int)(T val)
+sub explicit_implementation:(int)(int val)
 {
     write("Specifically for int!")
     write(val)
@@ -82,8 +82,37 @@ sub same_name:(K)(K value_two) {}
 sub conflicting_name:(T)(T value) {}
 sub conflicting_name(int value) {}
 
+sub test:(T)(T test1, int test2) {}
+sub test2(T test1) {}
+
+sub recursion:(T)(T val, int result)
+{
+    int res = cast:(K, int)(val)
+
+    if(result > 10)
+    {
+        return
+    }
+
+    result = result + 1
+
+    recursion(cast:(T, K)(val), result)
+}
 
 // Sample calling code
-
 inner_initialization(2)
 inner_initialization(2.0)
+
+explicit_implementation(2)
+explicit_implementation(2.0)
+
+call_to_templated_sub(2)
+call_to_templated_sub(2.0)
+call_to_templated_sub("dsd")
+
+int a = cast:(float, int)(read:(float)())
+inner_initialization(2)
+inner_initialization(2.0)
+inner_initialization("dsd")
+T a = cast:(int, T)(2)
+inner_initialization(2)
