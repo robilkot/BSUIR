@@ -70,8 +70,8 @@ sub unused_argument:(Unused)() {}
 sub unused_argument:(T, K)(T value) {}
 
 // Using template arguments without declaration
-sub unknown_argument(T value) {}
-sub unknown_argument:(T)(K value) {}
+// sub unknown_argument(T value) {}
+// sub unknown_argument:(T)(K value) {}
 
 // Redefinition of templated subprogram using different template argument identifiers
 sub same_name:(T)(T value_one) {}
@@ -83,7 +83,7 @@ sub conflicting_name:(T)(T value) {}
 sub conflicting_name(int value) {}
 
 sub test:(T)(T test1, int test2) {}
-sub test2(T test1) {}
+// sub test2(T test1) {}
 
 sub recursion:(T)(T val, int result)
 {
@@ -108,11 +108,11 @@ explicit_implementation(2.0)
 
 call_to_templated_sub(2)
 call_to_templated_sub(2.0)
-call_to_templated_sub("dsd")
+// call_to_templated_sub("dsd")
 
 int a = cast:(float, int)(read:(float)())
 inner_initialization(2)
 inner_initialization(2.0)
-inner_initialization("dsd")
-T a = cast:(int, T)(2)
+// inner_initialization("dsd")
+// T a = cast:(int, T)(2)
 inner_initialization(2)

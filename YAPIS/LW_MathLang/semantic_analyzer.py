@@ -5,6 +5,10 @@ from antlr4 import *
 from generated.grammar.MathLangLexer import MathLangLexer
 from generated.grammar.MathLangParser import MathLangParser
 from generated.grammar.MathLangVisitor import MathLangVisitor
+from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
+    BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
+    StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt
+from intermediate_code.wat_emitter import WATEmitter
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.symbol import Symbol, SubprogramSymbol, SymbolTable
@@ -28,27 +32,30 @@ class SemanticAnalyzer(MathLangVisitor):
         self.errors = []
         self.wat_code = []
 
+        self.program_node: ProgramNode = ProgramNode(subprograms=[], statements=[])
+        self.__subprograms_blocks: dict[SubprogramSymbol, BlockNode] = {}
+
         self.binding_cache = set()
 
         self.__default_subprograms = [
-            SubprogramSymbol(name='cast', return_type=Type('Tto'), parameters=[Type('Tfrom')], template_args=[Type('Tfrom'), Type('Tto')]),
-            SubprogramSymbol(name='write', return_type=Type.void(), parameters=[Type('T')], template_args=[Type('T')]),
+            SubprogramSymbol(name='cast', return_type=Type('T'), parameters=[Symbol(type=Type('K'), name='from')], template_args=[Type('K'), Type('T')]),
+            SubprogramSymbol(name='write', return_type=Type.void(), parameters=[Symbol(type=Type('T'), name='msg')], template_args=[Type('T')]),
             SubprogramSymbol(name='read', return_type=Type('T'), parameters=[], template_args=[Type('T')]),
-            SubprogramSymbol(name='abs', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='log', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='ln', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='sin', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='cos', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='tg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='atg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='ctg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='actg', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='asin', return_type=Type.float(), parameters=[Type.float()], template_args=[]),
-            SubprogramSymbol(name='acos', return_type=Type.float(), parameters=[Type.float()], template_args=[])
+            SubprogramSymbol(name='abs', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='log', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='ln', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='sin', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='cos', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='tg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='atg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='ctg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='actg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='asin', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
+            SubprogramSymbol(name='acos', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[])
         ]
 
-        for sub in self.__default_subprograms:
-            self.global_scope.add_symbol(sub)
+        # for sub in self.__default_subprograms:
+        #     self.global_scope.add_symbol(sub)
 
     @property
     def is_binding(self) -> bool:
@@ -61,51 +68,32 @@ class SemanticAnalyzer(MathLangVisitor):
         self.errors.append(error)
 
 
-    def get_wat_code(self):
-        return '\n'.join(self.wat_code)
-
-    def add_wat(self, code):
-        self.wat_code.append(code)
-
-
     def visitProgram(self, ctx:MathLangParser.ProgramContext):
-        self.add_wat("(module")
-        self.add_wat("  (import \"console\" \"log\" (func $log (param i32)))")
-        self.add_wat("  (import \"js\" \"mem\" (memory 1))")
-        self.add_wat("  (global $str_ptr (mut i32) (i32.const 1000))")
-
-        self.add_wat("  (func $write_string (param $ptr i32)")
-        self.add_wat("    (local $i i32)")
-        self.add_wat("    (local.set $i (i32.const 0))")
-        self.add_wat("    (loop $write_loop")
-        self.add_wat("      (local.get $ptr)")
-        self.add_wat("      (local.get $i)")
-        self.add_wat("      (i32.add)")
-        self.add_wat("      (i32.load8_u)")
-        self.add_wat("      (i32.eqz)")
-        self.add_wat("      (br_if $write_loop_end)")
-        self.add_wat("      (local.get $ptr)")
-        self.add_wat("      (local.get $i)")
-        self.add_wat("      (i32.add)")
-        self.add_wat("      (i32.load8_u)")
-        self.add_wat("      (call $log)")
-        self.add_wat("      (local.set $i (i32.add (local.get $i) (i32.const 1)))")
-        self.add_wat("      (br $write_loop))")
-        self.add_wat("    (end))")
-
         for sub in ctx.subprogram():
             self.visitSubprogram(sub)
 
         self.defining_subprogram = False
 
         for statement in ctx.statement():
-            self.visit(statement)
+            node = self.visit(statement)
+            if isinstance(node, list):
+                for subnode in node:
+                    self.program_node.statements.append(subnode)
+            else:
+                self.program_node.statements.append(node)
 
-        self.add_wat("  (func $main")
-        self.add_wat("    (call $program_start))")
-        self.add_wat("  (export \"main\" (func $main))")
-        self.add_wat(")")
-
+        # AST
+        for symbol in self.global_scope.symbols:
+            if isinstance(symbol, SubprogramSymbol):
+                sub_node = SubprogramNode(
+                    name=symbol.name,
+                    ret_type=symbol.type.name,
+                    param_types=[param.type.name for param in symbol.parameters],
+                    params=[param.name for param in symbol.parameters],
+                    # body=self.__subprograms_blocks[symbol]
+                    body=BlockNode(body=[])
+                )
+                self.program_node.subprograms.append(sub_node)
 
     def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> bool | None:
         self.binding_result = True
@@ -140,18 +128,26 @@ class SemanticAnalyzer(MathLangVisitor):
                 if TypeChecker.is_templated_argument(symbol.type):
                     self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
 
-        subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=[param.type for param in parameters_symbols], template_args=template_args)
-
-        if not self.is_binding:
-            try:
-                self.global_scope.add_symbol(subprogram_symbol)
-                self.subprogram_ctx[subprogram_symbol] = ctx
-            except SemanticError as e:
-                self.add_error(e.message, ctx)
+        if self.is_binding:
+            if template_args:
+                mangled_name = "_".join([sub_name] + [type.name for type in template_args])
+            else:
+                mangled_name = sub_name
+            subprogram_symbol = SubprogramSymbol(name=mangled_name, return_type=Type.void(), parameters=parameters_symbols,template_args=template_args)
         else:
+            subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=parameters_symbols, template_args=template_args)
+
+        try:
+            self.global_scope.add_symbol(subprogram_symbol)
+            self.subprogram_ctx[subprogram_symbol] = ctx
+        except SemanticError as e:
+            if not self.is_binding:
+                self.add_error(e.message, ctx)
+
+        if self.is_binding:
             if self.binding_cache.__contains__(subprogram_symbol):
-                print("recursion detected")
-                return
+                print("Warning: templated recursion detected")
+                return None
             self.binding_cache.add(subprogram_symbol)
 
         # Сохраняем текущий контекст и создаем новую область видимости
@@ -179,8 +175,11 @@ class SemanticAnalyzer(MathLangVisitor):
         if self.is_binding:
             self.binding_cache.remove(subprogram_symbol)
             return self.binding_result
+        else:
+            return None
 
-    def visitCall(self, ctx: MathLangParser.CallContext) -> Type | None:
+    # todo return expr
+    def visitCall(self, ctx: MathLangParser.CallContext) -> Expr | None:
         sub_name = ctx.ID().getText()
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
         sub_templated_arguments = self.visitTemplate(ctx.template()) if ctx.template() is not None else []
@@ -211,7 +210,7 @@ class SemanticAnalyzer(MathLangVisitor):
             self.add_error(ErrorFormatter.undefined_subprogram(sub_name), ctx)
             return None
 
-        overload_candidate_subprograms: list[(SubprogramSymbol, dict[Type, Type])] = []
+        overload_candidate_subprograms: list[tuple[SubprogramSymbol, dict[Type, Type]]] = []
 
         for defined_subprogram in defined_subprograms:
             if not isinstance(defined_subprogram, SubprogramSymbol):
@@ -222,12 +221,13 @@ class SemanticAnalyzer(MathLangVisitor):
 
             templated_types_mapping: dict[Type, Type] = {}
             params_ok = True
-            for (param_expected, param_actual) in zip(defined_subprogram.parameters, sub_parameters):
-                if TypeChecker.is_templated_argument(param_expected):
-                    if templated_types_mapping.get(param_expected, None) is None:
-                        templated_types_mapping[param_expected] = param_actual
+            for (param_expected, actual_node) in zip(defined_subprogram.parameters, sub_parameters):
+                node_type = Type.create(actual_node.type)
+                if TypeChecker.is_templated_argument(param_expected.type):
+                    if templated_types_mapping.get(param_expected.type, None) is None:
+                        templated_types_mapping[param_expected.type] = node_type
                 else:
-                    if param_expected != param_actual:
+                    if param_expected.type != node_type:
                         params_ok = False
                         break
 
@@ -300,9 +300,15 @@ class SemanticAnalyzer(MathLangVisitor):
         return result
 
     # todo review
-    def visitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext):
+    def visitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext) -> VarDecl:
         if self.current_subprogram is None:
             self.add_error(ErrorFormatter.uninitialized_global_symbol(ctx.ID().getText()), ctx)
+
+        return VarDecl(
+            name=ctx.ID().getText(),
+            type=ctx.type_specifier().getText(),
+            init=None
+        )
 
     def visitDeclaration_list(self, ctx: MathLangParser.Declaration_listContext) -> list[Symbol]:
         local = ctx.scope_modifier() is None
@@ -322,12 +328,14 @@ class SemanticAnalyzer(MathLangVisitor):
 
         return declarations
 
-    def visitAssignment(self, ctx: MathLangParser.AssignmentContext):
+    def visitAssignment(self, ctx: MathLangParser.AssignmentContext) -> list[AssignNode]:
+        result: list[AssignNode] = []
+
         def add_assignment_error(expected: Type, actual: Type):
             self.add_error(ErrorFormatter.cant_assign_from_to(from_type=actual, to_type=expected), ctx)
 
-        left_side = ctx.declaration_list() or ctx.id_list()
-        right_expressions = self.visitExpression_list(ctx.expression_list())
+        left_side = ctx.declaration_list() if ctx.declaration_list() else ctx.id_list()
+        right_expressions: list[Expr] = self.visitExpression_list(ctx.expression_list())
 
         left_side: MathLangParser.Id_listContext
         if isinstance(left_side, MathLangParser.Id_listContext):
@@ -335,19 +343,19 @@ class SemanticAnalyzer(MathLangVisitor):
 
             if left_symbols is None or len(left_symbols) != len(right_expressions):
                 self.add_error(ErrorFormatter.unmatched_number_of_expressions_or_not_single_expression(), ctx)
-                return
+                return []
 
-            for symbol, expression_type in zip(left_symbols, right_expressions):
+            for symbol, expression_node in zip(left_symbols, right_expressions):
                 if symbol is not None:
-                    if expression_type != symbol.type:
-                        can_ignore_error_while_templating = self.current_subprogram and (TypeChecker.is_templated_argument(expression_type) or TypeChecker.is_templated_argument(symbol.type))
-                        if not can_ignore_error_while_templating:
-                            add_assignment_error(symbol.type, expression_type)
+                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type.name))
 
-                    if symbol.is_global:
-                        self.add_wat(f"    (global.set ${symbol.name} (local.get ${expression_type}))")
-                    else:
-                        self.add_wat(f"    (local.set ${symbol.name} (local.get ${expression_type}))")
+                    expr_type = Type.create(expression_node.type)
+                    if expr_type != symbol.type:
+                        can_ignore_error_while_templating = (self.current_subprogram
+                                                             and (TypeChecker.is_templated_argument(Type.create(expression_node.type))
+                                                                  or TypeChecker.is_templated_argument(symbol.type)))
+                        if not can_ignore_error_while_templating:
+                            add_assignment_error(symbol.type, expr_type)
 
         elif isinstance(left_side, MathLangParser.Declaration_listContext):
             left_symbols = self.visitDeclaration_list(left_side)
@@ -366,17 +374,23 @@ class SemanticAnalyzer(MathLangVisitor):
             if len(right_expressions) != 1:
                 if len(left_symbols) != len(right_expressions):
                     self.add_error(ErrorFormatter.unmatched_number_of_expressions_or_not_single_expression(), ctx)
-                    return
+                    return []
 
-                for symbol, expression_type in zip(left_symbols, right_expressions):
-                    if expression_type != symbol.type:
-                        add_assignment_error(symbol.type, expression_type)
+                for symbol, expression_node in zip(left_symbols, right_expressions):
+                    expr_type = Type.create(expression_node.type)
+
+                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type.name))
+                    if expr_type != symbol.type:
+                        add_assignment_error(symbol.type, expr_type)
             else:
                 for symbol in left_symbols:
-                    if right_expressions[0] != symbol.type:
-                        add_assignment_error(symbol.type, right_expressions[0])
-        else:
-            raise ValueError("Unknown type")
+                    expr_type = Type.create(right_expressions[0].type)
+
+                    result.append(AssignNode(name=symbol.name, value=right_expressions[0], type=symbol.type.name))
+                    if expr_type != symbol.type:
+                        add_assignment_error(symbol.type, expr_type)
+
+        return result
 
     def visitId_list(self, ctx: MathLangParser.Id_listContext) -> list[Symbol] | None:
         ids: list[Symbol | None] = []
@@ -396,167 +410,215 @@ class SemanticAnalyzer(MathLangVisitor):
 
         return ids
 
-    def visitExpression_list(self, ctx: MathLangParser.Expression_listContext) -> list[Type]:
-        types = []
+    def visitExpression_list(self, ctx: MathLangParser.Expression_listContext) -> list[Expr]:
+        expr_list: list[Expr] = []
         if ctx.expression():
             for expr in ctx.expression():
-                expr_type = self.visitExpression(expr)
-                types.append(expr_type)
-        return types
+                expr_node = self.visitExpression(expr)
+                expr_list.append(expr_node)
+        return expr_list
 
-    def visitExpression(self, ctx: MathLangParser.ExpressionContext) -> Type | None:
-        result_type: Type | None = None
+    def visitExpression(self, ctx: MathLangParser.ExpressionContext) -> Expr | None:
+        result: Expr | None = None
 
-        def visit_binary_expression(ctx, operator: str) -> Type | None:
-            left_type = self.visitExpression(ctx.expression(0))
-            right_type = self.visitExpression(ctx.expression(1))
+        def visit_binary_expression(ctx, operator: str) -> Expr | None:
+            left_expr_node = self.visitExpression(ctx.expression(0))
+            right_expr_node = self.visitExpression(ctx.expression(1))
 
-            if left_type is None or right_type is None:
+            if left_expr_node is None or right_expr_node is None:
                 return None
 
             try:
-                return TypeChecker.get_binary_operation_type(left_type, right_type, operator, self.type_mapping)
+                result_node_type = TypeChecker.get_binary_operation_type(
+                    Type.create(left_expr_node.type),
+                    Type.create(right_expr_node.type),
+                    operator, self.type_mapping).name
+
+                return BinaryOp(type=result_node_type, op=operator, left=left_expr_node, right=right_expr_node)
             except SemanticError as e:
                 self.add_error(e, ctx)
-                return None
+                return BinaryOp(type=left_expr_node.type, op=operator, left=left_expr_node, right=right_expr_node)
 
-        def visit_unary_expression(ctx, operator: str) -> Type | None:
-            expr_type = self.visit(ctx.expression(0))
+        def visit_unary_expression(ctx, operator: str) -> Expr | None:
+            expr_node = self.visitExpression(ctx.expression(0))
 
             def valid_type(type: Type | None) -> bool:
                 return TypeChecker.is_numeric_type(type) or TypeChecker.is_boolean_type(type)
 
+            expr_type = Type.create(expr_node.type)
             if operator == '-' and not valid_type(expr_type):
                 self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type, self.type_mapping), ctx)
                 return None
 
-            return expr_type
+            return UnaryOp(type=expr_node.type, expr=expr_node, op=operator)
 
         if ctx.ID():
             var_name = ctx.ID().getText()
             symbol = self.current_scope.lookup(var_name)
             if not symbol:
                 self.add_error(ErrorFormatter.undefined_symbol(var_name), ctx)
-                result_type = None
             else:
-                result_type = symbol[0].type
+                result = VarRef(name=var_name, type=symbol[0].type.name)
 
         elif ctx.literal():
-            result_type = self.visitLiteral(ctx.literal())
+            result = self.visitLiteral(ctx.literal())
         elif ctx.call():
-            result_type = self.visitCall(ctx.call())
+            result = self.visitCall(ctx.call())
 
         elif ctx.getChildCount() == 3 and ctx.getChild(0).getText() == '(':
             # Выражение в скобках
-            result_type = self.visitExpression(ctx.expression(0))
+            result = self.visitExpression(ctx.expression(0))
 
 
         elif ctx.NOT():
-            result_type = visit_unary_expression(ctx, ctx.NOT().getText())
+            result = visit_unary_expression(ctx, ctx.NOT().getText())
         elif ctx.MINUS() and ctx.getChildCount() == 2:
-            result_type = visit_unary_expression(ctx, ctx.MINUS().getText())
+            result = visit_unary_expression(ctx, ctx.MINUS().getText())
         elif len(ctx.EQ()) == 2:
-            result_type = visit_binary_expression(ctx, "==")
+            result = visit_binary_expression(ctx, "==")
         else:
             binary_operator = ctx.getChild(1).getText()
-            result_type = visit_binary_expression(ctx, binary_operator)
+            result = visit_binary_expression(ctx, binary_operator)
 
         if self.is_binding:
-            result_type = self.type_mapping.get(result_type, result_type)
+            if result is not None:
+                result.type = self.type_mapping.get(Type.create(result.type), Type.create(result.type)).name
 
-        return result_type
+        return result
 
-
-    def visitLiteral(self, ctx: MathLangParser.LiteralContext) -> Type:
+    def visitLiteral(self, ctx: MathLangParser.LiteralContext) -> Expr:
         if ctx.INT():
-            return Type.int()
+            return IntLiteral(value=int(ctx.getText()), type='int')
         elif ctx.FLOAT():
-            return Type.float()
+            return FloatLiteral(value=float(ctx.getText()), type='float')
         elif ctx.BOOL():
-            return Type.bool()
+            return BoolLiteral(value=bool(ctx.getText()), type='bool')
         elif ctx.STRING():
-            return Type.string()
+            return StringLiteral(value=ctx.getText(), type='string')
         else:
             raise ValueError('Unknown literal type')
 
-    def visitBranching(self, ctx: MathLangParser.BranchingContext):
-        condition_type = self.visit(ctx.expression())
-
+    def visitBranching(self, ctx: MathLangParser.BranchingContext) -> StatementNode:
+        condition_expr_node = self.visitExpression(ctx.expression())
+        condition_type = Type.create(condition_expr_node.type)
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
-        self.visitBlock(ctx.block(0))
+        then_block = self.visitBlock(ctx.block(0))
 
+        else_block = None
         if ctx.ELSE():
-            self.visitBlock(ctx.block(1))
+            else_block = self.visitBlock(ctx.block(1))
 
-    def visitLoop(self, ctx: MathLangParser.LoopContext):
+        return IfStmt(
+            cond=condition_expr_node,
+            then_body=then_block,
+            else_body=else_block,
+        )
+
+    def visitLoop(self, ctx: MathLangParser.LoopContext) -> WhileStmt | ForStmt | UntilStmt:
         # Сохраняем текущий контекст и создаем новую область видимости
         previous_scope = self.current_scope
 
         self.current_scope = self.current_scope.create_child_scope()
         self.current_scope.parent = previous_scope
 
+        result = None
         if ctx.for_loop():
-            self.visitFor_loop(ctx.for_loop())
+            result = self.visitFor_loop(ctx.for_loop())
         elif ctx.while_loop():
-            self.visitWhile_loop(ctx.while_loop())
+            result = self.visitWhile_loop(ctx.while_loop())
         elif ctx.until_loop():
-            self.visitUntil_loop(ctx.until_loop())
+            result = self.visitUntil_loop(ctx.until_loop())
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
+        return result
 
     def visitWhile_loop(self, ctx: MathLangParser.While_loopContext):
-        condition_type = self.visit(ctx.expression())
+        condition_node = self.visitExpression(ctx.expression())
+        if condition_node is None:
+            condition_node = Expr(type='bool')
 
+        condition_type = Type.create(condition_node.type)
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
         self.in_loop = True
-        self.visitBlock(ctx.block())
+        block_node = self.visitBlock(ctx.block())
         self.in_loop = False
+
+        return WhileStmt(cond=condition_node, body=block_node)
 
     def visitUntil_loop(self, ctx: MathLangParser.Until_loopContext):
-        condition_type = self.visit(ctx.expression())
+        condition_node = self.visitExpression(ctx.expression())
+        if condition_node is None:
+            condition_node = Expr(type='bool')
 
+        condition_type = Type.create(condition_node.type)
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
         self.in_loop = True
-        self.visitBlock(ctx.block())
+        block_node = self.visitBlock(ctx.block())
         self.in_loop = False
 
-    def visitFor_loop(self, ctx: MathLangParser.For_loopContext):
-        self.visitAssignment(ctx.assignment())
+        return UntilStmt(cond=condition_node, body=block_node)
 
-        condition_type = self.visit(ctx.expression())
+    def visitFor_loop(self, ctx: MathLangParser.For_loopContext) -> ForStmt:
+        init_expr_node = self.visitAssignment(ctx.assignment())
+        if len(init_expr_node) == 0:
+            init_expr_node = Expr(type='Unknown')
+        else:
+            init_expr_node = init_expr_node[0]
+
+        condition_node = self.visitExpression(ctx.expression())
+        if condition_node is None:
+            condition_node = Expr(type='bool')
+
+        condition_type = Type.create(condition_node.type)
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
-        self.visit(ctx.statement())
+        step_node = self.visit(ctx.statement())
 
         self.in_loop = True
-        self.visitBlock(ctx.block())
+        block_node = self.visitBlock(ctx.block())
         self.in_loop = False
 
-    def visitBlock(self, ctx: MathLangParser.BlockContext):
+        return ForStmt(init=init_expr_node, cond=condition_node, step=step_node, body=block_node)
+
+    def visitBlock(self, ctx: MathLangParser.BlockContext) -> BlockNode:
         previous_scope = self.current_scope
         self.current_scope = self.current_scope.create_child_scope()
 
+        block_node = BlockNode(body=[])
         if ctx:
             for stmt in ctx.statement():
-                self.visit(stmt)
+                node = self.visit(stmt)
+                if isinstance(node, list):
+                    for subnode in node:
+                        block_node.body.append(subnode)
+                else:
+                    block_node.body.append(node)
 
         self.current_scope = previous_scope
+        return block_node
 
-    def visitControl_flow_operator(self, ctx: MathLangParser.Control_flow_operatorContext):
+    def visitControl_flow_operator(self, ctx: MathLangParser.Control_flow_operatorContext) -> StatementNode:
         if ctx.RETURN() and not self.current_subprogram:
             self.add_error(ErrorFormatter.return_outside_of_subprogram(), ctx)
         elif ctx.BREAK() and not self.in_loop:
             self.add_error(ErrorFormatter.flow_control_operator_outside_of_loop(), ctx)
         elif ctx.CONTINUE() and not self.in_loop:
             self.add_error(ErrorFormatter.flow_control_operator_outside_of_loop(), ctx)
+
+        if ctx.RETURN():
+            return ReturnNode()
+        elif ctx.BREAK():
+            return BreakNode()
+        else: # ctx.CONTINUE():
+            return ContinueNode()
 
 
 def main():
@@ -598,7 +660,13 @@ def main():
         else:
             print("✅ Программа семантически корректна!")
             print("\nGenerated WAT code:")
-            # print(analyzer.get_wat_code())
+
+            emitter = WATEmitter()
+            print(analyzer.program_node)
+
+            # code = emitter.emit(analyzer.program_node)
+            # print(code)
+
             sys.exit(0)
 
     except FileNotFoundError:

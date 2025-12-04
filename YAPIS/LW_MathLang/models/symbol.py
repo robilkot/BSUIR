@@ -34,14 +34,14 @@ class Symbol:
 # todo check for global symbols definition on call
 # todo check for identical subprograms with different teamplte arg names
 class SubprogramSymbol(Symbol):
-    def __init__(self, name, parameters: list[Type], return_type: Type, template_args: list[Type] | None):
+    def __init__(self, name, parameters: list[Symbol], return_type: Type, template_args: list[Type] | None):
         super().__init__(name, return_type)
-        self.parameters: list[Type] = parameters
+        self.parameters: list[Symbol] = parameters
         self.template_args: list[Type] | None = template_args
         self.local_scope = SymbolTable()
 
     def __str__(self):
-        if len(self.template_args) == 0:
+        if self.template_args is None or len(self.template_args) == 0:
             return f"sub {self.name}({self.__params_str()}) -> {self.type}"
         else:
             return f"sub {self.name}<{self.__template_args_str()}>({self.__params_str()}) -> {self.type}"
@@ -50,7 +50,7 @@ class SubprogramSymbol(Symbol):
         return self.__str__()
 
     def __params_str(self):
-        return ", ".join([type.name for type in self.parameters])
+        return ", ".join([symbol.type.name for symbol in self.parameters])
 
     def __template_args_str(self):
         if self.template_args is None:

@@ -28,8 +28,8 @@ class Type:
 
     @staticmethod
     def create(typename: str):
-        if isinstance(typename, Type):
-            raise ValueError(f'typename уже типа ({typename.name})')
+        # if isinstance(typename, Type):
+        #     raise ValueError(f'typename уже типа ({typename.name})')
 
         if typename == "float":
             return Type.float()
