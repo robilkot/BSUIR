@@ -1,4 +1,5 @@
 import sys
+import typing
 
 from antlr4 import *
 
@@ -8,6 +9,7 @@ from generated.grammar.MathLangVisitor import MathLangVisitor
 from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
     BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
     StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt, SubprogramCall
+from intermediate_code.wat_emitter import WATGenerator
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.symbol import Symbol, SubprogramSymbol, SymbolTable
@@ -31,7 +33,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.wat_code = []
 
         self.program_node: ProgramNode = ProgramNode(subprograms=[], statements=[])
-        self.__subprograms_blocks: dict[SubprogramSymbol, BlockNode] = {}
+        self.__subprograms_nodes: dict[SubprogramSymbol, SubprogramNode] = {}
 
         self.binding_cache = set()
 
@@ -57,8 +59,8 @@ class SemanticAnalyzer(MathLangVisitor):
 
         for sub in self.__default_subprograms:
             self.global_scope.add_symbol(sub)
-        for sub in self.__math_subprograms:
-            self.global_scope.add_symbol(sub)
+        # for sub in self.__math_subprograms:
+        #     self.global_scope.add_symbol(sub)
 
     @property
     def is_binding(self) -> bool:
@@ -88,15 +90,12 @@ class SemanticAnalyzer(MathLangVisitor):
         # AST
         for symbol in self.global_scope.symbols:
             if isinstance(symbol, SubprogramSymbol):
-                sub_node = SubprogramNode(
-                    name=symbol.name,
-                    type=symbol.type,
-                    param_types=[param.type for param in symbol.parameters],
-                    param_names=[param.name for param in symbol.parameters],
-                    # body=self.__subprograms_blocks[symbol]
-                    body=BlockNode(body=[])
-                )
-                self.program_node.subprograms.append(sub_node)
+                try:
+                    sub_node = self.__subprograms_nodes[symbol]
+                    self.program_node.subprograms.append(sub_node)
+                except KeyError:
+                    print(f"Templated sub {symbol} node not found in global scope")
+                    continue
 
     def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> SubprogramNode | None:
         sub_name = ctx.ID().getText()
@@ -175,6 +174,7 @@ class SemanticAnalyzer(MathLangVisitor):
             param_names=[param.name for param in subprogram_symbol.parameters],
             body=block_node
         )
+        self.__subprograms_nodes[subprogram_symbol] = subprogram_node
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
@@ -249,7 +249,7 @@ class SemanticAnalyzer(MathLangVisitor):
                     overload_candidate_subprograms.insert(0, (defined_subprogram, templated_types_mapping))
 
         # Try to find suitable with higher priority for non-templated subs
-        can_bind = False
+        can_bind: SubprogramNode | None | typing.Literal[True] = None
         type_mapping: dict[Type, Type] | None = None
         subprogram: SubprogramSymbol | None = None
 
@@ -270,7 +270,7 @@ class SemanticAnalyzer(MathLangVisitor):
             else:
                 can_bind = self.visitSubprogram(subprogram_ctx)
 
-            if can_bind:
+            if can_bind is not None:
                 # if self.is_binding:
                 #     print("call to", ctx.getText(), "= bind", subprogram , "with", type_mapping)
 
@@ -285,11 +285,11 @@ class SemanticAnalyzer(MathLangVisitor):
 
             self.type_mapping = previous_mapping
 
-            if can_bind:
+            if can_bind is not None:
                 break
 
-        if not can_bind and not self.defining_subprogram:
-            self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_parameters), ctx)
+        if can_bind is None and not self.defining_subprogram:
+            self.add_error(ErrorFormatter.no_overload_found(sub_name, [param.type for param in sub_parameters]), ctx)
             return None
 
         if subprogram is None:
@@ -647,7 +647,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    default_file = 'samples/sample4.ml'
+    default_file = 'samples/sample6.ml'
     # default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:
@@ -681,18 +681,19 @@ def main():
 
             for error in analyzer.errors:
                 print(f"❌ {error}")
-            sys.exit(1)
         else:
             print("✅ Программа семантически корректна!")
             print("\nGenerated WAT code:")
 
-            emitter = WATEmitter()
-            print(analyzer.program_node)
+            generator = WATGenerator()
 
-            # code = emitter.emit(analyzer.program_node)
-            # print(code)
+            code = generator.generate_wat(analyzer.program_node)
+            with open(source_file.replace('.ml', '.wat'), 'w', encoding='utf-8') as f:
+                f.write(code)
 
-            sys.exit(0)
+        print(analyzer.program_node)
+
+        sys.exit(0)
 
     except FileNotFoundError:
         print(f"❌ Файл {source_file} не найден")

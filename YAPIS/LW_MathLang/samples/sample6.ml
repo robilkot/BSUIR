@@ -1,17 +1,16 @@
-sub calc:(T)(T a, float result)
-{
-    result = a * 2.0
+sub solveQuadratic(float a, float b, float c, float root1, float root2, bool result) {
+    float discriminant = b^2. - 4.*a*c
+
+    if (discriminant < 0.) {
+        result = false // No roots found
+    }
+
+    root1 = (-b + discriminant^0.5) / (2.*a)
+    root2 = (-b - discriminant^0.5) / (2.*a)
+
+	result = true
 }
 
-//for(int x = 0; x > 2; x = x + 1)
-//{
-    //calc(2, 4)
-//}
-
-while(true)
-{
-    int x = 0
-}
-
-float y = 0.0
-//calc(x, y)
+float b = 0.0
+bool result = false
+solveQuadratic(b, b, b, b, b, result)

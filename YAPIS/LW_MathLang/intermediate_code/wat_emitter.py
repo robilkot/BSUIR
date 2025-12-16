@@ -43,9 +43,6 @@ class WATGenerator:
         # Generate main function from top-level statements
         self._generate_main_function(program.statements)
 
-        # Export main function
-        self.module_parts.append('  (export "main" (func $main))')
-
         self.module_parts.append(")")
         return "\n".join(self.module_parts)
 
@@ -102,6 +99,33 @@ class WATGenerator:
 
         return list(set(strings))  # Remove duplicates
 
+    def _collect_local_vars(self, block: BlockNode) -> dict[str, str]:
+        """Collect all local variables declared in a block"""
+        local_vars = {}
+
+        def collect_from_stmt(stmt):
+            if isinstance(stmt, VarDecl):
+                wasm_type = self._type_to_wasm(stmt.type)
+                local_vars[stmt.name] = wasm_type
+            elif isinstance(stmt, BlockNode):
+                for s in stmt.body:
+                    collect_from_stmt(s)
+            elif isinstance(stmt, IfStmt):
+                collect_from_stmt(stmt.then_body)
+                if stmt.else_body:
+                    collect_from_stmt(stmt.else_body)
+            elif isinstance(stmt, (WhileStmt, UntilStmt)):
+                collect_from_stmt(stmt.body)
+            elif isinstance(stmt, ForStmt):
+                if stmt.init:
+                    collect_from_stmt(stmt.init)
+                collect_from_stmt(stmt.body)
+
+        for stmt in block.body:
+            collect_from_stmt(stmt)
+
+        return local_vars
+
     def _generate_subprogram(self, subprogram: SubprogramNode):
         """Generate a function definition"""
         func_name = f"${subprogram.name}"
@@ -130,17 +154,8 @@ class WATGenerator:
         self.local_vars = {name: self.param_types[name]
                            for name in subprogram.param_names}
 
-        # Generate function body
-        body_lines = []
-        self.func_defs = []
-
-        # Process body
-        body_code = self._generate_block(subprogram.body.body, is_function_body=True)
-
-        # Restore context
-        self.current_function = old_function
-        self.return_type = old_return_type
-        self.local_vars = old_locals
+        # Collect all local variables first by analyzing the function body
+        local_vars_to_declare = self._collect_local_vars(subprogram.body)
 
         # Build function definition
         func_def = [f"  (func {func_name}"]
@@ -148,37 +163,101 @@ class WATGenerator:
         if result_str:
             func_def.append(f"    {result_str}")
 
-        # Add local variables
-        for var_name, var_type in self.local_vars.items():
-            if var_name not in subprogram.param_names:  # Skip params
-                func_def.append(f"    (local ${var_name} {var_type})")
+        # Declare all local variables at function start
+        for var_name, var_type in local_vars_to_declare.items():
+            func_def.append(f"    (local ${var_name} {var_type})")
 
-        func_def.append("    (block")
-        func_def.extend(f"      {line}" for line in body_lines)
-        func_def.extend(f"      {line}" for line in body_code)
+        # Add to local_vars map
+        self.local_vars.update(local_vars_to_declare)
+
+        # Generate function body
+        body_code = self._generate_block(subprogram.body.body, is_function_body=True)
+        func_def.extend(f"    {line}" for line in body_code)
 
         # Ensure function returns if needed
-        if subprogram.type != Type.void():
-            func_def.append("      unreachable  ;; default return if missing")
+        if subprogram.type != Type.void() and not self._has_return(subprogram.body):
+            func_def.append("    unreachable  ;; default return if missing")
 
-        func_def.append("    )")
         func_def.append("  )")
+
+        # Restore context
+        self.current_function = old_function
+        self.return_type = old_return_type
+        self.local_vars = old_locals
 
         self.module_parts.extend(func_def)
 
+    def _has_return(self, block: BlockNode) -> bool:
+        """Check if a block contains a return statement"""
+
+        def check_stmt(stmt):
+            if isinstance(stmt, Return) or isinstance(stmt, ReturnNode):
+                return True
+            elif isinstance(stmt, BlockNode):
+                for s in stmt.body:
+                    if check_stmt(s):
+                        return True
+            elif isinstance(stmt, IfStmt):
+                if check_stmt(stmt.then_body):
+                    return True
+                if stmt.else_body and check_stmt(stmt.else_body):
+                    return True
+            elif isinstance(stmt, (WhileStmt, UntilStmt, ForStmt)):
+                # Don't check loops for returns that might not execute
+                pass
+            return False
+
+        return check_stmt(block)
+
+    def _collect_local_vars_from_statements(self, statements: List[StatementNode]) -> dict[str, str]:
+        """Collect all local variables from a list of statements"""
+        local_vars = {}
+
+        def collect_from_stmt(stmt):
+            if isinstance(stmt, VarDecl):
+                wasm_type = self._type_to_wasm(stmt.type)
+                local_vars[stmt.name] = wasm_type
+            elif isinstance(stmt, BlockNode):
+                for s in stmt.body:
+                    collect_from_stmt(s)
+            elif isinstance(stmt, IfStmt):
+                collect_from_stmt(stmt.then_body)
+                if stmt.else_body:
+                    collect_from_stmt(stmt.else_body)
+            elif isinstance(stmt, (WhileStmt, UntilStmt)):
+                collect_from_stmt(stmt.body)
+            elif isinstance(stmt, ForStmt):
+                if stmt.init:
+                    collect_from_stmt(stmt.init)
+                collect_from_stmt(stmt.body)
+
+        for stmt in statements:
+            collect_from_stmt(stmt)
+
+        return local_vars
+
     def _generate_main_function(self, statements: List[StatementNode]):
         """Generate the main function"""
-        self.module_parts.append("  (func $main (export \"main\") (result i32)")
-        self.module_parts.append("    (local $temp i32)")
+        # Collect all local variables first
+        local_vars = self._collect_local_vars_from_statements(statements)
+
+        self.module_parts.append('  (func $main (export "main") (result i32)')
+
+        # Declare all local variables
+        for var_name, var_type in local_vars.items():
+            self.module_parts.append(f'    (local ${var_name} {var_type})')
+
+        # Add to local_vars map
+        self.local_vars.update(local_vars)
 
         # Generate statements
         main_body = self._generate_block(statements)
         for line in main_body:
-            self.module_parts.append(f"    {line}")
+            self.module_parts.append(f'    {line}')
 
         # Return 0 by default
-        self.module_parts.append("    i32.const 0")
-        self.module_parts.append("  )")
+        self.module_parts.append('    i32.const 0')
+        self.module_parts.append('  )')
 
     def _generate_block(self, statements: List[StatementNode], is_function_body=False) -> List[str]:
         """Generate code for a block of statements"""
@@ -220,12 +299,8 @@ class WATGenerator:
         """Generate variable declaration"""
         result = []
 
-        # Register variable
-        wasm_type = self._type_to_wasm(var_decl.type)
+        # Variable was already declared at function start, just initialize if needed
         var_name = f"${var_decl.name}"
-
-        # Store in local variables map
-        self.local_vars[var_decl.name] = wasm_type
 
         # Generate initialization if present
         if var_decl.init:
