@@ -84,17 +84,33 @@ class SubprogramNode(Expr):
 class IntLiteral(Expr):
     value: int
 
+    def __init__(self, value: int):
+        self.type = Type.int()
+        self.value = value
+
 @dataclass
 class FloatLiteral(Expr):
     value: float
+
+    def __init__(self, value: float):
+        self.type = Type.float()
+        self.value = value
 
 @dataclass
 class StringLiteral(Expr):
     value: str
 
+    def __init__(self, value: str):
+        self.type = Type.string()
+        self.value = value
+
 @dataclass
 class BoolLiteral(Expr):
     value: bool
+
+    def __init__(self, value: bool):
+        self.type = Type.bool()
+        self.value = value
 
 
 @dataclass

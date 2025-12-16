@@ -8,7 +8,6 @@ from generated.grammar.MathLangVisitor import MathLangVisitor
 from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
     BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
     StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt, SubprogramCall
-from intermediate_code.wat_emitter import WATEmitter
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.symbol import Symbol, SubprogramSymbol, SymbolTable
@@ -184,9 +183,9 @@ class SemanticAnalyzer(MathLangVisitor):
         if self.is_binding:
             self.binding_cache.remove(subprogram_symbol)
 
+        print(subprogram_node)
         return subprogram_node
 
-    # todo return expr
     def visitCall(self, ctx: MathLangParser.CallContext) -> Expr | None:
         sub_name = ctx.ID().getText()
         sub_parameters = self.visitExpression_list(ctx.expression_list()) if ctx.expression_list() is not None else []
@@ -514,13 +513,13 @@ class SemanticAnalyzer(MathLangVisitor):
 
     def visitLiteral(self, ctx: MathLangParser.LiteralContext) -> Expr:
         if ctx.INT():
-            return IntLiteral(value=int(ctx.getText()), type=Type.int())
+            return IntLiteral(value=int(ctx.getText()))
         elif ctx.FLOAT():
-            return FloatLiteral(value=float(ctx.getText()), type=Type.float())
+            return FloatLiteral(value=float(ctx.getText()))
         elif ctx.BOOL():
-            return BoolLiteral(value=bool(ctx.getText()), type=Type.bool())
+            return BoolLiteral(value=bool(ctx.getText()))
         elif ctx.STRING():
-            return StringLiteral(value=ctx.getText(), type=Type.string())
+            return StringLiteral(value=ctx.getText())
         else:
             raise ValueError('Unknown literal type')
 
