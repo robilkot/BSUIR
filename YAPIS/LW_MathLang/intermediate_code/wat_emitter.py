@@ -104,7 +104,10 @@ class WATGenerator:
         local_vars = {}
 
         def collect_from_stmt(stmt):
-            if isinstance(stmt, VarDecl):
+            if isinstance(stmt, AssignNode):
+                wasm_type = self._type_to_wasm(stmt.value.type)
+                local_vars[stmt.name] = wasm_type
+            elif isinstance(stmt, VarDecl):
                 wasm_type = self._type_to_wasm(stmt.type)
                 local_vars[stmt.name] = wasm_type
             elif isinstance(stmt, BlockNode):
@@ -120,9 +123,12 @@ class WATGenerator:
                 if stmt.init:
                     collect_from_stmt(stmt.init)
                 collect_from_stmt(stmt.body)
+            else:
+                print("Unused statement")
+                print(stmt)
 
-        for stmt in block.body:
-            collect_from_stmt(stmt)
+        for _stmt in block.body:
+            collect_from_stmt(_stmt)
 
         return local_vars
 
@@ -151,11 +157,11 @@ class WATGenerator:
         # Set new context
         self.current_function = subprogram.name
         self.return_type = subprogram.type
-        self.local_vars = {name: self.param_types[name]
-                           for name in subprogram.param_names}
+        self.local_vars = {name: self.param_types[name] for name in subprogram.param_names}
 
         # Collect all local variables first by analyzing the function body
         local_vars_to_declare = self._collect_local_vars(subprogram.body)
+        local_vars_to_declare = {name: type for name, type in local_vars_to_declare.items() if name not in subprogram.param_names}
 
         # Build function definition
         func_def = [f"  (func {func_name}"]
@@ -176,7 +182,18 @@ class WATGenerator:
 
         # Ensure function returns if needed
         if subprogram.type != Type.void() and not self._has_return(subprogram.body):
-            func_def.append("    unreachable  ;; default return if missing")
+            # Add default return value based on return type
+            if subprogram.type == Type.int():
+                func_def.append("    i32.const 0")
+            elif subprogram.type == Type.float():
+                func_def.append("    f32.const 0.0")
+            elif subprogram.type == Type.bool():
+                func_def.append("    i32.const 0")
+            elif subprogram.type == Type.string():
+                func_def.append("    i32.const 0")
+            else:
+                func_def.append("    i32.const 0")
+            func_def.append("    return")
 
         func_def.append("  )")
 
@@ -213,7 +230,7 @@ class WATGenerator:
         """Collect all local variables from a list of statements"""
         local_vars = {}
 
-        def collect_from_stmt(stmt):
+        def collect_from_stmt(stmt: StatementNode):
             if isinstance(stmt, VarDecl):
                 wasm_type = self._type_to_wasm(stmt.type)
                 local_vars[stmt.name] = wasm_type
@@ -231,8 +248,8 @@ class WATGenerator:
                     collect_from_stmt(stmt.init)
                 collect_from_stmt(stmt.body)
 
-        for stmt in statements:
-            collect_from_stmt(stmt)
+        for _stmt in statements:
+            collect_from_stmt(_stmt)
 
         return local_vars
 
@@ -255,7 +272,7 @@ class WATGenerator:
         for line in main_body:
             self.module_parts.append(f'    {line}')
 
-        # Return 0 by default
+        # Return 0 by default - always return an i32 value
         self.module_parts.append('    i32.const 0')
         self.module_parts.append('  )')
 
@@ -327,13 +344,27 @@ class WATGenerator:
 
         # For void returns or no expression
         if isinstance(ret, ReturnNode) or self.return_type == Type.void():
-            result.append("return")
+            # If in main function which returns i32, need to return a value
+            if self.current_function == "main":
+                result.append("i32.const 0")
+                result.append("return")
+            else:
+                result.append("return")
         # For return with expression (if Return had an expression field)
         elif hasattr(ret, 'expr') and ret.expr:
             expr_code = self._generate_expression(ret.expr)
             result.extend(expr_code)
             result.append("return")
         else:
+            # Default return without expression
+            if self.return_type == Type.int():
+                result.append("i32.const 0")
+            elif self.return_type == Type.float():
+                result.append("f32.const 0.0")
+            elif self.return_type == Type.bool():
+                result.append("i32.const 0")
+            else:
+                result.append("i32.const 0")  # default
             result.append("return")
 
         return result
