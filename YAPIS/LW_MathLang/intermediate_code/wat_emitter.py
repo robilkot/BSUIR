@@ -92,7 +92,7 @@ class WATEmitter:
         self.var_types = {}
 
         wasm_params_parts = []
-        for i, pname in enumerate(func.params):
+        for i, pname in enumerate(func.param_names):
             ptype = 'int'
             if func.param_types and i < len(func.param_types):
                 ptype = func.param_types[i]
@@ -110,7 +110,7 @@ class WATEmitter:
         locals_ = self._collect_locals_with_types(func)
         for name, type_ in locals_.items():
             self.var_types[name] = type_
-            if name not in func.params:
+            if name not in func.param_names:
                 self.lines.append(f'{self.indent*2}(local ${name} {self._map_type(type_)})')
         
         for s in func.body.body:

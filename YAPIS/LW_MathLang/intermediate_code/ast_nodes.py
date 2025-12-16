@@ -1,20 +1,13 @@
-from dataclasses import dataclass, Field
+from dataclasses import dataclass
 from typing import List, Optional
+
+from models.types import Type
 
 
 @dataclass
 class ProgramNode:
     subprograms: List['SubprogramNode']
     statements: List['StatementNode']
-
-
-@dataclass
-class SubprogramNode:
-    name: str
-    ret_type: str
-    params: list[str]
-    param_types: list[str]
-    body: 'BlockNode'
 
 
 @dataclass
@@ -38,7 +31,7 @@ class ContinueNode(StatementNode):
 
 @dataclass
 class VarDecl(StatementNode):
-    type: str
+    type: Type
     name: str
     init: Optional['Expr']
 
@@ -77,7 +70,14 @@ class ForStmt(StatementNode):
 
 @dataclass
 class Expr(StatementNode):
-    type: str
+    type: Type
+
+@dataclass
+class SubprogramNode(Expr):
+    name: str
+    param_names: list[str]
+    param_types: list[Type]
+    body: 'BlockNode'
 
 
 @dataclass
@@ -126,5 +126,5 @@ class SubprogramCall(Expr):
 
 @dataclass
 class CastExpr(Expr):
-    target_type: str
+    target_type: Type
     expr: Expr

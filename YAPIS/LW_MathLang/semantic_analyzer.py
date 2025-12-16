@@ -7,7 +7,7 @@ from generated.grammar.MathLangParser import MathLangParser
 from generated.grammar.MathLangVisitor import MathLangVisitor
 from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
     BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
-    StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt
+    StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt, SubprogramCall
 from intermediate_code.wat_emitter import WATEmitter
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
@@ -26,7 +26,6 @@ class SemanticAnalyzer(MathLangVisitor):
         self.current_subprogram: SubprogramSymbol | None = None
         self.in_loop = False
         self.type_mapping: dict[Type, Type] | None = None
-        self.binding_result = True
         self.subprogram_ctx: dict[SubprogramSymbol, MathLangParser.SubprogramContext] = {}
         self.defining_subprogram = True
         self.errors = []
@@ -41,6 +40,9 @@ class SemanticAnalyzer(MathLangVisitor):
             SubprogramSymbol(name='cast', return_type=Type('T'), parameters=[Symbol(type=Type('K'), name='from')], template_args=[Type('K'), Type('T')]),
             SubprogramSymbol(name='write', return_type=Type.void(), parameters=[Symbol(type=Type('T'), name='msg')], template_args=[Type('T')]),
             SubprogramSymbol(name='read', return_type=Type('T'), parameters=[], template_args=[Type('T')]),
+        ]
+
+        self.__math_subprograms = [
             SubprogramSymbol(name='abs', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
             SubprogramSymbol(name='log', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
             SubprogramSymbol(name='ln', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
@@ -51,11 +53,13 @@ class SemanticAnalyzer(MathLangVisitor):
             SubprogramSymbol(name='ctg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
             SubprogramSymbol(name='actg', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
             SubprogramSymbol(name='asin', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
-            SubprogramSymbol(name='acos', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[])
+            SubprogramSymbol(name='acos', return_type=Type.float(), parameters=[Symbol(type=Type.float(), name='x')], template_args=[]),
         ]
 
-        # for sub in self.__default_subprograms:
-        #     self.global_scope.add_symbol(sub)
+        for sub in self.__default_subprograms:
+            self.global_scope.add_symbol(sub)
+        for sub in self.__math_subprograms:
+            self.global_scope.add_symbol(sub)
 
     @property
     def is_binding(self) -> bool:
@@ -87,17 +91,15 @@ class SemanticAnalyzer(MathLangVisitor):
             if isinstance(symbol, SubprogramSymbol):
                 sub_node = SubprogramNode(
                     name=symbol.name,
-                    ret_type=symbol.type.name,
-                    param_types=[param.type.name for param in symbol.parameters],
-                    params=[param.name for param in symbol.parameters],
+                    type=symbol.type,
+                    param_types=[param.type for param in symbol.parameters],
+                    param_names=[param.name for param in symbol.parameters],
                     # body=self.__subprograms_blocks[symbol]
                     body=BlockNode(body=[])
                 )
                 self.program_node.subprograms.append(sub_node)
 
-    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> bool | None:
-        self.binding_result = True
-
+    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> SubprogramNode | None:
         sub_name = ctx.ID().getText()
 
         parameters_symbols: list[Symbol] = []
@@ -162,11 +164,18 @@ class SemanticAnalyzer(MathLangVisitor):
             try:
                 self.current_scope.add_symbol(param_symbol)
             except SemanticError as e:
-                self.binding_result = False
                 if not self.is_binding:
                     self.add_error(e.message, ctx)
 
-        self.visitBlock(ctx.block())
+
+        block_node = self.visitBlock(ctx.block())
+        subprogram_node = SubprogramNode(
+            name=subprogram_symbol.name,
+            type=subprogram_symbol.type,
+            param_types=[param.type for param in subprogram_symbol.parameters],
+            param_names=[param.name for param in subprogram_symbol.parameters],
+            body=block_node
+        )
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
@@ -174,9 +183,8 @@ class SemanticAnalyzer(MathLangVisitor):
 
         if self.is_binding:
             self.binding_cache.remove(subprogram_symbol)
-            return self.binding_result
-        else:
-            return None
+
+        return subprogram_node
 
     # todo return expr
     def visitCall(self, ctx: MathLangParser.CallContext) -> Expr | None:
@@ -197,9 +205,9 @@ class SemanticAnalyzer(MathLangVisitor):
 
         if self.is_binding and not self.current_subprogram:
             for param in sub_parameters:
-                param = self.type_mapping.get(param, param)
+                param.type = self.type_mapping.get(param.type, param.type)
 
-                if TypeChecker.is_templated_argument(param):
+                if TypeChecker.is_templated_argument(param.type):
                     # todo error message
                     self.add_error(f"fuck {param}", ctx)
 
@@ -222,7 +230,10 @@ class SemanticAnalyzer(MathLangVisitor):
             templated_types_mapping: dict[Type, Type] = {}
             params_ok = True
             for (param_expected, actual_node) in zip(defined_subprogram.parameters, sub_parameters):
-                node_type = Type.create(actual_node.type)
+                if actual_node is None:
+                    continue
+
+                node_type = actual_node.type
                 if TypeChecker.is_templated_argument(param_expected.type):
                     if templated_types_mapping.get(param_expected.type, None) is None:
                         templated_types_mapping[param_expected.type] = node_type
@@ -282,12 +293,20 @@ class SemanticAnalyzer(MathLangVisitor):
             self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_parameters), ctx)
             return None
 
+        if subprogram is None:
+            return None
+
+        return_type = subprogram.type
         if type_mapping:
-            return type_mapping.get(subprogram.type, subprogram.type)
-        else:
-            if subprogram is None:
-                return None
-            return subprogram.type
+            return_type = type_mapping.get(return_type, return_type)
+
+        call_node = SubprogramCall(
+            name=subprogram.name,
+            args=sub_parameters,
+            type=return_type,
+        )
+        print(call_node)
+        return call_node
 
 
     def visitTemplate(self, ctx:MathLangParser.TemplateContext) -> list[Type]:
@@ -346,13 +365,16 @@ class SemanticAnalyzer(MathLangVisitor):
                 return []
 
             for symbol, expression_node in zip(left_symbols, right_expressions):
-                if symbol is not None:
-                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type.name))
+                if expression_node is None:
+                    continue
 
-                    expr_type = Type.create(expression_node.type)
+                if symbol is not None:
+                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type))
+
+                    expr_type = expression_node.type
                     if expr_type != symbol.type:
                         can_ignore_error_while_templating = (self.current_subprogram
-                                                             and (TypeChecker.is_templated_argument(Type.create(expression_node.type))
+                                                             and (TypeChecker.is_templated_argument(expr_type)
                                                                   or TypeChecker.is_templated_argument(symbol.type)))
                         if not can_ignore_error_while_templating:
                             add_assignment_error(symbol.type, expr_type)
@@ -377,16 +399,20 @@ class SemanticAnalyzer(MathLangVisitor):
                     return []
 
                 for symbol, expression_node in zip(left_symbols, right_expressions):
-                    expr_type = Type.create(expression_node.type)
+                    expr_type = expression_node.type
 
-                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type.name))
+                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type))
                     if expr_type != symbol.type:
                         add_assignment_error(symbol.type, expr_type)
             else:
                 for symbol in left_symbols:
-                    expr_type = Type.create(right_expressions[0].type)
+                    right_expr = right_expressions[0]
+                    if right_expr is None:
+                        continue
+                        
+                    expr_type = right_expr.type
 
-                    result.append(AssignNode(name=symbol.name, value=right_expressions[0], type=symbol.type.name))
+                    result.append(AssignNode(name=symbol.name, value=right_expr, type=symbol.type))
                     if expr_type != symbol.type:
                         add_assignment_error(symbol.type, expr_type)
 
@@ -430,9 +456,9 @@ class SemanticAnalyzer(MathLangVisitor):
 
             try:
                 result_node_type = TypeChecker.get_binary_operation_type(
-                    Type.create(left_expr_node.type),
-                    Type.create(right_expr_node.type),
-                    operator, self.type_mapping).name
+                    left_expr_node.type,
+                    right_expr_node.type,
+                    operator, self.type_mapping)
 
                 return BinaryOp(type=result_node_type, op=operator, left=left_expr_node, right=right_expr_node)
             except SemanticError as e:
@@ -445,7 +471,7 @@ class SemanticAnalyzer(MathLangVisitor):
             def valid_type(type: Type | None) -> bool:
                 return TypeChecker.is_numeric_type(type) or TypeChecker.is_boolean_type(type)
 
-            expr_type = Type.create(expr_node.type)
+            expr_type = expr_node.type
             if operator == '-' and not valid_type(expr_type):
                 self.add_error(ErrorFormatter.unary_operator_only_valid_on_types(operator, 'числовым и булевым типам', expr_type, self.type_mapping), ctx)
                 return None
@@ -458,7 +484,7 @@ class SemanticAnalyzer(MathLangVisitor):
             if not symbol:
                 self.add_error(ErrorFormatter.undefined_symbol(var_name), ctx)
             else:
-                result = VarRef(name=var_name, type=symbol[0].type.name)
+                result = VarRef(name=var_name, type=symbol[0].type)
 
         elif ctx.literal():
             result = self.visitLiteral(ctx.literal())
@@ -482,25 +508,25 @@ class SemanticAnalyzer(MathLangVisitor):
 
         if self.is_binding:
             if result is not None:
-                result.type = self.type_mapping.get(Type.create(result.type), Type.create(result.type)).name
+                result.type = self.type_mapping.get(result.type, result.type)
 
         return result
 
     def visitLiteral(self, ctx: MathLangParser.LiteralContext) -> Expr:
         if ctx.INT():
-            return IntLiteral(value=int(ctx.getText()), type='int')
+            return IntLiteral(value=int(ctx.getText()), type=Type.int())
         elif ctx.FLOAT():
-            return FloatLiteral(value=float(ctx.getText()), type='float')
+            return FloatLiteral(value=float(ctx.getText()), type=Type.float())
         elif ctx.BOOL():
-            return BoolLiteral(value=bool(ctx.getText()), type='bool')
+            return BoolLiteral(value=bool(ctx.getText()), type=Type.bool())
         elif ctx.STRING():
-            return StringLiteral(value=ctx.getText(), type='string')
+            return StringLiteral(value=ctx.getText(), type=Type.string())
         else:
             raise ValueError('Unknown literal type')
 
     def visitBranching(self, ctx: MathLangParser.BranchingContext) -> StatementNode:
         condition_expr_node = self.visitExpression(ctx.expression())
-        condition_type = Type.create(condition_expr_node.type)
+        condition_type = condition_expr_node.type
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
@@ -538,9 +564,9 @@ class SemanticAnalyzer(MathLangVisitor):
     def visitWhile_loop(self, ctx: MathLangParser.While_loopContext):
         condition_node = self.visitExpression(ctx.expression())
         if condition_node is None:
-            condition_node = Expr(type='bool')
+            condition_node = Expr(type=Type.bool())
 
-        condition_type = Type.create(condition_node.type)
+        condition_type = condition_node.type
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
@@ -553,9 +579,9 @@ class SemanticAnalyzer(MathLangVisitor):
     def visitUntil_loop(self, ctx: MathLangParser.Until_loopContext):
         condition_node = self.visitExpression(ctx.expression())
         if condition_node is None:
-            condition_node = Expr(type='bool')
+            condition_node = Expr(type=Type.bool())
 
-        condition_type = Type.create(condition_node.type)
+        condition_type = condition_node.type
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
@@ -568,15 +594,15 @@ class SemanticAnalyzer(MathLangVisitor):
     def visitFor_loop(self, ctx: MathLangParser.For_loopContext) -> ForStmt:
         init_expr_node = self.visitAssignment(ctx.assignment())
         if len(init_expr_node) == 0:
-            init_expr_node = Expr(type='Unknown')
+            init_expr_node = Expr(type=Type.create('Unknown'))
         else:
             init_expr_node = init_expr_node[0]
 
         condition_node = self.visitExpression(ctx.expression())
         if condition_node is None:
-            condition_node = Expr(type='bool')
+            condition_node = Expr(type=Type.bool())
 
-        condition_type = Type.create(condition_node.type)
+        condition_type = condition_node.type
         if not TypeChecker.is_boolean_type(condition_type):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
@@ -622,7 +648,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    default_file = 'samples/sample6.ml'
+    default_file = 'samples/sample4.ml'
     # default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:
