@@ -1,855 +1,707 @@
+from dataclasses import dataclass, field, InitVar
+from typing import List, Optional, Dict, Set, Tuple
+import math
+
 from intermediate_code.ast_nodes import *
-from models.types import Type
 
 
-# WAT Generator Class
-class WATGenerator:
+class WatGenerator:
     def __init__(self):
-        self.module_parts = []
-        self.func_defs = []
-        self.main_func_body = []
-        self.variable_counter = 0
-        self.label_counter = 0
-        self.local_vars = {}
+        self.indent_level = 0
+        self.code_lines = []
         self.current_function = None
-        self.return_type = None
-        self.param_types = {}
-        self.loop_break_labels = []
-        self.loop_continue_labels = []
+        self.function_locals = {}  # function_name -> Dict[var_name: type]
+        self.function_params = {}  # function_name -> Dict[param_name: type]
+        self.function_types = {}
+        self.string_constants = {}
+        self.string_counter = 0
+        self.label_counter = 0
+        self.loop_stack = []
+        self.math_functions = {'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
+                               'exp', 'log', 'sqrt', 'ceil', 'floor', 'abs'}
 
-    def generate_wat(self, program: ProgramNode) -> str:
-        """Generate WAT code from the AST"""
-        self.module_parts = []
+    def indent(self):
+        self.indent_level += 1
+
+    def dedent(self):
+        self.indent_level -= 1
+
+    def emit(self, line: str):
+        self.code_lines.append("  " * self.indent_level + line)
+
+    def get_unique_label(self, prefix: str) -> str:
+        self.label_counter += 1
+        return f"${prefix}_{self.label_counter}"
+
+    def generate(self, program: 'ProgramNode') -> str:
+        """Main entry point to generate WAT from AST"""
+        self.code_lines = []
 
         # Start module
-        self.module_parts.append("(module")
+        self.emit("(module")
+        self.indent()
 
-        # Memory for strings (if needed)
-        self.module_parts.append("  (memory 1)")
+        # Import console functions
+        self._emit_imports()
 
-        # Data section for string literals
-        string_literals = self._collect_string_literals(program)
-        if string_literals:
-            self.module_parts.append("  (data (i32.const 0)")
-            for s in string_literals:
-                escaped = s.replace('"', '\\"')
-                self.module_parts.append(f'    "{escaped}"')
-            self.module_parts.append("  )")
+        # Import math functions
+        self._emit_math_imports()
 
-        # Process subprograms (functions)
+        # Generate memory for strings
+        self.emit('(memory $memory 1)')
+
+        # Generate string constants
+        self._generate_string_constants(program)
+
+        # Collect function signatures first
+        self._collect_function_info(program)
+
+        # Generate all subprograms
         for subprogram in program.subprograms:
             self._generate_subprogram(subprogram)
 
-        # Generate main function from top-level statements
-        self._generate_main_function(program.statements)
+        # Generate main program (global statements)
+        self._generate_main_program(program.statements)
 
-        self.module_parts.append(")")
-        return "\n".join(self.module_parts)
+        # Start the main function
+        self.emit('(start $main)')
 
-    def _collect_string_literals(self, program: ProgramNode) -> List[str]:
-        """Collect all string literals for the data section"""
-        strings = []
+        self.dedent()
+        self.emit(")")
 
-        def collect_from_expr(expr):
-            if isinstance(expr, StringLiteral):
-                strings.append(expr.value)
-            elif isinstance(expr, BinaryOp):
-                collect_from_expr(expr.left)
-                collect_from_expr(expr.right)
-            elif isinstance(expr, UnaryOp):
-                collect_from_expr(expr.expr)
-            elif isinstance(expr, SubprogramCall):
-                for arg in expr.args:
-                    collect_from_expr(arg)
-            elif isinstance(expr, CastExpr):
-                collect_from_expr(expr.expr)
-            elif isinstance(expr, AssignNode):
-                collect_from_expr(expr.value)
+        return "\n".join(self.code_lines)
 
-        def collect_from_stmt(stmt: StatementNode):
-            if isinstance(stmt, VarDecl) and stmt.init:
-                collect_from_expr(stmt.init)
-            elif isinstance(stmt, BlockNode):
-                for s in stmt.body:
-                    collect_from_stmt(s)
-            elif isinstance(stmt, IfStmt):
-                collect_from_expr(stmt.cond)
-                collect_from_stmt(stmt.then_body)
-                if stmt.else_body:
-                    collect_from_stmt(stmt.else_body)
-            elif isinstance(stmt, (WhileStmt, UntilStmt)):
-                collect_from_expr(stmt.cond)
-                collect_from_stmt(stmt.body)
-            elif isinstance(stmt, ForStmt):
-                if stmt.init:
-                    collect_from_stmt(stmt.init)
-                if stmt.cond:
-                    collect_from_expr(stmt.cond)
-                if stmt.step:
-                    collect_from_expr(stmt.step)
-                collect_from_stmt(stmt.body)
-            elif isinstance(stmt, Expr):
-                collect_from_expr(stmt)
+    def _emit_imports(self):
+        """Import console I/O functions"""
+        self.emit('(import "console" "write_int" (func $console_write_int (param i32)))')
+        self.emit('(import "console" "write_float" (func $console_write_float (param f32)))')
+        self.emit('(import "console" "write_bool" (func $console_write_bool (param i32)))')
+        self.emit('(import "console" "write_string" (func $console_write_string (param i32) (param i32)))')
+        self.emit('(import "console" "read_int" (func $console_read_int (result i32)))')
+        self.emit('(import "console" "read_float" (func $console_read_float (result f32)))')
+        self.emit('(import "console" "read_bool" (func $console_read_bool (result i32)))')
 
+    def _emit_math_imports(self):
+        """Import math functions from JS Math module"""
+        for func in self.math_functions:
+            self.emit(f'(import "Math" "{func}" (func $Math_{func} (param f32) (result f32)))')
+
+    def _collect_function_info(self, program: 'ProgramNode'):
+        """Collect function signatures for type checking"""
         for subprogram in program.subprograms:
-            collect_from_stmt(subprogram.body)
+            param_types = [p.to_wat() for p in subprogram.param_types]
+            return_type = subprogram.type.to_wat()
+            self.function_types[subprogram.name] = (param_types, return_type)
 
-        for program_stmt in program.statements:
-            collect_from_stmt(program_stmt)
+    def _generate_string_constants(self, program: 'ProgramNode'):
+        """Collect and generate string constants in data section"""
+        # We'll need to traverse the AST to find all string literals
+        # For now, we'll generate an empty data section
+        self.emit('(data (i32.const 0) "")')
 
-        return list(set(strings))  # Remove duplicates
+    def _generate_main_program(self, statements: List['StatementNode']):
+        """Generate main program as a function"""
+        self.emit('(func $main')
+        self.indent()
 
-    def _collect_local_vars(self, block: BlockNode) -> dict[str, str]:
-        """Collect all local variables declared in a block"""
-        local_vars = {}
-
-        def collect_from_stmt(stmt):
-            if isinstance(stmt, AssignNode):
-                wasm_type = self._type_to_wasm(stmt.value.type)
-                local_vars[stmt.name] = wasm_type
-            elif isinstance(stmt, VarDecl):
-                wasm_type = self._type_to_wasm(stmt.type)
-                local_vars[stmt.name] = wasm_type
-            elif isinstance(stmt, BlockNode):
-                for s in stmt.body:
-                    collect_from_stmt(s)
-            elif isinstance(stmt, IfStmt):
-                collect_from_stmt(stmt.then_body)
-                if stmt.else_body:
-                    collect_from_stmt(stmt.else_body)
-            elif isinstance(stmt, (WhileStmt, UntilStmt)):
-                collect_from_stmt(stmt.body)
-            elif isinstance(stmt, ForStmt):
-                if stmt.init:
-                    collect_from_stmt(stmt.init)
-                collect_from_stmt(stmt.body)
-            else:
-                print("Unused statement")
-                print(stmt)
-
-        for _stmt in block.body:
-            collect_from_stmt(_stmt)
-
-        return local_vars
-
-    def _generate_subprogram(self, subprogram: SubprogramNode):
-        """Generate a function definition"""
-        func_name = f"${subprogram.name}"
-        param_strs = []
-        self.param_types = {}
-
-        # Build parameter strings and track types
-        for i, (name, type_) in enumerate(zip(subprogram.param_names, subprogram.param_types)):
-            wasm_type = self._type_to_wasm(type_)
-            param_strs.append(f"(param ${name} {wasm_type})")
-            self.param_types[name] = wasm_type
-
-        # Return type
-        result_str = ""
-        if subprogram.type and subprogram.type != Type.void():
-            result_str = f"(result {self._type_to_wasm(subprogram.type)})"
-
-        # Save current context
-        old_function = self.current_function
-        old_return_type = self.return_type
-        old_locals = self.local_vars.copy()
-
-        # Set new context
-        self.current_function = subprogram.name
-        self.return_type = subprogram.type
-        self.local_vars = {name: self.param_types[name] for name in subprogram.param_names}
-
-        # Collect all local variables first by analyzing the function body
-        local_vars_to_declare = self._collect_local_vars(subprogram.body)
-        local_vars_to_declare = {name: type for name, type in local_vars_to_declare.items() if name not in subprogram.param_names}
-
-        # Build function definition
-        func_def = [f"  (func {func_name}"]
-        func_def.append(f"    {' '.join(param_strs)}")
-        if result_str:
-            func_def.append(f"    {result_str}")
-
-        # Declare all local variables at function start
-        for var_name, var_type in local_vars_to_declare.items():
-            func_def.append(f"    (local ${var_name} {var_type})")
-
-        # Add to local_vars map
-        self.local_vars.update(local_vars_to_declare)
-
-        # Generate function body
-        body_code = self._generate_block(subprogram.body.body, is_function_body=True)
-        func_def.extend(f"    {line}" for line in body_code)
-
-        # Ensure function returns if needed
-        if subprogram.type != Type.void() and not self._has_return(subprogram.body):
-            # Add default return value based on return type
-            if subprogram.type == Type.int():
-                func_def.append("    i32.const 0")
-            elif subprogram.type == Type.float():
-                func_def.append("    f32.const 0.0")
-            elif subprogram.type == Type.bool():
-                func_def.append("    i32.const 0")
-            elif subprogram.type == Type.string():
-                func_def.append("    i32.const 0")
-            else:
-                func_def.append("    i32.const 0")
-            func_def.append("    return")
-
-        func_def.append("  )")
-
-        # Restore context
-        self.current_function = old_function
-        self.return_type = old_return_type
-        self.local_vars = old_locals
-
-        self.module_parts.extend(func_def)
-
-    def _has_return(self, block: BlockNode) -> bool:
-        """Check if a block contains a return statement"""
-
-        def check_stmt(stmt):
-            if isinstance(stmt, Return) or isinstance(stmt, ReturnNode):
-                return True
-            elif isinstance(stmt, BlockNode):
-                for s in stmt.body:
-                    if check_stmt(s):
-                        return True
-            elif isinstance(stmt, IfStmt):
-                if check_stmt(stmt.then_body):
-                    return True
-                if stmt.else_body and check_stmt(stmt.else_body):
-                    return True
-            elif isinstance(stmt, (WhileStmt, UntilStmt, ForStmt)):
-                # Don't check loops for returns that might not execute
-                pass
-            return False
-
-        return check_stmt(block)
-
-    def _collect_local_vars_from_statements(self, statements: List[StatementNode]) -> dict[str, str]:
-        """Collect all local variables from a list of statements"""
-        local_vars = {}
-
-        def collect_from_stmt(stmt: StatementNode):
-            if isinstance(stmt, VarDecl):
-                wasm_type = self._type_to_wasm(stmt.type)
-                local_vars[stmt.name] = wasm_type
-            elif isinstance(stmt, BlockNode):
-                for s in stmt.body:
-                    collect_from_stmt(s)
-            elif isinstance(stmt, IfStmt):
-                collect_from_stmt(stmt.then_body)
-                if stmt.else_body:
-                    collect_from_stmt(stmt.else_body)
-            elif isinstance(stmt, (WhileStmt, UntilStmt)):
-                collect_from_stmt(stmt.body)
-            elif isinstance(stmt, ForStmt):
-                if stmt.init:
-                    collect_from_stmt(stmt.init)
-                collect_from_stmt(stmt.body)
-
-        for _stmt in statements:
-            collect_from_stmt(_stmt)
-
-        return local_vars
-
-    def _generate_main_function(self, statements: List[StatementNode]):
-        """Generate the main function"""
-        # Collect all local variables first
-        local_vars = self._collect_local_vars_from_statements(statements)
-
-        self.module_parts.append('  (func $main (export "main") (result i32)')
-
-        # Declare all local variables
-        for var_name, var_type in local_vars.items():
-            self.module_parts.append(f'    (local ${var_name} {var_type})')
-
-        # Add to local_vars map
-        self.local_vars.update(local_vars)
+        # Declare all local variables used in main
+        main_locals: dict[str, Type] = {}
+        self._collect_local_vars_with_types(statements, main_locals)
+        if main_locals:
+            local_decls = " ".join([f"(local ${var} {type.to_wat()})" for var, type in main_locals.items()])
+            self.emit(local_decls)
 
         # Generate statements
-        main_body = self._generate_block(statements)
-        for line in main_body:
-            self.module_parts.append(f'    {line}')
-
-        # Return 0 by default - always return an i32 value
-        self.module_parts.append('    i32.const 0')
-        self.module_parts.append('  )')
-
-    def _generate_block(self, statements: List[StatementNode], is_function_body=False) -> List[str]:
-        """Generate code for a block of statements"""
-        result = []
         for stmt in statements:
-            result.extend(self._generate_statement(stmt))
-        return result
+            self._generate_statement(stmt)
 
-    def _generate_statement(self, stmt: StatementNode) -> List[str]:
+        self.dedent()
+        self.emit(')')
+
+    def _collect_local_vars(self, statements: List['StatementNode'], var_set: Set[str]):
+        """Collect all local variable names from statements"""
+        for stmt in statements:
+            if isinstance(stmt, VarDecl):
+                var_set.add(stmt.name)
+            if isinstance(stmt, AssignNode):
+                var_set.add(stmt.name)
+            elif isinstance(stmt, BlockNode):
+                self._collect_local_vars(stmt.body, var_set)
+            elif isinstance(stmt, IfStmt):
+                self._collect_local_vars(stmt.then_body.body, var_set)
+                if stmt.else_body:
+                    self._collect_local_vars(stmt.else_body.body, var_set)
+            elif isinstance(stmt, (WhileStmt, UntilStmt)):
+                self._collect_local_vars(stmt.body.body, var_set)
+            elif isinstance(stmt, ForStmt):
+                if stmt.init:
+                    self._collect_local_vars([stmt.init], var_set)
+                self._collect_local_vars(stmt.body.body, var_set)
+
+    def _generate_subprogram(self, subprogram: 'SubprogramNode'):
+        """Generate a subprogram/function"""
+        self.current_function = subprogram.name
+
+        # Store parameter types for this function
+        param_types = {}
+        for name, typ in zip(subprogram.param_names, subprogram.param_types):
+            param_types[name] = typ
+        self.function_params[subprogram.name] = param_types
+
+        # Collect local variables with their types
+        local_vars = {}
+        self._collect_local_vars_with_types(subprogram.body.body, local_vars)
+        self.function_locals[subprogram.name] = local_vars
+
+        # Build parameter declarations (all passed by reference as i32 pointers)
+        param_decls = []
+        for name in subprogram.param_names:
+            param_decls.append(f"(param ${name} i32)")
+
+        # Build local variable declarations with correct types
+        local_decls = []
+        for var_name, var_type in sorted(local_vars.items()):
+            if var_name not in param_types:  # Don't redeclare parameters
+                wat_type = var_type.to_wat()
+                local_decls.append(f"(local ${var_name} {wat_type})")
+
+        # Build return type
+        return_type = subprogram.type.to_wat()
+        return_decl = f"(result {return_type})" if return_type else ""
+
+        # Emit function header
+        self.emit(f'(func ${subprogram.name}')
+        self.indent()
+
+        # Emit parameters and locals
+        for param_decl in param_decls:
+            self.emit(param_decl)
+
+        if return_decl:
+            self.emit(return_decl)
+
+        if local_decls:
+            self.emit(f"{' '.join(local_decls)}")
+
+        # Generate function body
+        for stmt in subprogram.body.body:
+            self._generate_statement(stmt)
+
+        # Add implicit return for void functions if not already present
+        if return_type == "" and not self._has_return(subprogram.body.body):
+            self.emit('return')
+
+        self.dedent()
+        self.emit(')')
+
+        self.current_function = None
+
+    def _has_return(self, statements: List['StatementNode']) -> bool:
+        """Check if statements contain a return"""
+        for stmt in statements:
+            if isinstance(stmt, Return):
+                return True
+            elif isinstance(stmt, BlockNode):
+                if self._has_return(stmt.body):
+                    return True
+            elif isinstance(stmt, IfStmt):
+                if self._has_return(stmt.then_body.body):
+                    return True
+                if stmt.else_body and self._has_return(stmt.else_body.body):
+                    return True
+        return False
+
+    def _generate_statement(self, stmt: 'StatementNode'):
         """Generate code for a statement"""
         if isinstance(stmt, VarDecl):
-            return self._generate_var_decl(stmt)
+            self._generate_var_decl(stmt)
         elif isinstance(stmt, Return):
-            return self._generate_return(stmt)
-        elif isinstance(stmt, BreakNode):
-            return self._generate_break()
-        elif isinstance(stmt, ContinueNode):
-            return self._generate_continue()
+            self._generate_return(stmt)
         elif isinstance(stmt, BlockNode):
-            return self._generate_block(stmt.body)
+            self._generate_block(stmt)
         elif isinstance(stmt, IfStmt):
-            return self._generate_if(stmt)
+            self._generate_if(stmt)
         elif isinstance(stmt, WhileStmt):
-            return self._generate_while(stmt)
+            self._generate_while(stmt)
         elif isinstance(stmt, UntilStmt):
-            return self._generate_until(stmt)
+            self._generate_until(stmt)
         elif isinstance(stmt, ForStmt):
-            return self._generate_for(stmt)
+            self._generate_for(stmt)
+        elif isinstance(stmt, (BreakNode, ContinueNode, ReturnNode)):
+            self._generate_control_flow(stmt)
         elif isinstance(stmt, Expr):
-            # Expression statement - evaluate and drop result
-            expr_code = self._generate_expression(stmt)
-            if stmt.type != Type.void():  # Don't drop void expressions
-                expr_code.append("drop")
-            return expr_code
-        else:
-            return [f";; Unknown statement: {type(stmt).__name__}"]
+            # Expression statement (function call, assignment, etc.)
+            result = self._generate_expr(stmt)
+            if result and stmt.type.name != "void":
+                # Discard the result
+                self.emit('drop')
 
-    def _generate_var_decl(self, var_decl: VarDecl) -> List[str]:
+    def _collect_local_vars_with_types(self, statements: List['StatementNode'], var_dict: Dict[str, Type]):
+        """Collect all local variable names with their types from statements"""
+        for stmt in statements:
+            if isinstance(stmt, VarDecl):
+                var_dict[stmt.name] = stmt.type
+            elif isinstance(stmt, AssignNode):
+                var_dict[stmt.name] = stmt.type
+            elif isinstance(stmt, BlockNode):
+                self._collect_local_vars_with_types(stmt.body, var_dict)
+            elif isinstance(stmt, IfStmt):
+                self._collect_local_vars_with_types(stmt.then_body.body, var_dict)
+                if stmt.else_body:
+                    self._collect_local_vars_with_types(stmt.else_body.body, var_dict)
+            elif isinstance(stmt, (WhileStmt, UntilStmt)):
+                self._collect_local_vars_with_types(stmt.body.body, var_dict)
+            elif isinstance(stmt, ForStmt):
+                if stmt.init and isinstance(stmt.init, VarDecl):
+                    var_dict[stmt.init.name] = stmt.init.type
+                self._collect_local_vars_with_types(stmt.body.body, var_dict)
+
+    def _generate_var_decl(self, decl: 'VarDecl'):
         """Generate variable declaration"""
-        result = []
+        var_name = decl.name
+        var_type = decl.type
 
-        # Variable was already declared at function start, just initialize if needed
-        var_name = f"${var_decl.name}"
-
-        # Generate initialization if present
-        if var_decl.init:
-            init_code = self._generate_expression(var_decl.init)
-            result.extend(init_code)
-            result.append(f"local.set {var_name}")
+        if decl.init:
+            # Generate initialization expression
+            self._generate_expr(decl.init)
+            # Store in local variable
+            self.emit(f'local.set ${var_name}')
         else:
-            # Default initialization based on type
-            if var_decl.type == Type.int():
-                result.append("i32.const 0")
-            elif var_decl.type == Type.float():
-                result.append("f32.const 0.0")
-            elif var_decl.type == Type.bool():
-                result.append("i32.const 0")
-            elif var_decl.type == Type.string():
-                result.append("i32.const 0")  # null pointer
-            result.append(f"local.set {var_name}")
+            # Initialize with default value
+            if decl.type == Type.int():
+                self.emit(f'i32.const 0')
+                self.emit(f'local.set ${var_name}')
+            elif decl.type == Type.float():
+                self.emit(f'f32.const 0.0')
+                self.emit(f'local.set ${var_name}')
+            elif decl.type == Type.bool():
+                self.emit(f'i32.const 0')
+                self.emit(f'local.set ${var_name}')
+            elif decl.type == Type.string():
+                self.emit(f'i32.const 0')  # Null pointer
+                self.emit(f'local.set ${var_name}')
 
-        return result
-
-    def _generate_return(self, ret: Return) -> List[str]:
+    def _generate_return(self, ret: 'Return'):
         """Generate return statement"""
-        result = []
+        self.emit('return')
 
-        # For void returns or no expression
-        if isinstance(ret, ReturnNode) or self.return_type == Type.void():
-            # If in main function which returns i32, need to return a value
-            if self.current_function == "main":
-                result.append("i32.const 0")
-                result.append("return")
-            else:
-                result.append("return")
-        # For return with expression (if Return had an expression field)
-        elif hasattr(ret, 'expr') and ret.expr:
-            expr_code = self._generate_expression(ret.expr)
-            result.extend(expr_code)
-            result.append("return")
-        else:
-            # Default return without expression
-            if self.return_type == Type.int():
-                result.append("i32.const 0")
-            elif self.return_type == Type.float():
-                result.append("f32.const 0.0")
-            elif self.return_type == Type.bool():
-                result.append("i32.const 0")
-            else:
-                result.append("i32.const 0")  # default
-            result.append("return")
+    def _generate_block(self, block: 'BlockNode'):
+        """Generate a block of statements"""
+        self.indent()
+        for stmt in block.body:
+            self._generate_statement(stmt)
+        self.dedent()
 
-        return result
-
-    def _generate_break(self) -> List[str]:
-        """Generate break statement"""
-        if self.loop_break_labels:
-            return [f"br {self.loop_break_labels[-1]}"]
-        return [";; Error: break outside loop"]
-
-    def _generate_continue(self) -> List[str]:
-        """Generate continue statement"""
-        if self.loop_continue_labels:
-            return [f"br {self.loop_continue_labels[-1]}"]
-        return [";; Error: continue outside loop"]
-
-    def _generate_if(self, if_stmt: IfStmt) -> List[str]:
+    def _generate_if(self, if_stmt: 'IfStmt'):
         """Generate if statement"""
-        result = []
-
         # Generate condition
-        cond_code = self._generate_expression(if_stmt.cond)
-        result.extend(cond_code)
+        self._generate_expr(if_stmt.cond)
 
-        # For boolean conditions, ensure i32
-        if if_stmt.cond.type == Type.bool():
-            result.append("i32.const 0")
-            result.append("i32.ne")
-
-        # Generate then block
-        then_code = self._generate_block(if_stmt.then_body.body)
-
+        # Generate then branch
         if if_stmt.else_body:
-            # Generate else block
-            else_code = self._generate_block(if_stmt.else_body.body)
-
-            result.append("if")
-            result.extend(f"  {line}" for line in then_code)
-            result.append("else")
-            result.extend(f"  {line}" for line in else_code)
-            result.append("end")
+            self.emit('if')
+            self.indent()
+            self._generate_block(if_stmt.then_body)
+            self.dedent()
+            self.emit('else')
+            self.indent()
+            self._generate_block(if_stmt.else_body)
+            self.dedent()
+            self.emit('end')
         else:
-            result.append("if")
-            result.extend(f"  {line}" for line in then_code)
-            result.append("end")
+            self.emit('if')
+            self.indent()
+            self._generate_block(if_stmt.then_body)
+            self.dedent()
+            self.emit('end')
 
-        return result
-
-    def _generate_while(self, while_stmt: WhileStmt) -> List[str]:
+    def _generate_while(self, while_stmt: 'WhileStmt'):
         """Generate while loop"""
-        result = []
+        loop_start = self.get_unique_label("loop_start")
+        loop_end = self.get_unique_label("loop_end")
 
-        # Create labels for break/continue
-        loop_label = f"$loop_{self.label_counter}"
-        end_label = f"$end_{self.label_counter}"
-        self.label_counter += 1
+        self.loop_stack.append((loop_start, loop_end))
 
-        # Push labels for break/continue
-        self.loop_break_labels.append(end_label)
-        self.loop_continue_labels.append(loop_label)
+        self.emit(f'block {loop_end}')
+        self.emit(f'loop {loop_start}')
+        self.indent()
 
-        result.append(f"block {end_label}")
-        result.append(f"  loop {loop_label}")
+        # Generate condition (continue if true)
+        self._generate_expr(while_stmt.cond)
+        self.emit(f'i32.eqz')
+        self.emit(f'br_if {loop_end}')
 
-        # Generate condition
-        cond_code = self._generate_expression(while_stmt.cond)
-        result.extend(f"    {line}" for line in cond_code)
+        # Generate body
+        self._generate_block(while_stmt.body)
 
-        # For boolean conditions
-        if while_stmt.cond.type == Type.bool():
-            result.append("    i32.const 0")
-            result.append("    i32.ne")
+        self.emit(f'br {loop_start}')
+        self.dedent()
+        self.emit('end')
+        self.emit('end')
 
-        # Branch to end if condition is false
-        result.append("    i32.eqz")
-        result.append(f"    br_if {end_label}")
+        self.loop_stack.pop()
 
-        # Generate loop body
-        body_code = self._generate_block(while_stmt.body.body)
-        result.extend(f"    {line}" for line in body_code)
+    def _generate_until(self, until_stmt: 'UntilStmt'):
+        """Generate until loop (do-while with inverted condition)"""
+        loop_start = self.get_unique_label("loop_start")
+        loop_end = self.get_unique_label("loop_end")
 
-        # Jump back to loop start
-        result.append(f"    br {loop_label}")
-        result.append("  end")
-        result.append("end")
+        self.loop_stack.append((loop_start, loop_end))
 
-        # Pop labels
-        self.loop_break_labels.pop()
-        self.loop_continue_labels.pop()
+        self.emit(f'loop {loop_start}')
+        self.indent()
 
-        return result
+        # Generate body
+        self._generate_block(until_stmt.body)
 
-    def _generate_until(self, until_stmt: UntilStmt) -> List[str]:
-        """Generate until loop (runs until condition is true)"""
-        result = []
+        # Generate condition (break if true)
+        self._generate_expr(until_stmt.cond)
+        self.emit(f'br_if {loop_end}')
 
-        # Create labels for break/continue
-        loop_label = f"$loop_{self.label_counter}"
-        end_label = f"$end_{self.label_counter}"
-        self.label_counter += 1
+        self.emit(f'br {loop_start}')
+        self.dedent()
+        self.emit('end')
+        self.emit(f'block {loop_end}')
+        self.emit('end')
 
-        # Push labels for break/continue
-        self.loop_break_labels.append(end_label)
-        self.loop_continue_labels.append(loop_label)
+        self.loop_stack.pop()
 
-        result.append(f"block {end_label}")
-        result.append(f"  loop {loop_label}")
-
-        # Generate loop body
-        body_code = self._generate_block(until_stmt.body.body)
-        result.extend(f"    {line}" for line in body_code)
-
-        # Generate condition
-        cond_code = self._generate_expression(until_stmt.cond)
-        result.extend(f"    {line}" for line in cond_code)
-
-        # For boolean conditions
-        if until_stmt.cond.type == Type.bool():
-            result.append("    i32.const 0")
-            result.append("    i32.ne")
-
-        # Branch to end if condition is true
-        result.append(f"    br_if {end_label}")
-
-        # Jump back to loop start
-        result.append(f"    br {loop_label}")
-        result.append("  end")
-        result.append("end")
-
-        # Pop labels
-        self.loop_break_labels.pop()
-        self.loop_continue_labels.pop()
-
-        return result
-
-    def _generate_for(self, for_stmt: ForStmt) -> List[str]:
+    def _generate_for(self, for_stmt: 'ForStmt'):
         """Generate for loop"""
-        result = []
+        loop_start = self.get_unique_label("loop_start")
+        loop_end = self.get_unique_label("loop_end")
 
-        # Create labels for break/continue
-        loop_label = f"$loop_{self.label_counter}"
-        end_label = f"$end_{self.label_counter}"
-        step_label = f"$step_{self.label_counter}"
-        self.label_counter += 1
+        self.loop_stack.append((loop_start, loop_end))
 
-        # Push labels for break/continue
-        self.loop_break_labels.append(end_label)
-        self.loop_continue_labels.append(step_label)
-
-        # Initialization
+        # Generate initialization
         if for_stmt.init:
-            init_code = self._generate_statement(for_stmt.init)
-            result.extend(init_code)
+            self._generate_statement(for_stmt.init)
 
-        result.append(f"block {end_label}")
-        result.append(f"  loop {loop_label}")
+        self.emit(f'block {loop_end}')
+        self.emit(f'loop {loop_start}')
+        self.indent()
 
-        # Condition (if present)
+        # Generate condition if present
         if for_stmt.cond:
-            cond_code = self._generate_expression(for_stmt.cond)
-            result.extend(f"    {line}" for line in cond_code)
+            self._generate_expr(for_stmt.cond)
+            self.emit(f'i32.eqz')
+            self.emit(f'br_if {loop_end}')
 
-            # For boolean conditions
-            if for_stmt.cond.type == Type.bool():
-                result.append("    i32.const 0")
-                result.append("    i32.ne")
+        # Generate body
+        self._generate_block(for_stmt.body)
 
-            # Branch to end if condition is false
-            result.append("    i32.eqz")
-            result.append(f"    br_if {end_label}")
-
-        # Loop body
-        body_code = self._generate_block(for_stmt.body.body)
-        result.extend(f"    {line}" for line in body_code)
-
-        # Step label for continue
-        result.append(f"  {step_label}:")
-
-        # Step expression (if present)
+        # Generate step
         if for_stmt.step:
-            step_code = self._generate_expression(for_stmt.step)
-            result.extend(f"    {line}" for line in step_code)
-            result.append("    drop")  # Drop step result
+            result = self._generate_expr(for_stmt.step)
+            if result:
+                self.emit('drop')
 
-        # Jump back to loop start
-        result.append(f"    br {loop_label}")
-        result.append("  end")
-        result.append("end")
+        self.emit(f'br {loop_start}')
+        self.dedent()
+        self.emit('end')
+        self.emit('end')
 
-        # Pop labels
-        self.loop_break_labels.pop()
-        self.loop_continue_labels.pop()
+        self.loop_stack.pop()
 
-        return result
+    def _generate_control_flow(self, stmt: 'StatementNode'):
+        """Generate break/continue/return"""
+        if isinstance(stmt, BreakNode):
+            if self.loop_stack:
+                _, loop_end = self.loop_stack[-1]
+                self.emit(f'br {loop_end}')
+        elif isinstance(stmt, ContinueNode):
+            if self.loop_stack:
+                loop_start, _ = self.loop_stack[-1]
+                self.emit(f'br {loop_start}')
 
-    def _generate_expression(self, expr: Expr) -> List[str]:
-        """Generate code for an expression"""
+    def _generate_expr(self, expr: 'Expr') -> bool:
+        """Generate expression code, returns True if expression leaves value on stack"""
         if isinstance(expr, IntLiteral):
-            return [f"i32.const {expr.value}"]
+            self.emit(f'i32.const {expr.value}')
+            return True
         elif isinstance(expr, FloatLiteral):
-            return [f"f32.const {expr.value}"]
-        elif isinstance(expr, StringLiteral):
-            # String literals are stored in memory, return pointer
-            # For simplicity, we'll return a placeholder
-            return ["i32.const 0 ;; TODO: string literal address"]
+            self.emit(f'f32.const {expr.value}')
+            return True
         elif isinstance(expr, BoolLiteral):
-            return [f"i32.const {1 if expr.value else 0}"]
+            self.emit(f'i32.const {1 if expr.value else 0}')
+            return True
+        elif isinstance(expr, StringLiteral):
+            self.emit(f'i32.const 0')  # Placeholder
+            return True
         elif isinstance(expr, VarRef):
-            var_name = f"${expr.name}"
-            if expr.name in self.local_vars:
-                return [f"local.get {var_name}"]
+            # For pass-by-reference parameters, we need to dereference
+            if self.current_function and expr.name in self.function_params.get(self.current_function, {}):
+                # It's a parameter passed by reference - load from memory
+                self.emit(f'local.get ${expr.name}')
+                param_type = self.function_params[self.current_function][expr.name]
+                if param_type == Type.float():
+                    self.emit('f32.load')
+                elif param_type == Type.int():
+                    self.emit('i32.load')
+                elif param_type == Type.bool():
+                    self.emit('i32.load')
+                else:
+                    self.emit('i32.load')
             else:
-                return [f"global.get {var_name}"]
+                # It's a local variable - get directly
+                self.emit(f'local.get ${expr.name}')
+            return True
         elif isinstance(expr, AssignNode):
-            # Generate value first
-            result = self._generate_expression(expr.value)
-            var_name = f"${expr.name}"
-            result.append(f"local.set {var_name}")
-            result.append(f"local.get {var_name}")  # Return assigned value
-            return result
+            # Check if assigning to a parameter (by reference) or local
+            if self.current_function and expr.name in self.function_params.get(self.current_function, {}):
+                # It's a parameter passed by reference - store to memory
+                # First push the address (parameter value)
+                self.emit(f'local.get ${expr.name}')
+                # Then push the value to store
+                self._generate_expr(expr.value)
+                # Store with correct type
+                param_type = self.function_params[self.current_function][expr.name]
+                if param_type == Type.float():
+                    self.emit('f32.store')
+                elif param_type == Type.int():
+                    self.emit('i32.store')
+                elif param_type == Type.bool():
+                    self.emit('i32.store')
+                else:
+                    self.emit('i32.store')
+                # For assignment expression, we want to leave the stored value on stack
+                # So we need to load it back
+                self.emit(f'local.get ${expr.name}')
+                if param_type == Type.float():
+                    self.emit('f32.load')
+                else:
+                    self.emit('i32.load')
+            else:
+                # It's a local variable - store directly
+                # First push the value to store
+                self._generate_expr(expr.value)
+                # Then store in local
+                self.emit(f'local.set ${expr.name}')
+                # Load back for expression value
+                self.emit(f'local.get ${expr.name}')
+            return True
         elif isinstance(expr, BinaryOp):
             return self._generate_binary_op(expr)
         elif isinstance(expr, UnaryOp):
             return self._generate_unary_op(expr)
         elif isinstance(expr, SubprogramCall):
-            return self._generate_function_call(expr)
+            return self._generate_subprogram_call(expr)
         elif isinstance(expr, CastExpr):
             return self._generate_cast(expr)
-        else:
-            return [f";; Unknown expression: {type(expr).__name__}"]
+        return False
 
-    def _generate_binary_op(self, op: BinaryOp) -> List[str]:
+    def _generate_binary_op(self, expr: 'BinaryOp') -> bool:
         """Generate binary operation"""
-        result = []
+        # Generate left operand
+        self._generate_expr(expr.left)
 
-        # Generate left and right operands
-        left_code = self._generate_expression(op.left)
-        right_code = self._generate_expression(op.right)
+        # Generate right operand
+        self._generate_expr(expr.right)
 
-        result.extend(left_code)
-        result.extend(right_code)
+        # Emit operation based on type and operator
+        op = expr.op
+        if expr.left.type == Type.int() or expr.left.type == Type.bool():
+            if op == '+':
+                self.emit('i32.add')
+            elif op == '-':
+                self.emit('i32.sub')
+            elif op == '*':
+                self.emit('i32.mul')
+            elif op == '/':
+                self.emit('i32.div_s')
+            elif op == '%':
+                self.emit('i32.rem_s')
+            elif op == '==':
+                self.emit('i32.eq')
+            elif op == '!=':
+                self.emit('i32.ne')
+            elif op == '<':
+                self.emit('i32.lt_s')
+            elif op == '<=':
+                self.emit('i32.le_s')
+            elif op == '>':
+                self.emit('i32.gt_s')
+            elif op == '>=':
+                self.emit('i32.ge_s')
+            elif op == 'and':
+                self.emit('i32.and')
+            elif op == 'or':
+                self.emit('i32.or')
+        elif expr.left.type == Type.float():
+            if op == '+':
+                self.emit('f32.add')
+            elif op == '-':
+                self.emit('f32.sub')
+            elif op == '*':
+                self.emit('f32.mul')
+            elif op == '/':
+                self.emit('f32.div')
+            elif op == '==':
+                self.emit('f32.eq')
+            elif op == '!=':
+                self.emit('f32.ne')
+            elif op == '<':
+                self.emit('f32.lt')
+            elif op == '<=':
+                self.emit('f32.le')
+            elif op == '>':
+                self.emit('f32.gt')
+            elif op == '>=':
+                self.emit('f32.ge')
 
-        # Determine operation based on type and operator
-        if op.left.type == Type.int() and op.right.type == Type.int():
-            if op.op == '+':
-                result.append("i32.add")
-            elif op.op == '-':
-                result.append("i32.sub")
-            elif op.op == '*':
-                result.append("i32.mul")
-            elif op.op == '/':
-                result.append("i32.div_s")
-            elif op.op == '%':
-                result.append("i32.rem_s")
-            elif op.op == '==':
-                result.append("i32.eq")
-            elif op.op == '!=':
-                result.append("i32.ne")
-            elif op.op == '<':
-                result.append("i32.lt_s")
-            elif op.op == '<=':
-                result.append("i32.le_s")
-            elif op.op == '>':
-                result.append("i32.gt_s")
-            elif op.op == '>=':
-                result.append("i32.ge_s")
-            elif op.op == '&&' or op.op == 'and':
-                result.append("i32.and")
-            elif op.op == '||' or op.op == 'or':
-                result.append("i32.or")
-            elif op.op == '&':
-                result.append("i32.and")
-            elif op.op == '|':
-                result.append("i32.or")
-            elif op.op == '^':
-                result.append("i32.xor")
-            elif op.op == '<<':
-                result.append("i32.shl")
-            elif op.op == '>>':
-                result.append("i32.shr_s")
-            else:
-                result.append(f";; Unknown integer operator: {op.op}")
+        return True
 
-        elif op.left.type == Type.float() and op.right.type == Type.float():
-            if op.op == '+':
-                result.append("f32.add")
-            elif op.op == '-':
-                result.append("f32.sub")
-            elif op.op == '*':
-                result.append("f32.mul")
-            elif op.op == '/':
-                result.append("f32.div")
-            elif op.op == '==':
-                result.append("f32.eq")
-            elif op.op == '!=':
-                result.append("f32.ne")
-            elif op.op == '<':
-                result.append("f32.lt")
-            elif op.op == '<=':
-                result.append("f32.le")
-            elif op.op == '>':
-                result.append("f32.gt")
-            elif op.op == '>=':
-                result.append("f32.ge")
-            else:
-                result.append(f";; Unknown float operator: {op.op}")
-
-        elif op.left.type == Type.bool() and op.right.type == Type.bool():
-            if op.op == '&&' or op.op == 'and':
-                result.append("i32.and")
-            elif op.op == '||' or op.op == 'or':
-                result.append("i32.or")
-            elif op.op == '==':
-                result.append("i32.eq")
-            elif op.op == '!=':
-                result.append("i32.ne")
-            else:
-                result.append(f";; Unknown boolean operator: {op.op}")
-
-        else:
-            # Type mismatch - need cast
-            result.append(f";; Type mismatch in binary op: {op.left.type} {op.op} {op.right.type}")
-
-        return result
-
-    def _generate_unary_op(self, op: UnaryOp) -> List[str]:
+    def _generate_unary_op(self, expr: 'UnaryOp') -> bool:
         """Generate unary operation"""
-        result = self._generate_expression(op.expr)
+        self._generate_expr(expr.expr)
 
-        if op.expr.type == Type.int():
-            if op.op == '-':
-                result.append("i32.const 0")
-                result.append("i32.sub")
-            elif op.op == '~':
-                result.append("i32.const -1")
-                result.append("i32.xor")
-            elif op.op == '!' or op.op == 'not':
-                result.append("i32.eqz")
-            else:
-                result.append(f";; Unknown integer unary operator: {op.op}")
+        op = expr.op
+        if expr.expr.type == Type.int() or expr.expr.type == Type.bool():
+            if op == '-':
+                self.emit('i32.const -1')
+                self.emit('i32.mul')
+            elif op == 'not':
+                self.emit('i32.eqz')
+        elif expr.expr.type == Type.float():
+            if op == '-':
+                self.emit('f32.neg')
 
-        elif op.expr.type == Type.float():
-            if op.op == '-':
-                result.append("f32.neg")
-            else:
-                result.append(f";; Unknown float unary operator: {op.op}")
+        return True
 
-        elif op.expr.type == Type.bool():
-            if op.op == '!' or op.op == 'not':
-                result.append("i32.eqz")
-            else:
-                result.append(f";; Unknown boolean unary operator: {op.op}")
+    def _generate_subprogram_call(self, call: 'SubprogramCall') -> bool:
+        """Generate function call with pass-by-reference semantics"""
+        # Handle special functions
+        if call.name == 'write':
+            return self._generate_write_call(call)
+        elif call.name == 'read':
+            return self._generate_read_call(call)
+        elif call.name in self.math_functions:
+            return self._generate_math_call(call)
 
-        else:
-            result.append(f";; Unknown type for unary op: {op.expr.type}")
-
-        return result
-
-    def _generate_function_call(self, call: SubprogramCall) -> List[str]:
-        """Generate function call"""
-        result = []
-
-        # Generate arguments
+        # Regular function call with pass-by-reference
+        # For pass-by-reference, we need to pass addresses of arguments
         for arg in call.args:
-            arg_code = self._generate_expression(arg)
-            result.extend(arg_code)
+            if isinstance(arg, VarRef):
+                # Pass the address (already in local)
+                self.emit(f'local.get ${arg.name}')
+            else:
+                # For non-variable expressions, we need to:
+                # 1. Evaluate the expression
+                # 2. Store it in a temporary local
+                # 3. Get the address of that temporary
 
-        # Call function
-        result.append(f"call ${call.name}")
+                # Create a temporary local
+                temp_name = self.get_unique_label("temp")
+                temp_type = arg.type.to_wat()
 
-        return result
+                # Allocate local
+                self.emit(f'(local ${temp_name} {temp_type})')
 
-    def _generate_cast(self, cast: CastExpr) -> List[str]:
+                # Evaluate expression and store in temp
+                self._generate_expr(arg)
+                self.emit(f'local.set ${temp_name}')
+
+                # Get address (we need memory for true pass-by-reference)
+                # For now, just pass the value
+                self.emit(f'local.get ${temp_name}')
+
+        # Call the function
+        self.emit(f'call ${call.name}')
+
+        # Check if function returns a value
+        if call.name in self.function_types:
+            _, return_type = self.function_types[call.name]
+            return return_type != ""
+
+        return False
+
+    def _generate_write_call(self, call: 'SubprogramCall') -> bool:
+        """Generate write call to console"""
+        if len(call.args) != 1:
+            raise ValueError("write takes exactly one argument")
+
+        arg = call.args[0]
+        arg_type = arg.type
+
+        # Generate argument value
+        self._generate_expr(arg)
+
+        # Call appropriate console function
+        if arg_type == Type.int():
+            self.emit('call $console_write_int')
+        elif arg_type == Type.float():
+            self.emit('call $console_write_float')
+        elif arg_type == Type.bool():
+            self.emit('call $console_write_bool')
+        elif arg_type == Type.string():
+            # For strings, we need length too (simplified)
+            self.emit('i32.const 0')  # Placeholder for length
+            self.emit('call $console_write_string')
+
+        # write returns void
+        return False
+
+    def _generate_read_call(self, call: 'SubprogramCall') -> bool:
+        """Generate read call from console"""
+        if len(call.args) != 0:
+            raise ValueError("read takes no arguments")
+
+        # Call appropriate console function based on expected return type
+        if call.type == Type.int():
+            self.emit('call $console_read_int')
+        elif call.type == Type.float():
+            self.emit('call $console_read_float')
+        elif call.type == Type.bool():
+            self.emit('call $console_read_bool')
+            # Convert to boolean (0/1)
+            self.emit('i32.const 0')
+            self.emit('i32.ne')
+        else:
+            raise ValueError(f"read cannot read type {call.type}")
+
+        return True
+
+    def _generate_math_call(self, call: 'SubprogramCall') -> bool:
+        """Generate math function call"""
+        if len(call.args) != 1:
+            raise ValueError(f"{call.name} takes exactly one argument")
+
+        arg = call.args[0]
+        if arg.type != Type.float():
+            raise ValueError(f"{call.name} requires float argument")
+
+        # Generate argument value
+        self._generate_expr(arg)
+
+        # Call math function
+        self.emit(f'call $Math_{call.name}')
+
+        return True
+
+    def _generate_cast(self, expr: CastExpr) -> bool:
         """Generate type cast"""
-        result = self._generate_expression(cast.expr)
+        self._generate_expr(expr.expr)
 
-        src_type = cast.expr.type
-        dst_type = cast.target_type
+        src_type = expr.expr.type
+        dst_type = expr.type
 
         if src_type == dst_type:
-            return result  # No cast needed
+            return True
 
-        # Integer to Float
         if src_type == Type.int() and dst_type == Type.float():
-            result.append("f32.convert_i32_s")
-
-        # Float to Integer
+            self.emit('f32.convert_i32_s')
         elif src_type == Type.float() and dst_type == Type.int():
-            result.append("i32.trunc_f32_s")
-
-        # Boolean to Integer
+            self.emit('f32.trunc')
+            self.emit('i32.trunc_f32_s')
         elif src_type == Type.bool() and dst_type == Type.int():
-            # Boolean is already i32, no conversion needed
+            # bool is already i32 in our representation
             pass
-
-        # Integer to Boolean
         elif src_type == Type.int() and dst_type == Type.bool():
-            result.append("i32.const 0")
-            result.append("i32.ne")
-
-        # Float to Boolean
+            self.emit('i32.const 0')
+            self.emit('i32.ne')
         elif src_type == Type.float() and dst_type == Type.bool():
-            result.append("f32.const 0.0")
-            result.append("f32.ne")
+            self.emit('f32.const 0.0')
+            self.emit('f32.ne')
+            self.emit('i32.trunc_f32_s')
 
-        else:
-            result.append(f";; Unsupported cast: {src_type} -> {dst_type}")
-
-        return result
-
-    def _type_to_wasm(self, type_: Type) -> str:
-        """Convert Type enum to WAT type string"""
-        if type_ == Type.int():
-            return "i32"
-        elif type_ == Type.float():
-            return "f32"
-        elif type_ == Type.bool():
-            return "i32"
-        elif type_ == Type.string():
-            return "i32"  # Strings as pointers
-        elif type_ == Type.void():
-            return ""
-        else:
-            return "i32"  # Default
-
-
-def ast_to_wat(program: ProgramNode) -> str:
-    generator = WATGenerator()
-    return generator.generate_wat(program)
-
-
-if __name__ == "__main__":
-    sample_program = ProgramNode(
-        subprograms=[
-            SubprogramNode(
-                name="factorial",
-                param_names=["n"],
-                param_types=[Type.int()],
-                body=BlockNode(body=[
-                    VarDecl(type=Type.int(), name="result", init=IntLiteral(value=1)),
-                    VarDecl(type=Type.int(), name="i", init=IntLiteral(value=1)),
-                    WhileStmt(
-                        cond=BinaryOp(op="<=",
-                                      left=VarRef(name="i", type=Type.int()),
-                                      right=VarRef(name="n", type=Type.int()),
-                                      type=Type.bool()),
-                        body=BlockNode(body=[
-                            AssignNode(
-                                name="result",
-                                value=BinaryOp(op="*",
-                                               left=VarRef(name="result", type=Type.int()),
-                                               right=VarRef(name="i", type=Type.int()),
-                                               type=Type.int()),
-                                type=Type.int()
-                            ),
-                            AssignNode(
-                                name="i",
-                                value=BinaryOp(op="+",
-                                               left=VarRef(name="i", type=Type.int()),
-                                               right=IntLiteral(value=1),
-                                               type=Type.int()),
-                                type=Type.int()
-                            )
-                        ])
-                    ),
-                    Return()
-                ]),
-                type=Type.int()
-            )
-        ],
-        statements=[
-            VarDecl(type=Type.int(), name="x", init=IntLiteral(value=5)),
-            VarDecl(type=Type.int(), name="result", init=None),
-            AssignNode(
-                name="result",
-                value=SubprogramCall(
-                    name="factorial",
-                    args=[VarRef(name="x", type=Type.int())],
-                    type=Type.int()
-                ),
-                type=Type.int()
-            ),
-            Return()
-        ]
-    )
-
-    wat_code = ast_to_wat(sample_program)
-    print(wat_code)
+        return True

@@ -54,9 +54,9 @@ write(isRight)
 
 // until loop
 int x = 0
-until(x == 10) {
-	write(x + 1)
-}
+//until(x == 10) {
+//	write(x + 1)
+//}
 
 float global_var1 = 2.0
 float global_var2 = 2.0

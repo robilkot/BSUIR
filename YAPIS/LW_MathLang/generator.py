@@ -17,7 +17,7 @@ def generate_parser():
         print("Генерация парсера из .g4 файлов...")
 
         # Команда для генерации парсера
-        cmd = f"java org.antlr.v4.Tool -Dlanguage=Python3 -visitor -o {generated_dir} {parser_g4}"
+        cmd = f"antlr4 -Dlanguage=Python3 -visitor -o {generated_dir} {parser_g4}"
         os.system(cmd)
 
         print("Парсер успешно сгенерирован!")

@@ -142,5 +142,4 @@ class SubprogramCall(Expr):
 
 @dataclass
 class CastExpr(Expr):
-    target_type: Type
     expr: Expr

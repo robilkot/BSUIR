@@ -9,7 +9,7 @@ from generated.grammar.MathLangVisitor import MathLangVisitor
 from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
     BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
     StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt, SubprogramCall
-from intermediate_code.wat_emitter import WATGenerator
+from intermediate_code.wat_emitter import *
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.symbol import Symbol, SubprogramSymbol, SymbolTable
@@ -59,8 +59,8 @@ class SemanticAnalyzer(MathLangVisitor):
 
         for sub in self.__default_subprograms:
             self.global_scope.add_symbol(sub)
-        # for sub in self.__math_subprograms:
-        #     self.global_scope.add_symbol(sub)
+        for sub in self.__math_subprograms:
+            self.global_scope.add_symbol(sub)
 
     @property
     def is_binding(self) -> bool:
@@ -299,13 +299,15 @@ class SemanticAnalyzer(MathLangVisitor):
         if type_mapping:
             return_type = type_mapping.get(return_type, return_type)
 
-        call_node = SubprogramCall(
-            name=subprogram.name,
-            args=sub_parameters,
-            type=return_type,
-        )
-        print(call_node)
-        return call_node
+        if subprogram.name == 'cast':
+            node = CastExpr(type=return_type, expr=sub_parameters[0])
+        else:
+            node = SubprogramCall(
+                name=subprogram.name,
+                args=sub_parameters,
+                type=return_type,
+            )
+        return node
 
 
     def visitTemplate(self, ctx:MathLangParser.TemplateContext) -> list[Type]:
@@ -517,7 +519,10 @@ class SemanticAnalyzer(MathLangVisitor):
         elif ctx.FLOAT():
             return FloatLiteral(value=float(ctx.getText()))
         elif ctx.BOOL():
-            return BoolLiteral(value=bool(ctx.getText()))
+            if ctx.BOOL().getText() == 'true':
+                return BoolLiteral(value=True)
+            else:
+                return BoolLiteral(value=False)
         elif ctx.STRING():
             return StringLiteral(value=ctx.getText())
         else:
@@ -606,6 +611,9 @@ class SemanticAnalyzer(MathLangVisitor):
             self.add_error(ErrorFormatter.unmatched_condition_type(condition_type), ctx.expression())
 
         step_node = self.visit(ctx.statement())
+        if isinstance(step_node, list):
+            step_node = step_node[0]
+            # todo could have been multiple statements there
 
         self.in_loop = True
         block_node = self.visitBlock(ctx.block())
@@ -685,9 +693,9 @@ def main():
             print("✅ Программа семантически корректна!")
             print("\nGenerated WAT code:")
 
-            generator = WATGenerator()
+            generator = WatGenerator()
 
-            code = generator.generate_wat(analyzer.program_node)
+            code = generator.generate(analyzer.program_node)
             with open(source_file.replace('.ml', '.wat'), 'w', encoding='utf-8') as f:
                 f.write(code)
 

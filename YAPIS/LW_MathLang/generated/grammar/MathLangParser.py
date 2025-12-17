@@ -1,4 +1,4 @@
-# Generated from grammar/MathLang.g4 by ANTLR 4.13.2
+# Generated from grammar/MathLang.g4 by ANTLR 4.9.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -9,104 +9,127 @@ else:
 	from typing.io import TextIO
 
 def serializedATN():
-    return [
-        4,1,40,272,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
-        6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
-        2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
-        7,20,2,21,7,21,2,22,7,22,2,23,7,23,1,0,5,0,50,8,0,10,0,12,0,53,9,
-        0,1,0,5,0,56,8,0,10,0,12,0,59,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,
-        1,1,1,3,1,70,8,1,1,2,1,2,1,2,3,2,75,8,2,1,2,1,2,3,2,79,8,2,1,2,1,
-        2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,95,8,4,1,5,
-        1,5,3,5,99,8,5,1,5,1,5,1,5,1,6,3,6,105,8,6,1,6,1,6,1,6,1,6,1,6,1,
-        6,5,6,113,8,6,10,6,12,6,116,9,6,1,7,1,7,1,7,1,7,1,8,1,8,3,8,124,
-        8,8,1,8,1,8,3,8,128,8,8,1,8,1,8,1,9,1,9,1,9,3,9,135,8,9,1,10,1,10,
-        1,10,3,10,140,8,10,1,10,1,10,3,10,144,8,10,1,10,1,10,3,10,148,8,
-        10,1,10,1,10,1,10,1,11,1,11,1,11,1,11,1,11,1,11,1,12,1,12,1,12,1,
-        12,1,12,1,12,1,13,1,13,5,13,167,8,13,10,13,12,13,170,9,13,1,13,1,
-        13,1,14,1,14,5,14,176,8,14,10,14,12,14,179,9,14,1,14,1,14,1,15,1,
-        15,1,15,5,15,186,8,15,10,15,12,15,189,9,15,1,15,1,15,1,16,1,16,1,
-        16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,3,16,205,8,16,1,
-        16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,
-        16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,
-        16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,16,1,
-        16,5,16,247,8,16,10,16,12,16,250,9,16,1,17,1,17,1,18,1,18,1,19,1,
-        19,1,20,1,20,1,21,1,21,1,22,1,22,1,22,5,22,265,8,22,10,22,12,22,
-        268,9,22,1,23,1,23,1,23,0,1,32,24,0,2,4,6,8,10,12,14,16,18,20,22,
-        24,26,28,30,32,34,36,38,40,42,44,46,0,2,1,0,27,29,1,0,34,37,290,
-        0,51,1,0,0,0,2,69,1,0,0,0,4,71,1,0,0,0,6,83,1,0,0,0,8,87,1,0,0,0,
-        10,98,1,0,0,0,12,104,1,0,0,0,14,117,1,0,0,0,16,121,1,0,0,0,18,134,
-        1,0,0,0,20,136,1,0,0,0,22,152,1,0,0,0,24,158,1,0,0,0,26,164,1,0,
-        0,0,28,177,1,0,0,0,30,187,1,0,0,0,32,204,1,0,0,0,34,251,1,0,0,0,
-        36,253,1,0,0,0,38,255,1,0,0,0,40,257,1,0,0,0,42,259,1,0,0,0,44,261,
-        1,0,0,0,46,269,1,0,0,0,48,50,3,4,2,0,49,48,1,0,0,0,50,53,1,0,0,0,
-        51,49,1,0,0,0,51,52,1,0,0,0,52,57,1,0,0,0,53,51,1,0,0,0,54,56,3,
-        2,1,0,55,54,1,0,0,0,56,59,1,0,0,0,57,55,1,0,0,0,57,58,1,0,0,0,58,
-        60,1,0,0,0,59,57,1,0,0,0,60,61,5,0,0,1,61,1,1,0,0,0,62,70,3,38,19,
-        0,63,70,3,26,13,0,64,70,3,8,4,0,65,70,3,18,9,0,66,70,3,10,5,0,67,
-        70,3,14,7,0,68,70,3,16,8,0,69,62,1,0,0,0,69,63,1,0,0,0,69,64,1,0,
-        0,0,69,65,1,0,0,0,69,66,1,0,0,0,69,67,1,0,0,0,69,68,1,0,0,0,70,3,
-        1,0,0,0,71,72,5,32,0,0,72,74,5,38,0,0,73,75,3,6,3,0,74,73,1,0,0,
-        0,74,75,1,0,0,0,75,76,1,0,0,0,76,78,5,14,0,0,77,79,3,12,6,0,78,77,
-        1,0,0,0,78,79,1,0,0,0,79,80,1,0,0,0,80,81,5,15,0,0,81,82,3,26,13,
-        0,82,5,1,0,0,0,83,84,5,1,0,0,84,85,3,44,22,0,85,86,5,15,0,0,86,7,
-        1,0,0,0,87,88,5,30,0,0,88,89,5,14,0,0,89,90,3,32,16,0,90,91,5,15,
-        0,0,91,94,3,26,13,0,92,93,5,31,0,0,93,95,3,26,13,0,94,92,1,0,0,0,
-        94,95,1,0,0,0,95,9,1,0,0,0,96,99,3,12,6,0,97,99,3,28,14,0,98,96,
-        1,0,0,0,98,97,1,0,0,0,99,100,1,0,0,0,100,101,3,34,17,0,101,102,3,
-        30,15,0,102,11,1,0,0,0,103,105,3,46,23,0,104,103,1,0,0,0,104,105,
-        1,0,0,0,105,106,1,0,0,0,106,107,3,42,21,0,107,114,5,38,0,0,108,109,
-        5,11,0,0,109,110,3,42,21,0,110,111,5,38,0,0,111,113,1,0,0,0,112,
-        108,1,0,0,0,113,116,1,0,0,0,114,112,1,0,0,0,114,115,1,0,0,0,115,
-        13,1,0,0,0,116,114,1,0,0,0,117,118,3,46,23,0,118,119,3,42,21,0,119,
-        120,5,38,0,0,120,15,1,0,0,0,121,123,5,38,0,0,122,124,3,6,3,0,123,
-        122,1,0,0,0,123,124,1,0,0,0,124,125,1,0,0,0,125,127,5,14,0,0,126,
-        128,3,30,15,0,127,126,1,0,0,0,127,128,1,0,0,0,128,129,1,0,0,0,129,
-        130,5,15,0,0,130,17,1,0,0,0,131,135,3,20,10,0,132,135,3,22,11,0,
-        133,135,3,24,12,0,134,131,1,0,0,0,134,132,1,0,0,0,134,133,1,0,0,
-        0,135,19,1,0,0,0,136,137,5,24,0,0,137,139,5,14,0,0,138,140,3,10,
-        5,0,139,138,1,0,0,0,139,140,1,0,0,0,140,141,1,0,0,0,141,143,5,12,
-        0,0,142,144,3,32,16,0,143,142,1,0,0,0,143,144,1,0,0,0,144,145,1,
-        0,0,0,145,147,5,12,0,0,146,148,3,2,1,0,147,146,1,0,0,0,147,148,1,
-        0,0,0,148,149,1,0,0,0,149,150,5,15,0,0,150,151,3,26,13,0,151,21,
-        1,0,0,0,152,153,5,25,0,0,153,154,5,14,0,0,154,155,3,32,16,0,155,
-        156,5,15,0,0,156,157,3,26,13,0,157,23,1,0,0,0,158,159,5,26,0,0,159,
-        160,5,14,0,0,160,161,3,32,16,0,161,162,5,15,0,0,162,163,3,26,13,
-        0,163,25,1,0,0,0,164,168,5,16,0,0,165,167,3,2,1,0,166,165,1,0,0,
-        0,167,170,1,0,0,0,168,166,1,0,0,0,168,169,1,0,0,0,169,171,1,0,0,
-        0,170,168,1,0,0,0,171,172,5,17,0,0,172,27,1,0,0,0,173,174,5,38,0,
-        0,174,176,5,11,0,0,175,173,1,0,0,0,176,179,1,0,0,0,177,175,1,0,0,
-        0,177,178,1,0,0,0,178,180,1,0,0,0,179,177,1,0,0,0,180,181,5,38,0,
-        0,181,29,1,0,0,0,182,183,3,32,16,0,183,184,5,11,0,0,184,186,1,0,
-        0,0,185,182,1,0,0,0,186,189,1,0,0,0,187,185,1,0,0,0,187,188,1,0,
-        0,0,188,190,1,0,0,0,189,187,1,0,0,0,190,191,3,32,16,0,191,31,1,0,
-        0,0,192,193,6,16,-1,0,193,205,3,16,8,0,194,205,5,38,0,0,195,205,
-        3,40,20,0,196,197,5,14,0,0,197,198,3,32,16,0,198,199,5,15,0,0,199,
-        205,1,0,0,0,200,201,5,4,0,0,201,205,3,32,16,15,202,203,5,20,0,0,
-        203,205,3,32,16,14,204,192,1,0,0,0,204,194,1,0,0,0,204,195,1,0,0,
-        0,204,196,1,0,0,0,204,200,1,0,0,0,204,202,1,0,0,0,205,248,1,0,0,
-        0,206,207,10,13,0,0,207,208,5,22,0,0,208,247,3,32,16,14,209,210,
-        10,12,0,0,210,211,5,21,0,0,211,247,3,32,16,13,212,213,10,11,0,0,
-        213,214,5,18,0,0,214,247,3,32,16,12,215,216,10,10,0,0,216,217,5,
-        19,0,0,217,247,3,32,16,11,218,219,10,9,0,0,219,220,5,20,0,0,220,
-        247,3,32,16,10,221,222,10,8,0,0,222,223,5,2,0,0,223,247,3,32,16,
-        9,224,225,10,7,0,0,225,226,5,3,0,0,226,247,3,32,16,8,227,228,10,
-        6,0,0,228,229,5,5,0,0,229,230,5,5,0,0,230,247,3,32,16,7,231,232,
-        10,5,0,0,232,233,5,6,0,0,233,247,3,32,16,6,234,235,10,4,0,0,235,
-        236,5,7,0,0,236,247,3,32,16,5,237,238,10,3,0,0,238,239,5,8,0,0,239,
-        247,3,32,16,4,240,241,10,2,0,0,241,242,5,9,0,0,242,247,3,32,16,3,
-        243,244,10,1,0,0,244,245,5,10,0,0,245,247,3,32,16,2,246,206,1,0,
-        0,0,246,209,1,0,0,0,246,212,1,0,0,0,246,215,1,0,0,0,246,218,1,0,
-        0,0,246,221,1,0,0,0,246,224,1,0,0,0,246,227,1,0,0,0,246,231,1,0,
-        0,0,246,234,1,0,0,0,246,237,1,0,0,0,246,240,1,0,0,0,246,243,1,0,
-        0,0,247,250,1,0,0,0,248,246,1,0,0,0,248,249,1,0,0,0,249,33,1,0,0,
-        0,250,248,1,0,0,0,251,252,3,36,18,0,252,35,1,0,0,0,253,254,5,5,0,
-        0,254,37,1,0,0,0,255,256,7,0,0,0,256,39,1,0,0,0,257,258,7,1,0,0,
-        258,41,1,0,0,0,259,260,5,38,0,0,260,43,1,0,0,0,261,266,3,42,21,0,
-        262,263,5,11,0,0,263,265,3,42,21,0,264,262,1,0,0,0,265,268,1,0,0,
-        0,266,264,1,0,0,0,266,267,1,0,0,0,267,45,1,0,0,0,268,266,1,0,0,0,
-        269,270,5,23,0,0,270,47,1,0,0,0,22,51,57,69,74,78,94,98,104,114,
-        123,127,134,139,143,147,168,177,187,204,246,248,266
-    ]
+    with StringIO() as buf:
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3*")
+        buf.write("\u0112\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
+        buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
+        buf.write("\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31")
+        buf.write("\t\31\3\2\7\2\64\n\2\f\2\16\2\67\13\2\3\2\7\2:\n\2\f\2")
+        buf.write("\16\2=\13\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\5\3H\n")
+        buf.write("\3\3\4\3\4\3\4\5\4M\n\4\3\4\3\4\5\4Q\n\4\3\4\3\4\3\4\3")
+        buf.write("\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3\6\3\6\5\6a\n\6\3")
+        buf.write("\7\3\7\5\7e\n\7\3\7\3\7\3\7\3\b\5\bk\n\b\3\b\3\b\3\b\3")
+        buf.write("\b\3\b\3\b\7\bs\n\b\f\b\16\bv\13\b\3\t\3\t\3\t\3\t\3\n")
+        buf.write("\3\n\5\n~\n\n\3\n\3\n\5\n\u0082\n\n\3\n\3\n\3\13\3\13")
+        buf.write("\3\13\5\13\u0089\n\13\3\f\3\f\3\f\5\f\u008e\n\f\3\f\3")
+        buf.write("\f\5\f\u0092\n\f\3\f\3\f\5\f\u0096\n\f\3\f\3\f\3\f\3\r")
+        buf.write("\3\r\3\r\3\r\3\r\3\r\3\16\3\16\3\16\3\16\3\16\3\16\3\17")
+        buf.write("\3\17\7\17\u00a9\n\17\f\17\16\17\u00ac\13\17\3\17\3\17")
+        buf.write("\3\20\3\20\7\20\u00b2\n\20\f\20\16\20\u00b5\13\20\3\20")
+        buf.write("\3\20\3\21\3\21\3\21\7\21\u00bc\n\21\f\21\16\21\u00bf")
+        buf.write("\13\21\3\21\3\21\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3")
+        buf.write("\22\3\22\3\22\3\22\3\22\5\22\u00cf\n\22\3\22\3\22\3\22")
+        buf.write("\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22")
+        buf.write("\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22")
+        buf.write("\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22\3\22")
+        buf.write("\3\22\3\22\3\22\3\22\7\22\u00f9\n\22\f\22\16\22\u00fc")
+        buf.write("\13\22\3\23\3\23\3\24\3\24\3\25\3\25\3\26\3\26\3\27\3")
+        buf.write("\27\3\30\3\30\3\30\7\30\u010b\n\30\f\30\16\30\u010e\13")
+        buf.write("\30\3\31\3\31\3\31\2\3\"\32\2\4\6\b\n\f\16\20\22\24\26")
+        buf.write("\30\32\34\36 \"$&(*,.\60\2\4\3\2\35\37\3\2$\'\2\u0124")
+        buf.write("\2\65\3\2\2\2\4G\3\2\2\2\6I\3\2\2\2\bU\3\2\2\2\nY\3\2")
+        buf.write("\2\2\fd\3\2\2\2\16j\3\2\2\2\20w\3\2\2\2\22{\3\2\2\2\24")
+        buf.write("\u0088\3\2\2\2\26\u008a\3\2\2\2\30\u009a\3\2\2\2\32\u00a0")
+        buf.write("\3\2\2\2\34\u00a6\3\2\2\2\36\u00b3\3\2\2\2 \u00bd\3\2")
+        buf.write("\2\2\"\u00ce\3\2\2\2$\u00fd\3\2\2\2&\u00ff\3\2\2\2(\u0101")
+        buf.write("\3\2\2\2*\u0103\3\2\2\2,\u0105\3\2\2\2.\u0107\3\2\2\2")
+        buf.write("\60\u010f\3\2\2\2\62\64\5\6\4\2\63\62\3\2\2\2\64\67\3")
+        buf.write("\2\2\2\65\63\3\2\2\2\65\66\3\2\2\2\66;\3\2\2\2\67\65\3")
+        buf.write("\2\2\28:\5\4\3\298\3\2\2\2:=\3\2\2\2;9\3\2\2\2;<\3\2\2")
+        buf.write("\2<>\3\2\2\2=;\3\2\2\2>?\7\2\2\3?\3\3\2\2\2@H\5(\25\2")
+        buf.write("AH\5\34\17\2BH\5\n\6\2CH\5\24\13\2DH\5\f\7\2EH\5\20\t")
+        buf.write("\2FH\5\22\n\2G@\3\2\2\2GA\3\2\2\2GB\3\2\2\2GC\3\2\2\2")
+        buf.write("GD\3\2\2\2GE\3\2\2\2GF\3\2\2\2H\5\3\2\2\2IJ\7\"\2\2JL")
+        buf.write("\7(\2\2KM\5\b\5\2LK\3\2\2\2LM\3\2\2\2MN\3\2\2\2NP\7\20")
+        buf.write("\2\2OQ\5\16\b\2PO\3\2\2\2PQ\3\2\2\2QR\3\2\2\2RS\7\21\2")
+        buf.write("\2ST\5\34\17\2T\7\3\2\2\2UV\7\3\2\2VW\5.\30\2WX\7\21\2")
+        buf.write("\2X\t\3\2\2\2YZ\7 \2\2Z[\7\20\2\2[\\\5\"\22\2\\]\7\21")
+        buf.write("\2\2]`\5\34\17\2^_\7!\2\2_a\5\34\17\2`^\3\2\2\2`a\3\2")
+        buf.write("\2\2a\13\3\2\2\2be\5\16\b\2ce\5\36\20\2db\3\2\2\2dc\3")
+        buf.write("\2\2\2ef\3\2\2\2fg\5$\23\2gh\5 \21\2h\r\3\2\2\2ik\5\60")
+        buf.write("\31\2ji\3\2\2\2jk\3\2\2\2kl\3\2\2\2lm\5,\27\2mt\7(\2\2")
+        buf.write("no\7\r\2\2op\5,\27\2pq\7(\2\2qs\3\2\2\2rn\3\2\2\2sv\3")
+        buf.write("\2\2\2tr\3\2\2\2tu\3\2\2\2u\17\3\2\2\2vt\3\2\2\2wx\5\60")
+        buf.write("\31\2xy\5,\27\2yz\7(\2\2z\21\3\2\2\2{}\7(\2\2|~\5\b\5")
+        buf.write("\2}|\3\2\2\2}~\3\2\2\2~\177\3\2\2\2\177\u0081\7\20\2\2")
+        buf.write("\u0080\u0082\5 \21\2\u0081\u0080\3\2\2\2\u0081\u0082\3")
+        buf.write("\2\2\2\u0082\u0083\3\2\2\2\u0083\u0084\7\21\2\2\u0084")
+        buf.write("\23\3\2\2\2\u0085\u0089\5\26\f\2\u0086\u0089\5\30\r\2")
+        buf.write("\u0087\u0089\5\32\16\2\u0088\u0085\3\2\2\2\u0088\u0086")
+        buf.write("\3\2\2\2\u0088\u0087\3\2\2\2\u0089\25\3\2\2\2\u008a\u008b")
+        buf.write("\7\32\2\2\u008b\u008d\7\20\2\2\u008c\u008e\5\f\7\2\u008d")
+        buf.write("\u008c\3\2\2\2\u008d\u008e\3\2\2\2\u008e\u008f\3\2\2\2")
+        buf.write("\u008f\u0091\7\16\2\2\u0090\u0092\5\"\22\2\u0091\u0090")
+        buf.write("\3\2\2\2\u0091\u0092\3\2\2\2\u0092\u0093\3\2\2\2\u0093")
+        buf.write("\u0095\7\16\2\2\u0094\u0096\5\4\3\2\u0095\u0094\3\2\2")
+        buf.write("\2\u0095\u0096\3\2\2\2\u0096\u0097\3\2\2\2\u0097\u0098")
+        buf.write("\7\21\2\2\u0098\u0099\5\34\17\2\u0099\27\3\2\2\2\u009a")
+        buf.write("\u009b\7\33\2\2\u009b\u009c\7\20\2\2\u009c\u009d\5\"\22")
+        buf.write("\2\u009d\u009e\7\21\2\2\u009e\u009f\5\34\17\2\u009f\31")
+        buf.write("\3\2\2\2\u00a0\u00a1\7\34\2\2\u00a1\u00a2\7\20\2\2\u00a2")
+        buf.write("\u00a3\5\"\22\2\u00a3\u00a4\7\21\2\2\u00a4\u00a5\5\34")
+        buf.write("\17\2\u00a5\33\3\2\2\2\u00a6\u00aa\7\22\2\2\u00a7\u00a9")
+        buf.write("\5\4\3\2\u00a8\u00a7\3\2\2\2\u00a9\u00ac\3\2\2\2\u00aa")
+        buf.write("\u00a8\3\2\2\2\u00aa\u00ab\3\2\2\2\u00ab\u00ad\3\2\2\2")
+        buf.write("\u00ac\u00aa\3\2\2\2\u00ad\u00ae\7\23\2\2\u00ae\35\3\2")
+        buf.write("\2\2\u00af\u00b0\7(\2\2\u00b0\u00b2\7\r\2\2\u00b1\u00af")
+        buf.write("\3\2\2\2\u00b2\u00b5\3\2\2\2\u00b3\u00b1\3\2\2\2\u00b3")
+        buf.write("\u00b4\3\2\2\2\u00b4\u00b6\3\2\2\2\u00b5\u00b3\3\2\2\2")
+        buf.write("\u00b6\u00b7\7(\2\2\u00b7\37\3\2\2\2\u00b8\u00b9\5\"\22")
+        buf.write("\2\u00b9\u00ba\7\r\2\2\u00ba\u00bc\3\2\2\2\u00bb\u00b8")
+        buf.write("\3\2\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00bb\3\2\2\2\u00bd")
+        buf.write("\u00be\3\2\2\2\u00be\u00c0\3\2\2\2\u00bf\u00bd\3\2\2\2")
+        buf.write("\u00c0\u00c1\5\"\22\2\u00c1!\3\2\2\2\u00c2\u00c3\b\22")
+        buf.write("\1\2\u00c3\u00cf\5\22\n\2\u00c4\u00cf\7(\2\2\u00c5\u00cf")
+        buf.write("\5*\26\2\u00c6\u00c7\7\20\2\2\u00c7\u00c8\5\"\22\2\u00c8")
+        buf.write("\u00c9\7\21\2\2\u00c9\u00cf\3\2\2\2\u00ca\u00cb\7\6\2")
+        buf.write("\2\u00cb\u00cf\5\"\22\21\u00cc\u00cd\7\26\2\2\u00cd\u00cf")
+        buf.write("\5\"\22\20\u00ce\u00c2\3\2\2\2\u00ce\u00c4\3\2\2\2\u00ce")
+        buf.write("\u00c5\3\2\2\2\u00ce\u00c6\3\2\2\2\u00ce\u00ca\3\2\2\2")
+        buf.write("\u00ce\u00cc\3\2\2\2\u00cf\u00fa\3\2\2\2\u00d0\u00d1\f")
+        buf.write("\17\2\2\u00d1\u00d2\7\30\2\2\u00d2\u00f9\5\"\22\20\u00d3")
+        buf.write("\u00d4\f\16\2\2\u00d4\u00d5\7\27\2\2\u00d5\u00f9\5\"\22")
+        buf.write("\17\u00d6\u00d7\f\r\2\2\u00d7\u00d8\7\24\2\2\u00d8\u00f9")
+        buf.write("\5\"\22\16\u00d9\u00da\f\f\2\2\u00da\u00db\7\25\2\2\u00db")
+        buf.write("\u00f9\5\"\22\r\u00dc\u00dd\f\13\2\2\u00dd\u00de\7\26")
+        buf.write("\2\2\u00de\u00f9\5\"\22\f\u00df\u00e0\f\n\2\2\u00e0\u00e1")
+        buf.write("\7\4\2\2\u00e1\u00f9\5\"\22\13\u00e2\u00e3\f\t\2\2\u00e3")
+        buf.write("\u00e4\7\5\2\2\u00e4\u00f9\5\"\22\n\u00e5\u00e6\f\b\2")
+        buf.write("\2\u00e6\u00e7\7\7\2\2\u00e7\u00e8\7\7\2\2\u00e8\u00f9")
+        buf.write("\5\"\22\t\u00e9\u00ea\f\7\2\2\u00ea\u00eb\7\b\2\2\u00eb")
+        buf.write("\u00f9\5\"\22\b\u00ec\u00ed\f\6\2\2\u00ed\u00ee\7\t\2")
+        buf.write("\2\u00ee\u00f9\5\"\22\7\u00ef\u00f0\f\5\2\2\u00f0\u00f1")
+        buf.write("\7\n\2\2\u00f1\u00f9\5\"\22\6\u00f2\u00f3\f\4\2\2\u00f3")
+        buf.write("\u00f4\7\13\2\2\u00f4\u00f9\5\"\22\5\u00f5\u00f6\f\3\2")
+        buf.write("\2\u00f6\u00f7\7\f\2\2\u00f7\u00f9\5\"\22\4\u00f8\u00d0")
+        buf.write("\3\2\2\2\u00f8\u00d3\3\2\2\2\u00f8\u00d6\3\2\2\2\u00f8")
+        buf.write("\u00d9\3\2\2\2\u00f8\u00dc\3\2\2\2\u00f8\u00df\3\2\2\2")
+        buf.write("\u00f8\u00e2\3\2\2\2\u00f8\u00e5\3\2\2\2\u00f8\u00e9\3")
+        buf.write("\2\2\2\u00f8\u00ec\3\2\2\2\u00f8\u00ef\3\2\2\2\u00f8\u00f2")
+        buf.write("\3\2\2\2\u00f8\u00f5\3\2\2\2\u00f9\u00fc\3\2\2\2\u00fa")
+        buf.write("\u00f8\3\2\2\2\u00fa\u00fb\3\2\2\2\u00fb#\3\2\2\2\u00fc")
+        buf.write("\u00fa\3\2\2\2\u00fd\u00fe\5&\24\2\u00fe%\3\2\2\2\u00ff")
+        buf.write("\u0100\7\7\2\2\u0100\'\3\2\2\2\u0101\u0102\t\2\2\2\u0102")
+        buf.write(")\3\2\2\2\u0103\u0104\t\3\2\2\u0104+\3\2\2\2\u0105\u0106")
+        buf.write("\7(\2\2\u0106-\3\2\2\2\u0107\u010c\5,\27\2\u0108\u0109")
+        buf.write("\7\r\2\2\u0109\u010b\5,\27\2\u010a\u0108\3\2\2\2\u010b")
+        buf.write("\u010e\3\2\2\2\u010c\u010a\3\2\2\2\u010c\u010d\3\2\2\2")
+        buf.write("\u010d/\3\2\2\2\u010e\u010c\3\2\2\2\u010f\u0110\7\31\2")
+        buf.write("\2\u0110\61\3\2\2\2\30\65;GLP`djt}\u0081\u0088\u008d\u0091")
+        buf.write("\u0095\u00aa\u00b3\u00bd\u00ce\u00f8\u00fa\u010c")
+        return buf.getvalue()
+
 
 class MathLangParser ( Parser ):
 
@@ -210,10 +233,9 @@ class MathLangParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.13.2")
+        self.checkVersion("4.9.2")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
-
 
 
 
@@ -271,7 +293,7 @@ class MathLangParser ( Parser ):
             self.state = 51
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==32:
+            while _la==MathLangParser.SUB:
                 self.state = 48
                 self.subprogram()
                 self.state = 53
@@ -281,7 +303,7 @@ class MathLangParser ( Parser ):
             self.state = 57
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 277017067520) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.LCURLY) | (1 << MathLangParser.GLOBAL) | (1 << MathLangParser.FOR) | (1 << MathLangParser.WHILE) | (1 << MathLangParser.UNTIL) | (1 << MathLangParser.BREAK) | (1 << MathLangParser.CONTINUE) | (1 << MathLangParser.RETURN) | (1 << MathLangParser.IF) | (1 << MathLangParser.ID))) != 0):
                 self.state = 54
                 self.statement()
                 self.state = 59
@@ -297,7 +319,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class StatementContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -413,7 +434,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class SubprogramContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -479,7 +499,7 @@ class MathLangParser ( Parser ):
             self.state = 74
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==1:
+            if _la==MathLangParser.T__0:
                 self.state = 73
                 self.template()
 
@@ -489,7 +509,7 @@ class MathLangParser ( Parser ):
             self.state = 78
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23 or _la==38:
+            if _la==MathLangParser.GLOBAL or _la==MathLangParser.ID:
                 self.state = 77
                 self.declaration_list()
 
@@ -505,7 +525,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class TemplateContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -560,7 +579,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class BranchingContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -632,7 +650,7 @@ class MathLangParser ( Parser ):
             self.state = 94
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==31:
+            if _la==MathLangParser.ELSE:
                 self.state = 92
                 self.match(MathLangParser.ELSE)
                 self.state = 93
@@ -646,7 +664,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class AssignmentContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -723,7 +740,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class Declaration_listContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -784,7 +800,7 @@ class MathLangParser ( Parser ):
             self.state = 104
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23:
+            if _la==MathLangParser.GLOBAL:
                 self.state = 103
                 self.scope_modifier()
 
@@ -796,7 +812,7 @@ class MathLangParser ( Parser ):
             self.state = 114
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==11:
+            while _la==MathLangParser.COMMA:
                 self.state = 108
                 self.match(MathLangParser.COMMA)
                 self.state = 109
@@ -814,7 +830,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class Global_variable_declarationContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -874,7 +889,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class CallContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -931,7 +945,7 @@ class MathLangParser ( Parser ):
             self.state = 123
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==1:
+            if _la==MathLangParser.T__0:
                 self.state = 122
                 self.template()
 
@@ -941,7 +955,7 @@ class MathLangParser ( Parser ):
             self.state = 127
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 532577009680) != 0):
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.NOT) | (1 << MathLangParser.LPAREN) | (1 << MathLangParser.MINUS) | (1 << MathLangParser.INT) | (1 << MathLangParser.FLOAT) | (1 << MathLangParser.BOOL) | (1 << MathLangParser.STRING) | (1 << MathLangParser.ID))) != 0):
                 self.state = 126
                 self.expression_list()
 
@@ -955,7 +969,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class LoopContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -1004,17 +1017,17 @@ class MathLangParser ( Parser ):
             self.state = 134
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [24]:
+            if token in [MathLangParser.FOR]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 131
                 self.for_loop()
                 pass
-            elif token in [25]:
+            elif token in [MathLangParser.WHILE]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 132
                 self.while_loop()
                 pass
-            elif token in [26]:
+            elif token in [MathLangParser.UNTIL]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 133
                 self.until_loop()
@@ -1029,7 +1042,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class For_loopContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -1103,7 +1115,7 @@ class MathLangParser ( Parser ):
             self.state = 139
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23 or _la==38:
+            if _la==MathLangParser.GLOBAL or _la==MathLangParser.ID:
                 self.state = 138
                 self.assignment()
 
@@ -1113,7 +1125,7 @@ class MathLangParser ( Parser ):
             self.state = 143
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 532577009680) != 0):
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.NOT) | (1 << MathLangParser.LPAREN) | (1 << MathLangParser.MINUS) | (1 << MathLangParser.INT) | (1 << MathLangParser.FLOAT) | (1 << MathLangParser.BOOL) | (1 << MathLangParser.STRING) | (1 << MathLangParser.ID))) != 0):
                 self.state = 142
                 self.expression(0)
 
@@ -1123,7 +1135,7 @@ class MathLangParser ( Parser ):
             self.state = 147
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 277017067520) != 0):
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.LCURLY) | (1 << MathLangParser.GLOBAL) | (1 << MathLangParser.FOR) | (1 << MathLangParser.WHILE) | (1 << MathLangParser.UNTIL) | (1 << MathLangParser.BREAK) | (1 << MathLangParser.CONTINUE) | (1 << MathLangParser.RETURN) | (1 << MathLangParser.IF) | (1 << MathLangParser.ID))) != 0):
                 self.state = 146
                 self.statement()
 
@@ -1139,7 +1151,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class While_loopContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -1209,7 +1220,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class Until_loopContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1278,7 +1288,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class BlockContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1331,7 +1340,7 @@ class MathLangParser ( Parser ):
             self.state = 168
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 277017067520) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.LCURLY) | (1 << MathLangParser.GLOBAL) | (1 << MathLangParser.FOR) | (1 << MathLangParser.WHILE) | (1 << MathLangParser.UNTIL) | (1 << MathLangParser.BREAK) | (1 << MathLangParser.CONTINUE) | (1 << MathLangParser.RETURN) | (1 << MathLangParser.IF) | (1 << MathLangParser.ID))) != 0):
                 self.state = 165
                 self.statement()
                 self.state = 170
@@ -1347,7 +1356,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class Id_listContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -1417,7 +1425,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class Expression_listContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1486,7 +1493,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class ExpressionContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -1830,7 +1836,6 @@ class MathLangParser ( Parser ):
             self.unrollRecursionContexts(_parentctx)
         return localctx
 
-
     class Assignment_operatorContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1878,7 +1883,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class Simple_assignment_operatorContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1925,7 +1929,6 @@ class MathLangParser ( Parser ):
             self.exitRule()
         return localctx
 
-
     class Control_flow_operatorContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -1971,7 +1974,7 @@ class MathLangParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 255
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 939524096) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.BREAK) | (1 << MathLangParser.CONTINUE) | (1 << MathLangParser.RETURN))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1983,7 +1986,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class LiteralContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -2033,7 +2035,7 @@ class MathLangParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 257
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 257698037760) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << MathLangParser.INT) | (1 << MathLangParser.FLOAT) | (1 << MathLangParser.BOOL) | (1 << MathLangParser.STRING))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -2045,7 +2047,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class Type_specifierContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -2092,7 +2093,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class Type_specifier_listContext(ParserRuleContext):
         __slots__ = 'parser'
@@ -2146,7 +2146,7 @@ class MathLangParser ( Parser ):
             self.state = 266
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==11:
+            while _la==MathLangParser.COMMA:
                 self.state = 262
                 self.match(MathLangParser.COMMA)
                 self.state = 263
@@ -2162,7 +2162,6 @@ class MathLangParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
-
 
     class Scope_modifierContext(ParserRuleContext):
         __slots__ = 'parser'

@@ -110,7 +110,8 @@ call_to_templated_sub(2)
 call_to_templated_sub(2.0)
 // call_to_templated_sub("dsd")
 
-int a = cast:(float, int)(read:(float)())
+float input_float = 0.0
+int a = cast:(float, int)(read(input_float))
 inner_initialization(2)
 inner_initialization(2.0)
 // inner_initialization("dsd")

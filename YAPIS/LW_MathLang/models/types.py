@@ -57,7 +57,7 @@ class Type:
         elif self == Type.void():
             return ""
         else:
-            return "i32"
+            raise ValueError(self.__str__())
         
 
     def __str__(self):
