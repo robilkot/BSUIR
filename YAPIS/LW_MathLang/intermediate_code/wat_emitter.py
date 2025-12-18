@@ -1,6 +1,4 @@
-from dataclasses import dataclass, field, InitVar
-from typing import List, Optional, Dict, Set, Tuple
-import math
+from typing import Dict
 
 from intermediate_code.ast_nodes import *
 
@@ -9,16 +7,21 @@ class WatGenerator:
     def __init__(self):
         self.indent_level = 0
         self.code_lines = []
-        self.current_function = None
-        self.function_locals = {}  # function_name -> Dict[var_name: type]
+        self.current_function: str = 'main'
+        self.function_locals: dict[str, dict[str, Type]] = {}  # function_name -> Dict[var_name: type]
         self.function_params = {}  # function_name -> Dict[param_name: type]
         self.function_types = {}
-        self.string_constants = {}
-        self.string_counter = 0
         self.label_counter = 0
         self.loop_stack = []
         self.math_functions = {'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
                                'exp', 'log', 'sqrt', 'ceil', 'floor', 'abs'}
+        self.current_address: int = 0
+        self.module_begin_line_idx: int = 0
+
+    def get_next_free_address(self):
+        free_addr = self.current_address
+        self.current_address += 4  # constant offset for now
+        return free_addr
 
     def indent(self):
         self.indent_level += 1
@@ -29,41 +32,60 @@ class WatGenerator:
     def emit(self, line: str):
         self.code_lines.append("  " * self.indent_level + line)
 
+    def emit_local(self, var_name: str):
+        line = f'(local ${var_name} i32)'
+        # Find the index of the last line starting with '(func ' (all locals are next to sub decl)
+        target_index = -1
+        for i in range(len(self.code_lines) - 1, self.module_begin_line_idx - 1, -1):
+            if self.code_lines[i].__contains__(f'(func ${self.current_function}'):
+                target_index = i
+                break
+
+        if target_index != -1:
+            # Skip params for sub decls
+            while target_index < len(self.code_lines) - 1 and self.code_lines[target_index + 1].__contains__('(param '):
+                target_index += 1
+
+            insert_pos = target_index + 1
+            self.code_lines.insert(insert_pos, "  " * self.indent_level + line)
+        else:
+            # Fallback: just append like emit if no local found
+            self.code_lines.append("  " * self.indent_level + line)
+
     def get_unique_label(self, prefix: str) -> str:
         self.label_counter += 1
         return f"${prefix}_{self.label_counter}"
 
     def generate(self, program: 'ProgramNode') -> str:
-        """Main entry point to generate WAT from AST"""
         self.code_lines = []
 
         # Start module
         self.emit("(module")
         self.indent()
 
-        # Import console functions
-        self._emit_imports()
+        self._emit_io_imports()
+        self._emit_js_math_imports()
 
-        # Import math functions
-        self._emit_math_imports()
-
-        # Generate memory for strings
         self.emit('(memory $memory 1)')
 
-        # Generate string constants
         self._generate_string_constants(program)
 
         # Collect function signatures first
         self._collect_function_info(program)
 
+        self.module_begin_line_idx = len(self.code_lines) - 1 if len(self.code_lines) > 0 else 0
+
         # Generate all subprograms
         for subprogram in program.subprograms:
             self._generate_subprogram(subprogram)
+
+        self.current_function = 'main'
 
         # Generate main program (global statements)
         self._generate_main_program(program.statements)
 
         # Start the main function
+        self.emit('(export "main" (func $main))')
         self.emit('(start $main)')
 
         self.dedent()
@@ -71,8 +93,7 @@ class WatGenerator:
 
         return "\n".join(self.code_lines)
 
-    def _emit_imports(self):
-        """Import console I/O functions"""
+    def _emit_io_imports(self):
         self.emit('(import "console" "write_int" (func $console_write_int (param i32)))')
         self.emit('(import "console" "write_float" (func $console_write_float (param f32)))')
         self.emit('(import "console" "write_bool" (func $console_write_bool (param i32)))')
@@ -81,8 +102,7 @@ class WatGenerator:
         self.emit('(import "console" "read_float" (func $console_read_float (result f32)))')
         self.emit('(import "console" "read_bool" (func $console_read_bool (result i32)))')
 
-    def _emit_math_imports(self):
-        """Import math functions from JS Math module"""
+    def _emit_js_math_imports(self):
         for func in self.math_functions:
             self.emit(f'(import "Math" "{func}" (func $Math_{func} (param f32) (result f32)))')
 
@@ -95,21 +115,23 @@ class WatGenerator:
 
     def _generate_string_constants(self, program: 'ProgramNode'):
         """Collect and generate string constants in data section"""
+        # TODO
         # We'll need to traverse the AST to find all string literals
         # For now, we'll generate an empty data section
         self.emit('(data (i32.const 0) "")')
 
     def _generate_main_program(self, statements: List['StatementNode']):
-        """Generate main program as a function"""
         self.emit('(func $main')
         self.indent()
 
-        # Declare all local variables used in main
+
         main_locals: dict[str, Type] = {}
         self._collect_local_vars_with_types(statements, main_locals)
         if main_locals:
-            local_decls = " ".join([f"(local ${var} {type.to_wat()})" for var, type in main_locals.items()])
-            self.emit(local_decls)
+            for var_name in main_locals.keys():
+                self.__allocate_local_var(var_name)
+
+        self.function_locals[self.current_function] = main_locals
 
         # Generate statements
         for stmt in statements:
@@ -118,28 +140,7 @@ class WatGenerator:
         self.dedent()
         self.emit(')')
 
-    def _collect_local_vars(self, statements: List['StatementNode'], var_set: Set[str]):
-        """Collect all local variable names from statements"""
-        for stmt in statements:
-            if isinstance(stmt, VarDecl):
-                var_set.add(stmt.name)
-            if isinstance(stmt, AssignNode):
-                var_set.add(stmt.name)
-            elif isinstance(stmt, BlockNode):
-                self._collect_local_vars(stmt.body, var_set)
-            elif isinstance(stmt, IfStmt):
-                self._collect_local_vars(stmt.then_body.body, var_set)
-                if stmt.else_body:
-                    self._collect_local_vars(stmt.else_body.body, var_set)
-            elif isinstance(stmt, (WhileStmt, UntilStmt)):
-                self._collect_local_vars(stmt.body.body, var_set)
-            elif isinstance(stmt, ForStmt):
-                if stmt.init:
-                    self._collect_local_vars([stmt.init], var_set)
-                self._collect_local_vars(stmt.body.body, var_set)
-
     def _generate_subprogram(self, subprogram: 'SubprogramNode'):
-        """Generate a subprogram/function"""
         self.current_function = subprogram.name
 
         # Store parameter types for this function
@@ -153,42 +154,36 @@ class WatGenerator:
         self._collect_local_vars_with_types(subprogram.body.body, local_vars)
         self.function_locals[subprogram.name] = local_vars
 
-        # Build parameter declarations (all passed by reference as i32 pointers)
-        param_decls = []
-        for name in subprogram.param_names:
-            param_decls.append(f"(param ${name} i32)")
-
-        # Build local variable declarations with correct types
-        local_decls = []
-        for var_name, var_type in sorted(local_vars.items()):
-            if var_name not in param_types:  # Don't redeclare parameters
-                wat_type = var_type.to_wat()
-                local_decls.append(f"(local ${var_name} {wat_type})")
-
-        # Build return type
-        return_type = subprogram.type.to_wat()
-        return_decl = f"(result {return_type})" if return_type else ""
 
         # Emit function header
         self.emit(f'(func ${subprogram.name}')
         self.indent()
 
+
+        # Build parameter declarations (all passed by reference as i32 pointers)
+        param_decls = []
+        for name in subprogram.param_names:
+            param_decls.append(f"(param ${name} i32)")
+
         # Emit parameters and locals
         for param_decl in param_decls:
             self.emit(param_decl)
 
+        return_type = subprogram.type.to_wat()
+        return_decl = f"(result {return_type})" if return_type else ""
         if return_decl:
             self.emit(return_decl)
 
-        if local_decls:
-            self.emit(f"{' '.join(local_decls)}")
 
-        # Generate function body
+        for var_name in local_vars.keys():
+            if var_name not in self.function_params[subprogram.name]:
+                self.__allocate_local_var(var_name)
+
         for stmt in subprogram.body.body:
             self._generate_statement(stmt)
 
         # Add implicit return for void functions if not already present
-        if return_type == "" and not self._has_return(subprogram.body.body):
+        if return_type == "" and not self._contains_return(subprogram.body.body):
             self.emit('return')
 
         self.dedent()
@@ -196,27 +191,37 @@ class WatGenerator:
 
         self.current_function = None
 
-    def _has_return(self, statements: List['StatementNode']) -> bool:
-        """Check if statements contain a return"""
+    def _contains_return(self, statements: List['StatementNode']) -> bool:
         for stmt in statements:
             if isinstance(stmt, Return):
                 return True
             elif isinstance(stmt, BlockNode):
-                if self._has_return(stmt.body):
+                if self._contains_return(stmt.body):
                     return True
             elif isinstance(stmt, IfStmt):
-                if self._has_return(stmt.then_body.body):
+                if self._contains_return(stmt.then_body.body):
                     return True
-                if stmt.else_body and self._has_return(stmt.else_body.body):
+                if stmt.else_body and self._contains_return(stmt.else_body.body):
                     return True
+            # todo loops
         return False
 
+    def _generate_assign(self, stmt: AssignNode):
+        if stmt.name not in self.function_locals.get(self.current_function, {}):
+            self.function_locals[self.current_function][stmt.name] = stmt.value.type
+            self.__allocate_local_var(stmt.name)
+
+        self.emit(f'local.get ${stmt.name}')
+        self._generate_expr(stmt.value)
+        self.emit(f'{stmt.value.type.to_wat()}.store')
+
     def _generate_statement(self, stmt: 'StatementNode'):
-        """Generate code for a statement"""
-        if isinstance(stmt, VarDecl):
-            self._generate_var_decl(stmt)
+        if isinstance(stmt, GlobalVarDeclaration):
+            self._generate_global_var_decl(stmt)
+        elif isinstance(stmt, AssignNode):
+            self._generate_assign(stmt)
         elif isinstance(stmt, Return):
-            self._generate_return(stmt)
+            self.emit('return')
         elif isinstance(stmt, BlockNode):
             self._generate_block(stmt)
         elif isinstance(stmt, IfStmt):
@@ -230,19 +235,19 @@ class WatGenerator:
         elif isinstance(stmt, (BreakNode, ContinueNode, ReturnNode)):
             self._generate_control_flow(stmt)
         elif isinstance(stmt, Expr):
-            # Expression statement (function call, assignment, etc.)
             result = self._generate_expr(stmt)
-            if result and stmt.type.name != "void":
+            if result and stmt.type != Type.void():
                 # Discard the result
                 self.emit('drop')
+        else:
+            raise NotImplementedError(stmt)
 
     def _collect_local_vars_with_types(self, statements: List['StatementNode'], var_dict: Dict[str, Type]):
-        """Collect all local variable names with their types from statements"""
         for stmt in statements:
-            if isinstance(stmt, VarDecl):
+            if isinstance(stmt, GlobalVarDeclaration):
                 var_dict[stmt.name] = stmt.type
             elif isinstance(stmt, AssignNode):
-                var_dict[stmt.name] = stmt.type
+                var_dict[stmt.name] = stmt.value.type
             elif isinstance(stmt, BlockNode):
                 self._collect_local_vars_with_types(stmt.body, var_dict)
             elif isinstance(stmt, IfStmt):
@@ -252,52 +257,23 @@ class WatGenerator:
             elif isinstance(stmt, (WhileStmt, UntilStmt)):
                 self._collect_local_vars_with_types(stmt.body.body, var_dict)
             elif isinstance(stmt, ForStmt):
-                if stmt.init and isinstance(stmt.init, VarDecl):
+                if stmt.init and isinstance(stmt.init, GlobalVarDeclaration):
                     var_dict[stmt.init.name] = stmt.init.type
                 self._collect_local_vars_with_types(stmt.body.body, var_dict)
 
-    def _generate_var_decl(self, decl: 'VarDecl'):
-        """Generate variable declaration"""
-        var_name = decl.name
-        var_type = decl.type
-
-        if decl.init:
-            # Generate initialization expression
-            self._generate_expr(decl.init)
-            # Store in local variable
-            self.emit(f'local.set ${var_name}')
-        else:
-            # Initialize with default value
-            if decl.type == Type.int():
-                self.emit(f'i32.const 0')
-                self.emit(f'local.set ${var_name}')
-            elif decl.type == Type.float():
-                self.emit(f'f32.const 0.0')
-                self.emit(f'local.set ${var_name}')
-            elif decl.type == Type.bool():
-                self.emit(f'i32.const 0')
-                self.emit(f'local.set ${var_name}')
-            elif decl.type == Type.string():
-                self.emit(f'i32.const 0')  # Null pointer
-                self.emit(f'local.set ${var_name}')
-
-    def _generate_return(self, ret: 'Return'):
-        """Generate return statement"""
-        self.emit('return')
+    # todo
+    def _generate_global_var_decl(self, decl: 'GlobalVarDeclaration'):
+        pass
 
     def _generate_block(self, block: 'BlockNode'):
-        """Generate a block of statements"""
         self.indent()
         for stmt in block.body:
             self._generate_statement(stmt)
         self.dedent()
 
     def _generate_if(self, if_stmt: 'IfStmt'):
-        """Generate if statement"""
-        # Generate condition
         self._generate_expr(if_stmt.cond)
 
-        # Generate then branch
         if if_stmt.else_body:
             self.emit('if')
             self.indent()
@@ -316,7 +292,6 @@ class WatGenerator:
             self.emit('end')
 
     def _generate_while(self, while_stmt: 'WhileStmt'):
-        """Generate while loop"""
         loop_start = self.get_unique_label("loop_start")
         loop_end = self.get_unique_label("loop_end")
 
@@ -342,32 +317,28 @@ class WatGenerator:
         self.loop_stack.pop()
 
     def _generate_until(self, until_stmt: 'UntilStmt'):
-        """Generate until loop (do-while with inverted condition)"""
         loop_start = self.get_unique_label("loop_start")
         loop_end = self.get_unique_label("loop_end")
 
         self.loop_stack.append((loop_start, loop_end))
 
+        self.emit(f'block {loop_end}')
         self.emit(f'loop {loop_start}')
         self.indent()
 
-        # Generate body
         self._generate_block(until_stmt.body)
 
-        # Generate condition (break if true)
         self._generate_expr(until_stmt.cond)
         self.emit(f'br_if {loop_end}')
 
         self.emit(f'br {loop_start}')
         self.dedent()
         self.emit('end')
-        self.emit(f'block {loop_end}')
         self.emit('end')
 
         self.loop_stack.pop()
 
     def _generate_for(self, for_stmt: 'ForStmt'):
-        """Generate for loop"""
         loop_start = self.get_unique_label("loop_start")
         loop_end = self.get_unique_label("loop_end")
 
@@ -392,7 +363,7 @@ class WatGenerator:
 
         # Generate step
         if for_stmt.step:
-            result = self._generate_expr(for_stmt.step)
+            result = self._generate_statement(for_stmt.step)
             if result:
                 self.emit('drop')
 
@@ -426,59 +397,18 @@ class WatGenerator:
             self.emit(f'i32.const {1 if expr.value else 0}')
             return True
         elif isinstance(expr, StringLiteral):
-            self.emit(f'i32.const 0')  # Placeholder
+            self.emit(f'i32.const 0')  # todo Placeholder
             return True
         elif isinstance(expr, VarRef):
-            # For pass-by-reference parameters, we need to dereference
-            if self.current_function and expr.name in self.function_params.get(self.current_function, {}):
-                # It's a parameter passed by reference - load from memory
-                self.emit(f'local.get ${expr.name}')
-                param_type = self.function_params[self.current_function][expr.name]
-                if param_type == Type.float():
-                    self.emit('f32.load')
-                elif param_type == Type.int():
-                    self.emit('i32.load')
-                elif param_type == Type.bool():
-                    self.emit('i32.load')
-                else:
-                    self.emit('i32.load')
+            self.emit(f'local.get ${expr.name}')
+            if expr.type == Type.float():
+                self.emit('f32.load')
+            elif expr.type == Type.int():
+                self.emit('i32.load')
+            elif expr.type == Type.bool():
+                self.emit('i32.load')
             else:
-                # It's a local variable - get directly
-                self.emit(f'local.get ${expr.name}')
-            return True
-        elif isinstance(expr, AssignNode):
-            # Check if assigning to a parameter (by reference) or local
-            if self.current_function and expr.name in self.function_params.get(self.current_function, {}):
-                # It's a parameter passed by reference - store to memory
-                # First push the address (parameter value)
-                self.emit(f'local.get ${expr.name}')
-                # Then push the value to store
-                self._generate_expr(expr.value)
-                # Store with correct type
-                param_type = self.function_params[self.current_function][expr.name]
-                if param_type == Type.float():
-                    self.emit('f32.store')
-                elif param_type == Type.int():
-                    self.emit('i32.store')
-                elif param_type == Type.bool():
-                    self.emit('i32.store')
-                else:
-                    self.emit('i32.store')
-                # For assignment expression, we want to leave the stored value on stack
-                # So we need to load it back
-                self.emit(f'local.get ${expr.name}')
-                if param_type == Type.float():
-                    self.emit('f32.load')
-                else:
-                    self.emit('i32.load')
-            else:
-                # It's a local variable - store directly
-                # First push the value to store
-                self._generate_expr(expr.value)
-                # Then store in local
-                self.emit(f'local.set ${expr.name}')
-                # Load back for expression value
-                self.emit(f'local.get ${expr.name}')
+                raise NotImplementedError(expr)
             return True
         elif isinstance(expr, BinaryOp):
             return self._generate_binary_op(expr)
@@ -491,68 +421,52 @@ class WatGenerator:
         return False
 
     def _generate_binary_op(self, expr: 'BinaryOp') -> bool:
-        """Generate binary operation"""
-        # Generate left operand
+        int_codes: dict[str, list[str]] = {
+            '+': ['i32.add'],
+            '-': ['i32.sub'],
+            '*': ['i32.mul'],
+            '/': ['i32.div_s'],
+            '%': ['i32.rem_s'],
+            '==': ['i32.eq'],
+            '!=': ['i32.ne'],
+            '<': ['i32.lt_s'],
+            '<=': ['i32.le_s'],
+            '>': ['i32.gt_s'],
+            '>=': ['i32.ge_s'],
+            'and': ['i32.and'],
+            'or': ['i32.or'],
+            '^': ['i32.mul'] # TODO
+        }
+        float_codes: dict[str, list[str]] = {
+            '+': ['f32.add'],
+            '-': ['f32.sub'],
+            '*': ['f32.mul'],
+            '/': ['f32.div'],
+            '%': ['f32.rem'],
+            '==': ['f32.eq'],
+            '!=': ['f32.ne'],
+            '<': ['f32.lt'],
+            '<=': ['f32.le'],
+            '>': ['f32.gt'],
+            '>=': ['f32.ge'],
+            '^': ['f32.mul'] # TODO
+        }
         self._generate_expr(expr.left)
-
-        # Generate right operand
         self._generate_expr(expr.right)
 
-        # Emit operation based on type and operator
         op = expr.op
         if expr.left.type == Type.int() or expr.left.type == Type.bool():
-            if op == '+':
-                self.emit('i32.add')
-            elif op == '-':
-                self.emit('i32.sub')
-            elif op == '*':
-                self.emit('i32.mul')
-            elif op == '/':
-                self.emit('i32.div_s')
-            elif op == '%':
-                self.emit('i32.rem_s')
-            elif op == '==':
-                self.emit('i32.eq')
-            elif op == '!=':
-                self.emit('i32.ne')
-            elif op == '<':
-                self.emit('i32.lt_s')
-            elif op == '<=':
-                self.emit('i32.le_s')
-            elif op == '>':
-                self.emit('i32.gt_s')
-            elif op == '>=':
-                self.emit('i32.ge_s')
-            elif op == 'and':
-                self.emit('i32.and')
-            elif op == 'or':
-                self.emit('i32.or')
+            for code in int_codes[op]:
+                self.emit(code)
         elif expr.left.type == Type.float():
-            if op == '+':
-                self.emit('f32.add')
-            elif op == '-':
-                self.emit('f32.sub')
-            elif op == '*':
-                self.emit('f32.mul')
-            elif op == '/':
-                self.emit('f32.div')
-            elif op == '==':
-                self.emit('f32.eq')
-            elif op == '!=':
-                self.emit('f32.ne')
-            elif op == '<':
-                self.emit('f32.lt')
-            elif op == '<=':
-                self.emit('f32.le')
-            elif op == '>':
-                self.emit('f32.gt')
-            elif op == '>=':
-                self.emit('f32.ge')
+            for code in float_codes[op]:
+                self.emit(code)
+        else:
+            raise NotImplementedError(op, expr.left.type, expr.right.type)
 
         return True
 
     def _generate_unary_op(self, expr: 'UnaryOp') -> bool:
-        """Generate unary operation"""
         self._generate_expr(expr.expr)
 
         op = expr.op
@@ -568,9 +482,13 @@ class WatGenerator:
 
         return True
 
+    def __allocate_local_var(self, var_name: str) -> None:
+        # print("Allocation for", var_name, 'in', self.current_function)
+        self.emit_local(var_name)
+        self.emit(f'i32.const {self.get_next_free_address()}')
+        self.emit(f'local.set ${var_name}')
+
     def _generate_subprogram_call(self, call: 'SubprogramCall') -> bool:
-        """Generate function call with pass-by-reference semantics"""
-        # Handle special functions
         if call.name == 'write':
             return self._generate_write_call(call)
         elif call.name == 'read':
@@ -578,37 +496,27 @@ class WatGenerator:
         elif call.name in self.math_functions:
             return self._generate_math_call(call)
 
-        # Regular function call with pass-by-reference
-        # For pass-by-reference, we need to pass addresses of arguments
         for arg in call.args:
             if isinstance(arg, VarRef):
-                # Pass the address (already in local)
                 self.emit(f'local.get ${arg.name}')
             else:
-                # For non-variable expressions, we need to:
-                # 1. Evaluate the expression
-                # 2. Store it in a temporary local
-                # 3. Get the address of that temporary
-
                 # Create a temporary local
                 temp_name = self.get_unique_label("temp")
                 temp_type = arg.type.to_wat()
 
-                # Allocate local
-                self.emit(f'(local ${temp_name} {temp_type})')
+                self.function_locals[self.current_function][temp_name] = temp_type
+                self.__allocate_local_var(temp_name)
 
                 # Evaluate expression and store in temp
+                self.emit(f'local.get ${temp_name}')
                 self._generate_expr(arg)
-                self.emit(f'local.set ${temp_name}')
+                self.emit(f'{temp_type}.store')
 
-                # Get address (we need memory for true pass-by-reference)
-                # For now, just pass the value
+                # Get pointer
                 self.emit(f'local.get ${temp_name}')
 
-        # Call the function
         self.emit(f'call ${call.name}')
 
-        # Check if function returns a value
         if call.name in self.function_types:
             _, return_type = self.function_types[call.name]
             return return_type != ""
@@ -616,14 +524,12 @@ class WatGenerator:
         return False
 
     def _generate_write_call(self, call: 'SubprogramCall') -> bool:
-        """Generate write call to console"""
         if len(call.args) != 1:
             raise ValueError("write takes exactly one argument")
 
         arg = call.args[0]
         arg_type = arg.type
 
-        # Generate argument value
         self._generate_expr(arg)
 
         # Call appropriate console function
@@ -635,18 +541,16 @@ class WatGenerator:
             self.emit('call $console_write_bool')
         elif arg_type == Type.string():
             # For strings, we need length too (simplified)
-            self.emit('i32.const 0')  # Placeholder for length
+            self.emit('i32.const 0')  #  todo Placeholder for length
             self.emit('call $console_write_string')
 
         # write returns void
         return False
 
     def _generate_read_call(self, call: 'SubprogramCall') -> bool:
-        """Generate read call from console"""
         if len(call.args) != 0:
             raise ValueError("read takes no arguments")
 
-        # Call appropriate console function based on expected return type
         if call.type == Type.int():
             self.emit('call $console_read_int')
         elif call.type == Type.float():
@@ -662,7 +566,6 @@ class WatGenerator:
         return True
 
     def _generate_math_call(self, call: 'SubprogramCall') -> bool:
-        """Generate math function call"""
         if len(call.args) != 1:
             raise ValueError(f"{call.name} takes exactly one argument")
 
@@ -670,16 +573,13 @@ class WatGenerator:
         if arg.type != Type.float():
             raise ValueError(f"{call.name} requires float argument")
 
-        # Generate argument value
         self._generate_expr(arg)
 
-        # Call math function
         self.emit(f'call $Math_{call.name}')
 
         return True
 
     def _generate_cast(self, expr: CastExpr) -> bool:
-        """Generate type cast"""
         self._generate_expr(expr.expr)
 
         src_type = expr.expr.type
@@ -703,5 +603,7 @@ class WatGenerator:
             self.emit('f32.const 0.0')
             self.emit('f32.ne')
             self.emit('i32.trunc_f32_s')
+        else:
+            print("Invalid cast from", src_type, "to", dst_type)
 
         return True

@@ -64,7 +64,7 @@ class TypeChecker:
 
         elif operator in logical_ops:
             if not (TypeChecker.is_boolean_type(left_type) and TypeChecker.is_boolean_type(right_type)):
-                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "булевым типам", left_type, right_type))
+                raise SemanticError(ErrorFormatter.binary_operator_only_valid_on_types(operator, "булевым типам", left_type, right_type, mapping))
             return Type.bool()
 
         raise ValueError(f"Неизвестный оператор: {operator}")

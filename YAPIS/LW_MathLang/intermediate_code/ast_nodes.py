@@ -30,10 +30,9 @@ class ContinueNode(StatementNode):
 
 
 @dataclass
-class VarDecl(StatementNode):
+class GlobalVarDeclaration(StatementNode):
     type: Type
     name: str
-    init: Optional['Expr']
 
 @dataclass
 class Return(StatementNode):
@@ -64,7 +63,7 @@ class UntilStmt(StatementNode):
 class ForStmt(StatementNode):
     init: Optional[StatementNode]
     cond: Optional['Expr']
-    step: Optional['Expr']
+    step: Optional[StatementNode]
     body: BlockNode
 
 
@@ -118,7 +117,7 @@ class VarRef(Expr):
     name: str
 
 @dataclass
-class AssignNode(Expr):
+class AssignNode(StatementNode):
     name: str
     value: Expr
 

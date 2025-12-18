@@ -6,9 +6,6 @@ from antlr4 import *
 from generated.grammar.MathLangLexer import MathLangLexer
 from generated.grammar.MathLangParser import MathLangParser
 from generated.grammar.MathLangVisitor import MathLangVisitor
-from intermediate_code.ast_nodes import ProgramNode, SubprogramNode, BlockNode, VarDecl, StatementNode, ReturnNode, \
-    BreakNode, ContinueNode, IfStmt, Expr, UnaryOp, AssignNode, VarRef, IntLiteral, FloatLiteral, BoolLiteral, \
-    StringLiteral, BinaryOp, ForStmt, WhileStmt, UntilStmt, SubprogramCall
 from intermediate_code.wat_emitter import *
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
@@ -35,7 +32,7 @@ class SemanticAnalyzer(MathLangVisitor):
         self.program_node: ProgramNode = ProgramNode(subprograms=[], statements=[])
         self.__subprograms_nodes: dict[SubprogramSymbol, SubprogramNode] = {}
 
-        self.binding_cache = set()
+        self.binding_cache: dict[str, SubprogramSymbol] = {}
 
         self.__default_subprograms = [
             SubprogramSymbol(name='cast', return_type=Type('T'), parameters=[Symbol(type=Type('K'), name='from')], template_args=[Type('K'), Type('T')]),
@@ -94,10 +91,11 @@ class SemanticAnalyzer(MathLangVisitor):
                     sub_node = self.__subprograms_nodes[symbol]
                     self.program_node.subprograms.append(sub_node)
                 except KeyError:
-                    print(f"Templated sub {symbol} node not found in global scope")
+                    # Standard function
+                    # print(f"Templated sub {symbol} node not found in global scope")
                     continue
 
-    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> SubprogramNode | None:
+    def visitSubprogram(self, ctx: MathLangParser.SubprogramContext) -> SubprogramNode | None | typing.Literal[True]:
         sub_name = ctx.ID().getText()
 
         parameters_symbols: list[Symbol] = []
@@ -144,11 +142,15 @@ class SemanticAnalyzer(MathLangVisitor):
             if not self.is_binding:
                 self.add_error(e.message, ctx)
 
+
         if self.is_binding:
-            if self.binding_cache.__contains__(subprogram_symbol):
-                print("Warning: templated recursion detected")
-                return None
-            self.binding_cache.add(subprogram_symbol)
+            cached_symbol = self.binding_cache.get(subprogram_symbol.name, None)
+            if cached_symbol is not None:
+                # Recursion detected
+                if template_args is not None:
+                    print("Warning: recursion detected")
+                return True  # can bind
+            self.binding_cache[subprogram_symbol.name] = subprogram_symbol
 
         # Сохраняем текущий контекст и создаем новую область видимости
         previous_scope = self.current_scope
@@ -165,8 +167,13 @@ class SemanticAnalyzer(MathLangVisitor):
                 if not self.is_binding:
                     self.add_error(e.message, ctx)
 
-
         block_node = self.visitBlock(ctx.block())
+
+        # Восстанавливаем предыдущий контекст
+        self.current_scope = previous_scope
+        self.current_subprogram = previous_subprogram
+
+
         subprogram_node = SubprogramNode(
             name=subprogram_symbol.name,
             type=subprogram_symbol.type,
@@ -174,16 +181,13 @@ class SemanticAnalyzer(MathLangVisitor):
             param_names=[param.name for param in subprogram_symbol.parameters],
             body=block_node
         )
+
         self.__subprograms_nodes[subprogram_symbol] = subprogram_node
 
-        # Восстанавливаем предыдущий контекст
-        self.current_scope = previous_scope
-        self.current_subprogram = previous_subprogram
-
         if self.is_binding:
-            self.binding_cache.remove(subprogram_symbol)
+            self.binding_cache.pop(subprogram_symbol.name)
 
-        print(subprogram_node)
+        # print(subprogram_node)
         return subprogram_node
 
     def visitCall(self, ctx: MathLangParser.CallContext) -> Expr | None:
@@ -319,15 +323,13 @@ class SemanticAnalyzer(MathLangVisitor):
             result.append(Type.create(type_specifier.getText()))
         return result
 
-    # todo review
-    def visitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext) -> VarDecl:
+    def visitGlobal_variable_declaration(self, ctx:MathLangParser.Global_variable_declarationContext) -> GlobalVarDeclaration:
         if self.current_subprogram is None:
             self.add_error(ErrorFormatter.uninitialized_global_symbol(ctx.ID().getText()), ctx)
 
-        return VarDecl(
+        return GlobalVarDeclaration(
             name=ctx.ID().getText(),
             type=ctx.type_specifier().getText(),
-            init=None
         )
 
     def visitDeclaration_list(self, ctx: MathLangParser.Declaration_listContext) -> list[Symbol]:
@@ -370,7 +372,7 @@ class SemanticAnalyzer(MathLangVisitor):
                     continue
 
                 if symbol is not None:
-                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type))
+                    result.append(AssignNode(name=symbol.name, value=expression_node))
 
                     expr_type = expression_node.type
                     if expr_type != symbol.type:
@@ -402,7 +404,7 @@ class SemanticAnalyzer(MathLangVisitor):
                 for symbol, expression_node in zip(left_symbols, right_expressions):
                     expr_type = expression_node.type
 
-                    result.append(AssignNode(name=symbol.name, value=expression_node, type=symbol.type))
+                    result.append(AssignNode(name=symbol.name, value=expression_node))
                     if expr_type != symbol.type:
                         add_assignment_error(symbol.type, expr_type)
             else:
@@ -413,7 +415,7 @@ class SemanticAnalyzer(MathLangVisitor):
                         
                     expr_type = right_expr.type
 
-                    result.append(AssignNode(name=symbol.name, value=right_expr, type=symbol.type))
+                    result.append(AssignNode(name=symbol.name, value=right_expr))
                     if expr_type != symbol.type:
                         add_assignment_error(symbol.type, expr_type)
 
@@ -691,14 +693,13 @@ def main():
                 print(f"❌ {error}")
         else:
             print("✅ Программа семантически корректна!")
-            print("\nGenerated WAT code:")
-
             generator = WatGenerator()
 
             code = generator.generate(analyzer.program_node)
             with open(source_file.replace('.ml', '.wat'), 'w', encoding='utf-8') as f:
                 f.write(code)
 
+        print("\nGenerated AST:")
         print(analyzer.program_node)
 
         sys.exit(0)
