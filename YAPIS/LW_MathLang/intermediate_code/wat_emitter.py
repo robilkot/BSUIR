@@ -193,7 +193,7 @@ class WatGenerator:
 
     def _contains_return(self, statements: List['StatementNode']) -> bool:
         for stmt in statements:
-            if isinstance(stmt, Return):
+            if isinstance(stmt, ReturnNode):
                 return True
             elif isinstance(stmt, BlockNode):
                 if self._contains_return(stmt.body):
@@ -220,7 +220,7 @@ class WatGenerator:
             self._generate_global_var_decl(stmt)
         elif isinstance(stmt, AssignNode):
             self._generate_assign(stmt)
-        elif isinstance(stmt, Return):
+        elif isinstance(stmt, ReturnNode):
             self.emit('return')
         elif isinstance(stmt, BlockNode):
             self._generate_block(stmt)

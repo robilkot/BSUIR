@@ -70,8 +70,8 @@ sub unused_argument:(Unused)() {}
 sub unused_argument:(T, K)(T value) {}
 
 // Using template arguments without declaration
-// sub unknown_argument(T value) {}
-// sub unknown_argument:(T)(K value) {}
+sub unknown_argument(T value) {}
+sub unknown_argument:(T)(K value) {}
 
 // Redefinition of templated subprogram using different template argument identifiers
 sub same_name:(T)(T value_one) {}
@@ -117,3 +117,6 @@ inner_initialization(2.0)
 // inner_initialization("dsd")
 // T a = cast:(int, T)(2)
 inner_initialization(2)
+
+unused_argument:(int)()
+unused_argument:(int, float)()

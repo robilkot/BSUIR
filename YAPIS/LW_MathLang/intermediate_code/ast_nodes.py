@@ -35,10 +35,6 @@ class GlobalVarDeclaration(StatementNode):
     name: str
 
 @dataclass
-class Return(StatementNode):
-    pass
-
-@dataclass
 class BlockNode(StatementNode):
     body: List['StatementNode']
 
@@ -77,6 +73,9 @@ class SubprogramNode(Expr):
     param_names: list[str]
     param_types: list[Type]
     body: 'BlockNode'
+
+    def __hash__(self) -> int:
+        return hash((self.name, ','.join(self.param_names), ','.join([str(typ) for typ in self.param_types])))
 
 
 @dataclass

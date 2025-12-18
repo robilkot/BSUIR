@@ -1,7 +1,3 @@
-function consoleLogString(value) {
-    console.log(value);
-  }
-
 function readInt() { return 0; }
 function readBool() { return true; }
 function readFloat() { return 0.2; }
@@ -9,10 +5,18 @@ function readFloat() { return 0.2; }
 
 const importObject = {
     console: {
-      write_int: consoleLogString,
-      write_float: consoleLogString,
-      write_bool: consoleLogString,
-      write_string: consoleLogString,
+      write_int: (x) => {
+        console.log("int    ", x)
+      },
+      write_float: (x) => {
+        console.log("float  ", x)
+      },
+      write_bool: (x) => {
+        console.log("bool   ", x)
+      },
+      write_string: (x) => {
+        console.log("string ", x)
+      },
       read_int: readInt,
       read_float: readFloat,
       read_bool: readBool,
@@ -37,4 +41,4 @@ const importObject = {
 
 const wasmInstance =
       new WebAssembly.Instance(wasmModule, importObject);
-const { main } = wasmInstance.exports;
+const { main } = wasmInstance.exports

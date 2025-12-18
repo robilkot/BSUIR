@@ -64,11 +64,10 @@ class SubprogramSymbol(Symbol):
     def __hash__(self):
         return hash(self.__key())
 
-    @staticmethod
-    def mangle_name(name: str, template_args: list[Type] | None):
-        if template_args is None or len(template_args) == 0:
-            return name
-        return name + "@" + "_".join([type.name for type in template_args])
+    def get_mangled_name(self):
+        return (self.name
+                + "@" + "_".join([param.type.name for param in self.parameters])
+                + "@" + "_".join([type.name for type in self.template_args] if self.template_args is not None else []))
 
 
 class SymbolTable:
