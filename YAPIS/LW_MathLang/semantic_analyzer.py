@@ -84,7 +84,6 @@ class SemanticAnalyzer(MathLangVisitor):
             else:
                 self.program_node.statements.append(node)
 
-        # AST
         for symbol in self.global_scope.symbols:
             if isinstance(symbol, SubprogramSymbol):
                 try:
@@ -126,14 +125,8 @@ class SemanticAnalyzer(MathLangVisitor):
                 if TypeChecker.is_templated_argument(symbol.type):
                     self.add_error(ErrorFormatter.undefined_templated_argument(symbol.type), ctx)
 
-        if self.is_binding:
-            if template_args:
-                mangled_name = "_".join([sub_name] + [type.name for type in template_args])
-            else:
-                mangled_name = sub_name
-            subprogram_symbol = SubprogramSymbol(name=mangled_name, return_type=Type.void(), parameters=parameters_symbols,template_args=template_args)
-        else:
-            subprogram_symbol = SubprogramSymbol(name=sub_name, return_type=Type.void(), parameters=parameters_symbols, template_args=template_args)
+        mangled_name = SubprogramSymbol.mangle_name(sub_name, template_args)
+        subprogram_symbol = SubprogramSymbol(name=mangled_name, return_type=Type.void(), parameters=parameters_symbols,template_args=template_args)
 
         try:
             self.global_scope.add_symbol(subprogram_symbol)
@@ -187,7 +180,7 @@ class SemanticAnalyzer(MathLangVisitor):
         if self.is_binding:
             self.binding_cache.pop(subprogram_symbol.name)
 
-        # print(subprogram_node)
+        print("SUB", subprogram_node.name)
         return subprogram_node
 
     def visitCall(self, ctx: MathLangParser.CallContext) -> Expr | None:
@@ -216,8 +209,8 @@ class SemanticAnalyzer(MathLangVisitor):
 
             sub_templated_arguments = [self.type_mapping.get(type, type) for type in sub_templated_arguments]
 
-        defined_subprograms = self.global_scope.lookup(sub_name)
-        if defined_subprograms is None:
+        defined_subprograms = [symbol for symbol in self.global_scope.symbols if isinstance(symbol, SubprogramSymbol) and symbol.name.startswith(sub_name)]
+        if len(defined_subprograms) == 0:
             self.add_error(ErrorFormatter.undefined_subprogram(sub_name), ctx)
             return None
 
@@ -258,6 +251,7 @@ class SemanticAnalyzer(MathLangVisitor):
         subprogram: SubprogramSymbol | None = None
 
         previous_mapping = self.type_mapping
+
 
         for subprogram, type_mapping in overload_candidate_subprograms:
             if subprogram.template_args:
@@ -311,6 +305,7 @@ class SemanticAnalyzer(MathLangVisitor):
                 args=sub_parameters,
                 type=return_type,
             )
+            print("CALL", node.name)
         return node
 
 
@@ -657,7 +652,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    default_file = 'samples/sample6.ml'
+    default_file = 'samples/sample7.ml'
     # default_file = 'samples/samples_templates.ml'
 
     if len(sys.argv) != 2:
