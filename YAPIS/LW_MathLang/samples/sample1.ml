@@ -14,15 +14,16 @@ sub usingGlobalStuff() {
 	global_var2 = 3.0
 	
 	write(global_var3) // 2.0
+    write("\n")
 }
 
 // Start of program
 int counter = 0
 float cathetusA, float cathetusB = 0.0
 
-write("Enter the first cathetus: ")
+write("Enter the first cathetus:\n")
 cathetusA = read:(float)()
-write("Enter the second cathetus: ")
+write("Enter the second cathetus:\n")
 cathetusB = read:(float)()
 
 // Compound assignment
@@ -32,25 +33,28 @@ calculateHypotenuse(cathetusA, cathetusB, hypotenuse)
 
 // Branching operator
 if (hypotenuse > 10.0) {
-	write("Large triangle. ")
+	write("Large triangle.\n")
 } else {
-	write("Small triangle. ")
+	write("Small triangle.\n")
 }
 
 write("Area: ")
 write(area)
 write(", Hypotenuse: ")
 write(hypotenuse)
+write("\n")
 
 // Type conversion
 int roundedHypotenuse = cast:(float, int)(hypotenuse)
 write("Rounded hypotenuse: ")
 write(roundedHypotenuse)
+write("\n")
 
 bool isRight = false
 isRightTriangle(cathetusA, cathetusB, hypotenuse, isRight)
 write("Is right triangle? ")
 write(isRight)
+write("\n")
 
 // until loop
 int x = 0
@@ -62,6 +66,9 @@ float global_var1 = 2.0
 float global_var2 = 2.0
 float global_var3 = 2.0
 
-write(global_var1) // 3.0
-write(global_var2) // 2.0
+usingGlobalStuff()
 
+write(global_var1) // 3.0
+write("\n")
+write(global_var2) // 2.0
+write("\n")

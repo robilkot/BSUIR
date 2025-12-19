@@ -78,8 +78,8 @@ if __name__ == '__main__':
     + '''  
         const importObject = {
             console: {
-              write_int: (x) => process.stdout.write(x),
-              write_float: (x) => process.stdout.write(x.toPrecision(3)),
+              write_int: (x) => process.stdout.write(x.toString()),
+              write_float: (x) => process.stdout.write(x.toPrecision(3).toString()),
               write_bool: (x) => process.stdout.write(x == 1 ? "true" : "false"),
               write_string: (address) => {
                 if (address === 0) {

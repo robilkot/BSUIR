@@ -25,8 +25,8 @@ class TypeChecker:
             Type.bool(): [],
             Type.string: [],
             Type.void: [],
-            Type.int(): [Type.float()],
-            Type.float(): [Type.int()],
+            Type.int(): [Type.float(), Type.bool()],
+            Type.float(): [Type.int(), Type.bool()],
         }
 
         if from_type == to_type:
