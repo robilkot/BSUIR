@@ -20,6 +20,7 @@ for (float angle = 0.0; angle <= 6.28318; angle = angle + 0.1) {
     write(angle)
     write(") = ")
     write(result)
+    write("\n")
 }
 
 // While loop
@@ -36,12 +37,13 @@ while(abs(sin(x) - target) > precision) {
     }
 }
 
-write("Solution found: x ≈ ")
+write("Solution found: x = ")
 write(x)
-write(", sin(x) ≈ ")
+write(", sin(x) = ")
 write(sin(x))
+write("\n")
 
 float result = (cos(x) ^ 2.) + (sin(x) ^ 2.) // Should be ≈1
 write("sin^2(x) + cos^2(x) = ")
 write(result)
-
+write("\n")

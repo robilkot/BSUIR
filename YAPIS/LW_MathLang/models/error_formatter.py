@@ -18,6 +18,7 @@ class ErrorFormatter:
     def undefined_symbol(symbol_id: str):
         return f'Символ {symbol_id} не определен'
 
+    # todo impl
     @staticmethod
     def undefined_global_symbol(symbol_id: str):
         return f'Символ {symbol_id} не определен в глобальной области видимости'
@@ -86,3 +87,11 @@ class ErrorFormatter:
     @staticmethod
     def explicit_impl_now_allowed_without_templated_decl(sub_name: str):
         return f"Явная реализация {sub_name} не допускается до шаблонного объявления подпрограммы"
+
+    @staticmethod
+    def provided_argument_does_not_match_templated_argument_type(actual, expected):
+        return f'Аргумент подпрограммы не соответствует типу шаблонного аргумента. Ожидался {expected}, получен {actual}'
+
+    @staticmethod
+    def string_operations_are_not_supported(type_mapping: dict[Type, Type] | None):
+        return f'Использование строк в качестве операндов не поддерживается языком.' + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")

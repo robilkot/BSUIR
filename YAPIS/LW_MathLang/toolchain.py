@@ -59,20 +59,39 @@ if __name__ == '__main__':
         console.error(`Invalid boolean: ${value}`);
     }
     
+    function readWasmString(memory, address) {
+        const memUint8 = new Uint8Array(memory.buffer);
+        let str = '';
+        let i = address;
+        
+        // Read until null terminator
+        while (memUint8[i] !== 0 && i < memUint8.length) {
+            str += String.fromCharCode(memUint8[i]);
+            i++;
+        }
+        str = str.slice(1, -1);
+        return str;
+    }
+
     async function runWasm() { ''' \
     + f"const wasmBuffer = fs.readFileSync('{wasm_file.absolute()}');" \
-    + '''
+    + '''  
         const importObject = {
             console: {
-              write_int: (x) => console.log("int    ", x),
-              write_float: (x) => console.log("float  ", x),
-              write_bool: (x) => console.log("bool   ", x),
-              write_string: (x) => console.log("string ", x),
+              write_int: (x) => process.stdout.write(x),
+              write_float: (x) => process.stdout.write(x.toPrecision(3)),
+              write_bool: (x) => process.stdout.write(x == 1 ? "true" : "false"),
+              write_string: (address) => {
+                if (address === 0) {
+                    process.stdout.write("(null)");
+                    return;
+                }
+                const str = readWasmString(memory, address);
+                process.stdout.write(str);
+              },
               read_int: () => get_value("int"),
               read_float: () => get_value("float"),
               read_bool: () => get_value("bool"),
-              
-              mem: new WebAssembly.Memory({ initial: 1 })
             },
             Math: {
               floor: (x) => Math.floor(x),
@@ -87,10 +106,16 @@ if __name__ == '__main__':
               tan: (x) => Math.tan(x),
               atan: (x) => Math.atan(x),
               log: (x) => Math.log(x),
+              pow: (x, y) => Math.pow(x, y),
             },
           };
-          
-        const wasmModule = await WebAssembly.instantiate(wasmBuffer, importObject); 
+        
+        const result = await WebAssembly.instantiate(wasmBuffer, importObject); 
+        const { main, memory } = result.instance.exports;
+        importObject.console.mem = memory;
+        
+        // Run
+        main();
     }
     
     runWasm();

@@ -15,12 +15,13 @@ class WatGenerator:
         self.loop_stack = []
         self.math_functions = {'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
                                'exp', 'log', 'sqrt', 'ceil', 'floor', 'abs'}
-        self.current_address: int = 0
-        self.module_begin_line_idx: int = 0
+        self.__current_address: int = 1  # preserving 0 for null
+        self.__module_begin_line_idx: int = 0
+        self.string_constants: dict[str, tuple[int, int]] = {}  # string_value -> (address, length)
 
-    def get_next_free_address(self):
-        free_addr = self.current_address
-        self.current_address += 4  # constant offset for now
+    def get_next_free_address(self, alloc_size: int) -> int:
+        free_addr = self.__current_address
+        self.__current_address += alloc_size
         return free_addr
 
     def indent(self):
@@ -36,7 +37,7 @@ class WatGenerator:
         line = f'(local ${var_name} i32)'
         # Find the index of the last line starting with '(func ' (all locals are next to sub decl)
         target_index = -1
-        for i in range(len(self.code_lines) - 1, self.module_begin_line_idx - 1, -1):
+        for i in range(len(self.code_lines) - 1, self.__module_begin_line_idx - 1, -1):
             if self.code_lines[i].__contains__(f'(func ${self.current_function}'):
                 target_index = i
                 break
@@ -56,6 +57,64 @@ class WatGenerator:
         self.label_counter += 1
         return f"${prefix}_{self.label_counter}"
 
+    def _collect_string_constants(self, program: 'ProgramNode'):
+        for stmt in program.statements:
+            self._collect_strings_from_statement(stmt)
+
+        for subprogram in program.subprograms:
+            for stmt in subprogram.body.body:
+                self._collect_strings_from_statement(stmt)
+
+        # Generate data section
+        if self.string_constants:
+            self.emit(';; String constants')
+            for string_value, (address, length) in sorted(self.string_constants.items(), key=lambda x: x[1][0]):
+                # Encode string for WAT data section (escape special characters)
+                encoded = string_value.replace('"', '\\"').replace('\\x', '\\')
+                self.emit(f'(data (i32.const {address}) "{encoded}\\00")')
+
+    def _collect_strings_from_statement(self, stmt):
+        if isinstance(stmt, AssignNode):
+            self._collect_strings_from_expr(stmt.value)
+        elif isinstance(stmt, IfStmt):
+            self._collect_strings_from_expr(stmt.cond)
+            for s in stmt.then_body.body:
+                self._collect_strings_from_statement(s)
+            if stmt.else_body:
+                for s in stmt.else_body.body:
+                    self._collect_strings_from_statement(s)
+        elif isinstance(stmt, (WhileStmt, UntilStmt)):
+            self._collect_strings_from_expr(stmt.cond)
+            for s in stmt.body.body:
+                self._collect_strings_from_statement(s)
+        elif isinstance(stmt, ForStmt):
+            if stmt.cond:
+                self._collect_strings_from_expr(stmt.cond)
+            for s in stmt.body.body:
+                self._collect_strings_from_statement(s)
+        elif isinstance(stmt, Expr) and not isinstance(stmt, (VarRef, ReturnNode, BreakNode, ContinueNode)):
+            self._collect_strings_from_expr(stmt)
+        elif isinstance(stmt, BlockNode):
+            for s in stmt.body:
+                self._collect_strings_from_statement(s)
+
+    def _collect_strings_from_expr(self, expr):
+        """Helper to collect strings from expressions"""
+        if isinstance(expr, StringLiteral):
+            if expr.value not in self.string_constants:
+                length = len(expr.value.encode('utf-8'))
+                self.string_constants[expr.value] = (self.get_next_free_address(length + 1), length)
+        elif isinstance(expr, BinaryOp):
+            self._collect_strings_from_expr(expr.left)
+            self._collect_strings_from_expr(expr.right)
+        elif isinstance(expr, UnaryOp):
+            self._collect_strings_from_expr(expr.expr)
+        elif isinstance(expr, SubprogramCall):
+            for arg in expr.args:
+                self._collect_strings_from_expr(arg)
+        elif isinstance(expr, CastExpr):
+            self._collect_strings_from_expr(expr.expr)
+
     def generate(self, program: 'ProgramNode') -> str:
         self.code_lines = []
 
@@ -68,12 +127,12 @@ class WatGenerator:
 
         self.emit('(memory $memory 1)')
 
-        self._generate_string_constants(program)
+        self._collect_string_constants(program)
 
         # Collect function signatures first
         self._collect_function_info(program)
 
-        self.module_begin_line_idx = len(self.code_lines) - 1 if len(self.code_lines) > 0 else 0
+        self.__module_begin_line_idx = len(self.code_lines) - 1 if len(self.code_lines) > 0 else 0
 
         # Generate all subprograms
         for subprogram in program.subprograms:
@@ -84,9 +143,9 @@ class WatGenerator:
         # Generate main program (global statements)
         self._generate_main_program(program.statements)
 
-        # Start the main function
+        # Export the main function
+        self.emit('(export "memory" (memory $memory))')
         self.emit('(export "main" (func $main))')
-        self.emit('(start $main)')
 
         self.dedent()
         self.emit(")")
@@ -97,7 +156,7 @@ class WatGenerator:
         self.emit('(import "console" "write_int" (func $console_write_int (param i32)))')
         self.emit('(import "console" "write_float" (func $console_write_float (param f32)))')
         self.emit('(import "console" "write_bool" (func $console_write_bool (param i32)))')
-        self.emit('(import "console" "write_string" (func $console_write_string (param i32) (param i32)))')
+        self.emit('(import "console" "write_string" (func $console_write_string (param i32)))')
         self.emit('(import "console" "read_int" (func $console_read_int (result i32)))')
         self.emit('(import "console" "read_float" (func $console_read_float (result f32)))')
         self.emit('(import "console" "read_bool" (func $console_read_bool (result i32)))')
@@ -105,25 +164,18 @@ class WatGenerator:
     def _emit_js_math_imports(self):
         for func in self.math_functions:
             self.emit(f'(import "Math" "{func}" (func $Math_{func} (param f32) (result f32)))')
+        self.emit(f'(import "Math" "pow" (func $Math_pow (param f32) (param f32) (result f32)))')
 
     def _collect_function_info(self, program: 'ProgramNode'):
-        """Collect function signatures for type checking"""
         for subprogram in program.subprograms:
             param_types = [p.to_wat() for p in subprogram.param_types]
             return_type = subprogram.type.to_wat()
             self.function_types[subprogram.name] = (param_types, return_type)
 
-    def _generate_string_constants(self, program: 'ProgramNode'):
-        """Collect and generate string constants in data section"""
-        # TODO
-        # We'll need to traverse the AST to find all string literals
-        # For now, we'll generate an empty data section
-        self.emit('(data (i32.const 0) "")')
 
     def _generate_main_program(self, statements: List['StatementNode']):
         self.emit('(func $main')
         self.indent()
-
 
         main_locals: dict[str, Type] = {}
         self._collect_local_vars_with_types(statements, main_locals)
@@ -213,7 +265,14 @@ class WatGenerator:
 
         self.emit(f'local.get ${stmt.name}')
         self._generate_expr(stmt.value)
-        self.emit(f'{stmt.value.type.to_wat()}.store')
+
+        var_type = self.function_locals[self.current_function][stmt.name]
+        if var_type == Type.string():
+            # For strings, just store the address (no .store needed)
+            pass
+        else:
+            self.emit(f'{stmt.value.type.to_wat()}.store')
+
 
     def _generate_statement(self, stmt: 'StatementNode'):
         if isinstance(stmt, GlobalVarDeclaration):
@@ -303,6 +362,7 @@ class WatGenerator:
 
         # Generate condition (continue if true)
         self._generate_expr(while_stmt.cond)
+
         self.emit(f'i32.eqz')
         self.emit(f'br_if {loop_end}')
 
@@ -397,7 +457,9 @@ class WatGenerator:
             self.emit(f'i32.const {1 if expr.value else 0}')
             return True
         elif isinstance(expr, StringLiteral):
-            self.emit(f'i32.const 0')  # todo Placeholder
+            # For strings, return the address in memory
+            address, _ = self.string_constants[expr.value]
+            self.emit(f'i32.const {address}')
             return True
         elif isinstance(expr, VarRef):
             self.emit(f'local.get ${expr.name}')
@@ -407,6 +469,10 @@ class WatGenerator:
                 self.emit('i32.load')
             elif expr.type == Type.bool():
                 self.emit('i32.load')
+            elif expr.type == Type.string():
+                # For strings, we store the address, so just return it
+                # No need to load - the local contains the address directly
+                pass
             else:
                 raise NotImplementedError(expr)
             return True
@@ -435,7 +501,6 @@ class WatGenerator:
             '>=': ['i32.ge_s'],
             'and': ['i32.and'],
             'or': ['i32.or'],
-            '^': ['i32.mul'] # TODO
         }
         float_codes: dict[str, list[str]] = {
             '+': ['f32.add'],
@@ -485,7 +550,7 @@ class WatGenerator:
     def __allocate_local_var(self, var_name: str) -> None:
         # print("Allocation for", var_name, 'in', self.current_function)
         self.emit_local(var_name)
-        self.emit(f'i32.const {self.get_next_free_address()}')
+        self.emit(f'i32.const {self.get_next_free_address(4)}')
         self.emit(f'local.set ${var_name}')
 
     def _generate_subprogram_call(self, call: 'SubprogramCall') -> bool:
@@ -495,6 +560,8 @@ class WatGenerator:
             return self._generate_read_call(call)
         elif call.name in self.math_functions:
             return self._generate_math_call(call)
+        elif call.name == 'pow':
+            return self._generate_pow_call(call)
 
         for arg in call.args:
             if isinstance(arg, VarRef):
@@ -540,8 +607,6 @@ class WatGenerator:
         elif arg_type == Type.bool():
             self.emit('call $console_write_bool')
         elif arg_type == Type.string():
-            # For strings, we need length too (simplified)
-            self.emit('i32.const 0')  #  todo Placeholder for length
             self.emit('call $console_write_string')
 
         # write returns void
@@ -574,6 +639,21 @@ class WatGenerator:
             raise ValueError(f"{call.name} requires float argument")
 
         self._generate_expr(arg)
+
+        self.emit(f'call $Math_{call.name}')
+
+        return True
+
+
+    def _generate_pow_call(self, call: 'SubprogramCall') -> bool:
+        if len(call.args) != 2:
+            raise ValueError(f"Pow takes exactly two arguments")
+
+        if call.args[0].type != Type.float() and call.args[1].type != Type.int():
+            raise ValueError(f"Pow requires float argument")
+
+        self._generate_expr(call.args[0])
+        self._generate_expr(call.args[1])
 
         self.emit(f'call $Math_{call.name}')
 

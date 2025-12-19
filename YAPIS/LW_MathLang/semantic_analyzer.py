@@ -335,7 +335,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
         for caller_arg_expr, callee_arg_symbol in zip(sub_arguments, callee_arguments):
             if callee_type_mapping.__contains__(callee_arg_symbol.type):
-                self.add_error("Specified template type does not match provided argument type", ctx)
+                self.add_error(ErrorFormatter.provided_argument_does_not_match_templated_argument_type(actual=caller_arg_expr.type, expected=callee_type_mapping[callee_arg_symbol.type]), ctx)
                 continue
             callee_type_mapping[callee_arg_symbol.type] = caller_arg_expr.type
 
@@ -464,6 +464,9 @@ class SemanticAnalyzer(MathLangVisitor):
                     if expr_type != symbol.type:
                         add_assignment_error(symbol.type, expr_type)
 
+        for node in result:
+            if node.value.type == Type.string():
+                self.add_error(ErrorFormatter.string_operations_are_not_supported(type_mapping), ctx)
         return result
 
     def visitId_list(self, ctx: MathLangParser.Id_listContext, type_mapping: dict[Type, Type] | None = None) -> list[Symbol] | None:
@@ -508,6 +511,10 @@ class SemanticAnalyzer(MathLangVisitor):
                     right_expr_node.type,
                     operator,
                     type_mapping)
+
+                # Special case since there is no operator for ** in WAT
+                if operator == '^':
+                    return SubprogramCall(type=result_node_type, name='pow', args=[left_expr_node, right_expr_node])
 
                 return BinaryOp(type=result_node_type, op=operator, left=left_expr_node, right=right_expr_node)
             except SemanticError as e:
