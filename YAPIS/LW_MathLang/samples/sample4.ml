@@ -43,11 +43,13 @@ write("Min: ")
 write(minimum)
 write(", Max: ")
 write(maximum)
+write("\n")
 
 write("Before swap: num1 = ")
 write(num1)
 write(", num2 = ")
 write(num2)
+write("\n")
 
 num1, num2 = num2, num1
 
@@ -55,6 +57,7 @@ write("After swap: num1 = ")
 write(num1)
 write(", num2 = ")
 write(num2)
+write("\n")
 
 float a, float b, float c = 1.0, -5.0, 6.0
 float root1, float root2 = 0.0
@@ -75,6 +78,7 @@ if (result) {
     write(root1)
     write(", Root 2: ")
     write(root2)
+    write("\n")
     
     float check1 = a*(root1^2.) + b*root1 + c
     float check2 = a*(root2^2.) + b*root2 + c
@@ -82,10 +86,12 @@ if (result) {
     write(check1)
     write(" and ")
     write(check2)
+    write("\n")
 } else {
-    write("No real roots found")
+    write("No real roots found\n")
 }
 
 bool isPositive = (root1 > 0.) and (root2 > 0.)
 write("Both roots are positive: ")
 write(isPositive)
+write("\n")

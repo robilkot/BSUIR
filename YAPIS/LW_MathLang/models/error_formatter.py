@@ -66,7 +66,7 @@ class ErrorFormatter:
 
     @staticmethod
     def unmatched_arguments_count(actual: int, expected: int):
-        return f"Требуется аргумент: {expected}. Получено аргументов: {actual}."
+        return f"Требуется аргументов: {expected}. Получено аргументов: {actual}."
 
     @staticmethod
     def unmatched_argument_type(actual: Type, expected: Type):

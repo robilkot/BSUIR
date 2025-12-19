@@ -6,36 +6,68 @@
   (import "console" "read_int" (func $console_read_int (result i32)))
   (import "console" "read_float" (func $console_read_float (result f32)))
   (import "console" "read_bool" (func $console_read_bool (result i32)))
+  (import "Math" "tan" (func $Math_tan (param f32) (result f32)))
+  (import "Math" "floor" (func $Math_floor (param f32) (result f32)))
   (import "Math" "asin" (func $Math_asin (param f32) (result f32)))
+  (import "Math" "abs" (func $Math_abs (param f32) (result f32)))
+  (import "Math" "cos" (func $Math_cos (param f32) (result f32)))
+  (import "Math" "acos" (func $Math_acos (param f32) (result f32)))
+  (import "Math" "ceil" (func $Math_ceil (param f32) (result f32)))
   (import "Math" "sin" (func $Math_sin (param f32) (result f32)))
   (import "Math" "sqrt" (func $Math_sqrt (param f32) (result f32)))
-  (import "Math" "exp" (func $Math_exp (param f32) (result f32)))
-  (import "Math" "floor" (func $Math_floor (param f32) (result f32)))
   (import "Math" "atan" (func $Math_atan (param f32) (result f32)))
-  (import "Math" "ceil" (func $Math_ceil (param f32) (result f32)))
-  (import "Math" "cos" (func $Math_cos (param f32) (result f32)))
   (import "Math" "log" (func $Math_log (param f32) (result f32)))
-  (import "Math" "tan" (func $Math_tan (param f32) (result f32)))
-  (import "Math" "abs" (func $Math_abs (param f32) (result f32)))
-  (import "Math" "acos" (func $Math_acos (param f32) (result f32)))
+  (import "Math" "exp" (func $Math_exp (param f32) (result f32)))
   (import "Math" "pow" (func $Math_pow (param f32) (param f32) (result f32)))
   (memory $memory 1)
   ;; String constants
   (data (i32.const 1) "\"Min: \"\00")
   (data (i32.const 9) "\", Max: \"\00")
-  (data (i32.const 19) "\"Before swap: num1 = \"\00")
-  (data (i32.const 42) "\", num2 = \"\00")
-  (data (i32.const 54) "\"After swap: num1 = \"\00")
-  (data (i32.const 76) "\"Roots of equation \"\00")
-  (data (i32.const 97) "\"x^2 + \"\00")
-  (data (i32.const 106) "\"x + \"\00")
-  (data (i32.const 113) "\" = 0 are:\"\00")
-  (data (i32.const 125) "\"Root 1: \"\00")
-  (data (i32.const 136) "\", Root 2: \"\00")
-  (data (i32.const 149) "\"Verification (should be close to 0): \"\00")
-  (data (i32.const 189) "\" and \"\00")
-  (data (i32.const 197) "\"No real roots found\"\00")
-  (data (i32.const 219) "\"Both roots are positive: \"\00")
+  (data (i32.const 19) "\"\n\"\00")
+  (data (i32.const 24) "\"Before swap: num1 = \"\00")
+  (data (i32.const 47) "\", num2 = \"\00")
+  (data (i32.const 59) "\"After swap: num1 = \"\00")
+  (data (i32.const 81) "\"Roots of equation \"\00")
+  (data (i32.const 102) "\"x^2 + \"\00")
+  (data (i32.const 111) "\"x + \"\00")
+  (data (i32.const 118) "\" = 0 are:\"\00")
+  (data (i32.const 130) "\"Root 1: \"\00")
+  (data (i32.const 141) "\", Root 2: \"\00")
+  (data (i32.const 154) "\"Verification (should be close to 0): \"\00")
+  (data (i32.const 194) "\" and \"\00")
+  (data (i32.const 202) "\"No real roots found\n\"\00")
+  (data (i32.const 226) "\"Both roots are positive: \"\00")
+  (func $findMinMax@float_float_float_float@
+    (param $a i32)
+    (param $b i32)
+    (param $min i32)
+    (param $max i32)
+    local.get $a
+    f32.load
+    local.get $b
+    f32.load
+    f32.lt
+    if
+        local.get $min
+        local.get $a
+        f32.load
+        f32.store
+        local.get $max
+        local.get $b
+        f32.load
+        f32.store
+    else
+        local.get $min
+        local.get $b
+        f32.load
+        f32.store
+        local.get $max
+        local.get $a
+        f32.load
+        f32.store
+    end
+    return
+  )
   (func $solveQuadratic@float_float_float_float_float_bool@
     (param $a i32)
     (param $b i32)
@@ -44,7 +76,7 @@
     (param $root2 i32)
     (param $result i32)
     (local $discriminant i32)
-    i32.const 247
+    i32.const 254
     local.set $discriminant
     local.get $discriminant
     local.get $b
@@ -104,42 +136,11 @@
     i32.store
     return
   )
-  (func $findMinMax@float_float_float_float@
-    (param $a i32)
-    (param $b i32)
-    (param $min i32)
-    (param $max i32)
-    local.get $a
-    f32.load
-    local.get $b
-    f32.load
-    f32.lt
-    if
-        local.get $min
-        local.get $a
-        f32.load
-        f32.store
-        local.get $max
-        local.get $b
-        f32.load
-        f32.store
-    else
-        local.get $min
-        local.get $b
-        f32.load
-        f32.store
-        local.get $max
-        local.get $a
-        f32.load
-        f32.store
-    end
-    return
-  )
   (func $swap@float_float@
     (param $x i32)
     (param $y i32)
     (local $temp i32)
-    i32.const 251
+    i32.const 258
     local.set $temp
     local.get $temp
     local.get $x
@@ -172,35 +173,35 @@
     (local $minimum i32)
     (local $num2 i32)
     (local $num1 i32)
-    i32.const 255
+    i32.const 262
     local.set $num1
-    i32.const 259
+    i32.const 266
     local.set $num2
-    i32.const 263
+    i32.const 270
     local.set $minimum
-    i32.const 267
+    i32.const 274
     local.set $maximum
-    i32.const 271
+    i32.const 278
     local.set $a
-    i32.const 275
+    i32.const 282
     local.set $b
-    i32.const 279
+    i32.const 286
     local.set $c
-    i32.const 283
+    i32.const 290
     local.set $root1
-    i32.const 287
+    i32.const 294
     local.set $root2
-    i32.const 291
+    i32.const 298
     local.set $test
-    i32.const 295
+    i32.const 302
     local.set $test2
-    i32.const 299
+    i32.const 306
     local.set $result
-    i32.const 303
+    i32.const 310
     local.set $check1
-    i32.const 307
+    i32.const 314
     local.set $check2
-    i32.const 311
+    i32.const 318
     local.set $isPositive
     local.get $num1
     f32.const 1.5
@@ -222,7 +223,7 @@
             local.get $num1
             local.get $num2
             local.get $minimum
-            i32.const 315
+            i32.const 322
             local.set $$temp_1
             local.get $$temp_1
             local.get $maximum
@@ -243,14 +244,18 @@
     call $console_write_float
     i32.const 19
     call $console_write_string
+    i32.const 24
+    call $console_write_string
     local.get $num1
     f32.load
     call $console_write_float
-    i32.const 42
+    i32.const 47
     call $console_write_string
     local.get $num2
     f32.load
     call $console_write_float
+    i32.const 19
+    call $console_write_string
     local.get $num1
     local.get $num2
     f32.load
@@ -259,16 +264,18 @@
     local.get $num1
     f32.load
     f32.store
-    i32.const 54
+    i32.const 59
     call $console_write_string
     local.get $num1
     f32.load
     call $console_write_float
-    i32.const 42
+    i32.const 47
     call $console_write_string
     local.get $num2
     f32.load
     call $console_write_float
+    i32.const 19
+    call $console_write_string
     local.get $a
     f32.const 1.0
     f32.store
@@ -303,33 +310,35 @@
     local.get $result
     i32.load
     if
-        i32.const 76
+        i32.const 81
         call $console_write_string
         local.get $a
         f32.load
         call $console_write_float
-        i32.const 97
+        i32.const 102
         call $console_write_string
         local.get $b
         f32.load
         call $console_write_float
-        i32.const 106
+        i32.const 111
         call $console_write_string
         local.get $c
         f32.load
         call $console_write_float
-        i32.const 113
+        i32.const 118
         call $console_write_string
-        i32.const 125
+        i32.const 130
         call $console_write_string
         local.get $root1
         f32.load
         call $console_write_float
-        i32.const 136
+        i32.const 141
         call $console_write_string
         local.get $root2
         f32.load
         call $console_write_float
+        i32.const 19
+        call $console_write_string
         local.get $check1
         local.get $a
         f32.load
@@ -366,18 +375,20 @@
         f32.load
         f32.add
         f32.store
-        i32.const 149
+        i32.const 154
         call $console_write_string
         local.get $check1
         f32.load
         call $console_write_float
-        i32.const 189
+        i32.const 194
         call $console_write_string
         local.get $check2
         f32.load
         call $console_write_float
+        i32.const 19
+        call $console_write_string
     else
-        i32.const 197
+        i32.const 202
         call $console_write_string
     end
     local.get $isPositive
@@ -391,11 +402,13 @@
     f32.gt
     i32.and
     i32.store
-    i32.const 219
+    i32.const 226
     call $console_write_string
     local.get $isPositive
     i32.load
     call $console_write_bool
+    i32.const 19
+    call $console_write_string
   )
   (export "memory" (memory $memory))
   (export "main" (func $main))
