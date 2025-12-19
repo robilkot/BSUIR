@@ -514,7 +514,6 @@ class WatGenerator:
             '<=': ['f32.le'],
             '>': ['f32.gt'],
             '>=': ['f32.ge'],
-            '^': ['f32.mul'] # TODO
         }
         self._generate_expr(expr.left)
         self._generate_expr(expr.right)
