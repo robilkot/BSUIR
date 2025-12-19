@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from antlr4 import *
@@ -6,7 +7,6 @@ from generated.grammar.MathLangLexer import MathLangLexer
 from generated.grammar.MathLangParser import MathLangParser
 from generated.grammar.MathLangVisitor import MathLangVisitor
 from intermediate_code.wat_emitter import *
-from models import symbol
 from models.error_formatter import ErrorFormatter
 from models.errors import SemanticError
 from models.symbol import Symbol, SubprogramSymbol, SymbolTable
@@ -15,8 +15,6 @@ from models.types import Type
 from syntax_analyzer import CustomErrorListener
 
 
-# todo check for unused template arguments
-# todo check for templated sub before using explicit implementation
 class SemanticAnalyzer(MathLangVisitor):
     def __init__(self):
         self.global_scope = SymbolTable()
@@ -103,14 +101,36 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
         # Templated sub branch
-        # todo explicit implementation
         if template_args is not None and type_mapping is None:
+            is_explicit_implementation = False
+            for arg in template_args:
+                if not TypeChecker.is_templated_argument(arg):
+                    is_explicit_implementation = True
+                    break
+
             if self.__subprogram_templates.__contains__(sub_name):
+                subprogram_template = self.__subprogram_templates[sub_name]
+                subprogram_template_args = self.visitTemplate(subprogram_template.template())
+
+                explicit_implementation_type_mapping: dict[Type, Type] = {}
+                for template_arg, explicit_arg in zip(subprogram_template_args, template_args):
+                    explicit_implementation_type_mapping[template_arg] = explicit_arg
+                    if TypeChecker.is_templated_argument(explicit_arg):
+                        self.add_error(ErrorFormatter.explicit_impl_argument_not_specified(explicit_arg), ctx)
+                        is_explicit_implementation = False
+
+                if is_explicit_implementation:
+                    return self.visitSubprogram(ctx, explicit_implementation_type_mapping)
+
                 self.add_error(ErrorFormatter.redefined_symbol(sub_name), ctx)
                 return None
 
+            if is_explicit_implementation:
+                self.add_error(ErrorFormatter.explicit_impl_now_allowed_without_templated_decl(sub_name), ctx)
+                return None
+
             self.__subprogram_templates[sub_name] = ctx
-            print("TEMPLATED_SUB", sub_name)
+            # print("TEMPLATED_SUB", sub_name)
             return None
 
         # Not templated sub branch (calling and trying to bind)
@@ -154,8 +174,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
             for type, used in used_template_args.items():
                 if not used:
-                    # todo formatter
-                    self.add_error(f'Unused template argument {type} (got with substitutions {type_mapping})', ctx)
+                    self.add_error(ErrorFormatter.unused_template_argument(type, type_mapping), ctx)
 
         # Восстанавливаем предыдущий контекст
         self.current_scope = previous_scope
@@ -170,7 +189,7 @@ class SemanticAnalyzer(MathLangVisitor):
 
         self.__subprograms_nodes.add(subprogram_node)
 
-        print("SPECIFIC_SUB", subprogram_node.name)
+        # print("SPECIFIC_SUB", subprogram_node.name)
 
         self.current_subprogram = previous_sub
         return subprogram_node
@@ -191,19 +210,17 @@ class SemanticAnalyzer(MathLangVisitor):
         # Special case: cast subprogram
         if sub_name == 'cast':
             if len(sub_templated_arguments) != 2:
-                self.add_error(ErrorFormatter.cast_with_not_two_arguments(len(sub_templated_arguments)), ctx)
+                self.add_error(ErrorFormatter.unmatched_arguments_count(actual=len(sub_templated_arguments), expected=2), ctx)
                 return None
 
             if len(sub_arguments) != 1:
-                # todo message formatter
-                self.add_error("cast with not single argument", ctx)
+                self.add_error(ErrorFormatter.unmatched_arguments_count(actual=len(sub_arguments), expected=1), ctx)
                 return None
 
             from_type = sub_templated_arguments[0]
             to_type = sub_templated_arguments[1]
             if sub_arguments[0].type != from_type:
-                # todo message formatter
-                self.add_error("cast with template arg not matching argument type", ctx)
+                self.add_error(ErrorFormatter.unmatched_argument_type(expected=from_type, actual=sub_arguments[0].type), ctx)
                 return None
 
             if not TypeChecker.can_cast(from_type, to_type):
@@ -215,7 +232,11 @@ class SemanticAnalyzer(MathLangVisitor):
         # Special case: read subprogram
         if sub_name == 'read':
             if len(sub_templated_arguments) != 1:
-                self.add_error(ErrorFormatter.read_with_not_one_template_argument(len(sub_templated_arguments)), ctx)
+                self.add_error(ErrorFormatter.unmatched_arguments_count(actual=len(sub_templated_arguments), expected=1), ctx)
+                return None
+
+            if sub_templated_arguments[0] not in [Type.int(), Type.float(), Type.bool()]:
+                self.add_error(ErrorFormatter.no_overload_found(sub_name, sub_templated_arguments), ctx)
                 return None
 
             node = SubprogramCall(name=sub_name, type=sub_templated_arguments[0], args=[])
@@ -224,21 +245,34 @@ class SemanticAnalyzer(MathLangVisitor):
         # Special case: write subprogram
         if sub_name == 'write':
             if len(sub_arguments) == 1:
-                if len(sub_templated_arguments) == 1:
-                    if sub_arguments[0].type != sub_templated_arguments[0]:
-                        # todo message formatter
-                        self.add_error("write with template arg not matching argument type", ctx)
-                        return None
+                if len(sub_templated_arguments) > 1:
+                    self.add_error(ErrorFormatter.unmatched_arguments_count(actual=len(sub_templated_arguments), expected=1), ctx)
+                    return None
+                if len(sub_templated_arguments) > 0 and sub_arguments[0].type != sub_templated_arguments[0]:
+                    self.add_error(ErrorFormatter.unmatched_argument_type(actual=sub_arguments[0].type, expected=sub_templated_arguments[0]), ctx)
 
                 node = SubprogramCall(name=sub_name, type=sub_arguments[0].type, args=sub_arguments)
                 return node
 
+        # Special case: math functions
         if sub_name in [sub.name for sub in self.__math_subprograms]:
-            if len(sub_arguments) != 1 and sub_arguments[0].type != Type.float():
-                # todo message formatter
-                self.add_error("math functions require single float argument", ctx)
+            if len(sub_arguments) != 1:
+                self.add_error(
+                    ErrorFormatter.unmatched_arguments_count(actual=len(sub_arguments), expected=1), ctx)
+                return None
+            if len(sub_templated_arguments) > 1:
+                self.add_error(
+                    ErrorFormatter.unmatched_arguments_count(actual=len(sub_templated_arguments), expected=1), ctx)
+                return None
+            if len(sub_templated_arguments) > 0 and sub_templated_arguments[0] != Type.float():
+                self.add_error(ErrorFormatter.unmatched_argument_type(actual=sub_templated_arguments[0],
+                                                                      expected=Type.float()), ctx)
+            if len(sub_arguments) > 0 and sub_arguments[0].type != Type.float():
+                self.add_error(ErrorFormatter.unmatched_argument_type(actual=sub_arguments[0].type,
+                                                                      expected=Type.float()), ctx)
 
-            node = SubprogramCall(name=sub_name, type=sub_arguments[0].type, args=sub_arguments)
+            typ = sub_arguments[0].type if len(sub_arguments) > 0 else Type.float()  # fallback to float for math
+            node = SubprogramCall(name=sub_name, type=typ, args=sub_arguments)
             return node
 
         # Try to find non-templated function
@@ -317,7 +351,7 @@ class SemanticAnalyzer(MathLangVisitor):
             args=sub_arguments,
             type=subprogram_node.type,
         )
-        print("CALL", node.name)
+        # print("CALL", node.name)
         return node
 
 
@@ -547,7 +581,6 @@ class SemanticAnalyzer(MathLangVisitor):
         else:
             raise ValueError('Unknown literal type')
 
-    # todo map types
     def visitBranching(self, ctx: MathLangParser.BranchingContext, type_mapping: dict[Type, Type] | None = None) -> StatementNode:
         condition_expr_node = self.visitExpression(ctx.expression(), type_mapping)
         condition_type = condition_expr_node.type
@@ -567,7 +600,6 @@ class SemanticAnalyzer(MathLangVisitor):
         )
 
     def visitLoop(self, ctx: MathLangParser.LoopContext, type_mapping: dict[Type, Type] | None = None) -> WhileStmt | ForStmt | UntilStmt:
-        # Сохраняем текущий контекст и создаем новую область видимости
         previous_scope = self.current_scope
 
         self.current_scope = self.current_scope.create_child_scope()
@@ -693,14 +725,11 @@ class SemanticAnalyzer(MathLangVisitor):
 
 
 def main():
-    default_file = 'samples/sample7.ml'
-    # default_file = 'samples/samples_templates.ml'
-
     if len(sys.argv) != 2:
-        print(f"No file specified. Using {default_file}.")
+        logging.error(f"Usage: python {sys.argv[0]} <source_file.ml>\nExample: python {sys.argv[0]} samples/sample7.ml")
+        sys.exit(1)
 
-    source_file = sys.argv[1] if len(sys.argv) > 1 else default_file
-    # source_file = sys.argv[1] if len(sys.argv) > 1 else 'samples/samples_templates.ml'
+    source_file = sys.argv[1]
 
     try:
         input_stream = FileStream(source_file, encoding='utf-8')
@@ -716,27 +745,29 @@ def main():
         tree = parser.program()
 
         if syntax_error_listener.has_errors:
-            print(f"\n🔴 Семантический анализ не выполнен, потому что программа синтаксически некорректна")
+            logging.error(f"Семантический анализ не выполнен, потому что программа синтаксически некорректна")
             sys.exit(1)
 
         analyzer = SemanticAnalyzer()
         analyzer.visit(tree)
 
         if analyzer.errors:
-            print(f"\n🔴 Семантический анализ завершен с ошибками: {len(analyzer.errors)}")
+            logging.error(f"Семантический анализ завершен с ошибками: {len(analyzer.errors)}")
 
             for error in analyzer.errors:
-                print(f"❌ {error}")
+                logging.error(f"❌ {error}")
+
+            sys.exit(1)
         else:
-            print("✅ Программа семантически корректна!")
+            logging.info("✅ Программа семантически корректна!")
             generator = WatGenerator()
 
             code = generator.generate(analyzer.program_node)
             with open(source_file.replace('.ml', '.wat'), 'w', encoding='utf-8') as f:
                 f.write(code)
 
-        print("\nGenerated AST:")
-        print(analyzer.program_node)
+        # print("\nGenerated AST:")
+        # print(analyzer.program_node)
 
         sys.exit(0)
 

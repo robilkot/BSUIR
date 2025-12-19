@@ -66,8 +66,8 @@ sub explicit_implementation_without_templated_declaration:(int)(int val)
 }
 
 // Unused template argument
-sub unused_argument:(Unused)() {}
 sub unused_argument:(T, K)(T value) {}
+sub unused_argument:(Unused)() {}
 
 // Using template arguments without declaration
 sub unknown_argument(T value) {}

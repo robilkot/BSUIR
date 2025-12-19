@@ -60,12 +60,16 @@ class ErrorFormatter:
         return f"Невозможно преобразовать {from_type} в {to_type}" + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")
 
     @staticmethod
-    def cast_with_not_two_arguments(args_count: int):
-        return f"Подпрограмма преобразования требует 2 шаблонных аргумента. Получено {args_count}"
+    def unused_template_argument(arg: Type, type_mapping: dict[Type, Type] | None):
+        return f"Неиспользованный шаблонный аргумент {arg}" + (f" (Получено при подстановке типов {type_mapping})" if type_mapping else "")
 
     @staticmethod
-    def read_with_not_one_template_argument(args_count: int):
-        return f"Подпрограмма ввода требует 1 шаблонный аргумент. Получено {args_count}"
+    def unmatched_arguments_count(actual: int, expected: int):
+        return f"Требуется аргумент: {expected}. Получено аргументов: {actual}."
+
+    @staticmethod
+    def unmatched_argument_type(actual: Type, expected: Type):
+        return f"Ожидался тип {expected}. Получен {actual}."
 
     @staticmethod
     def undefined_templated_argument(template_arg_type: Type):
@@ -74,3 +78,11 @@ class ErrorFormatter:
     @staticmethod
     def undefined_type(type: Type):
         return f'Тип {type} не определен'
+
+    @staticmethod
+    def explicit_impl_argument_not_specified(typ: Type):
+        return f"Тип шаблонного аргумента {typ} не указан при явной реализации"
+
+    @staticmethod
+    def explicit_impl_now_allowed_without_templated_decl(sub_name: str):
+        return f"Явная реализация {sub_name} не допускается до шаблонного объявления подпрограммы"

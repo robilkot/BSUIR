@@ -42,7 +42,6 @@ class TypeChecker:
         logical_ops = ['and', 'or']
 
         # Assuming binary operations only allowed on same types
-        # todo does not seem valid
         if TypeChecker.is_templated_argument(left_type) and not TypeChecker.is_templated_argument(right_type):
             return right_type
 
